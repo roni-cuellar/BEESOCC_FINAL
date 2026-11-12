@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 use Tests\TestCase;
@@ -25,10 +26,8 @@ abstract class BackendTestCase extends TestCase
         }
 
         $sqliteSeguro = $conexion === 'sqlite' && $configuracion['database'] === ':memory:';
-        $mysqlSeguro = $conexion === 'mysql' && $configuracion['database'] === 'beesocc_v2_test';
-
-        if (! $sqliteSeguro && ! $mysqlSeguro) {
-            throw new RuntimeException('Destino inseguro. Solo se permite SQLite :memory: o MySQL beesocc_v2_test.');
+        if (! $sqliteSeguro) {
+            throw new RuntimeException('Este Sprint solo permite SQLite :memory: para las pruebas.');
         }
 
         $base = DB::connection();
@@ -37,18 +36,17 @@ abstract class BackendTestCase extends TestCase
             throw new RuntimeException('SQLite debe tener las claves foráneas activadas.');
         }
 
-        if ($mysqlSeguro && $base->selectOne('SELECT DATABASE() AS nombre')->nombre !== 'beesocc_v2_test') {
-            throw new RuntimeException('La conexión real no corresponde a beesocc_v2_test.');
+        // Esquema efímero en memoria, sin ejecutar comandos migrate sobre MySQL.
+        foreach (glob(database_path('migrations/*.php')) as $archivo) {
+            (require $archivo)->up();
         }
-
-        // No se borran tablas: se aplican migraciones pendientes solo en la base aislada.
-        $this->artisan('migrate', ['--force' => true])->assertExitCode(0);
         $base->beginTransaction();
         $this->beforeApplicationDestroyed(function () use ($base) {
             while ($base->transactionLevel() > 0) {
                 $base->rollBack();
             }
         });
+        $this->actingAs(User::factory()->create(), 'web');
     }
 
     protected function campeonato(string $nombre = 'Copa de prueba'): array

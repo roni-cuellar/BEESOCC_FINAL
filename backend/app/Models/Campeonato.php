@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use InvalidArgumentException;
@@ -10,6 +11,11 @@ use InvalidArgumentException;
 class Campeonato extends Model
 {
     public const FORMATO_TODOS_CONTRA_TODOS = 'todos_contra_todos';
+
+    public function administrador(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'administrador_id');
+    }
 
     // Campos que se pueden asignar con create() o fill().
     protected $fillable = [

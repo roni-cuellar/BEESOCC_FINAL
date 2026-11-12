@@ -24,11 +24,13 @@ Route::middleware('web')->withoutMiddleware(EnsureFrontendRequestsAreStateful::c
     });
 });
 
-Route::get('/campeonatos', [CampeonatoController::class, 'index']);
-Route::post('/campeonatos', [CampeonatoController::class, 'store']);
-Route::get('/campeonatos/{campeonato}', [CampeonatoController::class, 'show']);
-Route::match(['put', 'patch'], '/campeonatos/{campeonato}', [CampeonatoController::class, 'update']);
-Route::delete('/campeonatos/{campeonato}', [CampeonatoController::class, 'destroy']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/campeonatos', [CampeonatoController::class, 'index']);
+    Route::post('/campeonatos', [CampeonatoController::class, 'store']);
+    Route::get('/campeonatos/{campeonato}', [CampeonatoController::class, 'show']);
+    Route::match(['put', 'patch'], '/campeonatos/{campeonato}', [CampeonatoController::class, 'update']);
+    Route::delete('/campeonatos/{campeonato}', [CampeonatoController::class, 'destroy']);
+});
 
 Route::get('/equipos', [EquipoController::class, 'index']);
 Route::post('/equipos', [EquipoController::class, 'store']);

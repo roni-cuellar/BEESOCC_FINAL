@@ -1,0 +1,39 @@
+# Configuración privada; conservar únicamente los ejemplos sin secretos.
+.env
+.env.*
+!.env.example
+**/node_modules/
+**/vendor/
+**/dist/
+**/*.log
+**/.phpunit.result.cache
+**/.phpunit.cache/
+backend/database/*.sqlite*
+*.sql
+*.sql.gz
+*.dump
+*.dmp
+backend/storage/framework/testing/
+backend/storage/framework/cache/data/
+backend/storage/framework/sessions/
+backend/storage/framework/views/*.php
+backend/bootstrap/cache/*.php
+
+# Bases de datos locales y de pruebas
+**/*.sqlite
+**/*.sqlite-*
+**/*.sqlite3
+**/*.db
+
+# Resultados de pruebas
+**/coverage/
+**/test-results/
+
+# Cachés y archivos temporales
+**/.vite/
+**/.DS_Store
+Thumbs.db
+
+# Archivos subidos durante la ejecución
+backend/storage/app/private/
+backend/storage/app/public/

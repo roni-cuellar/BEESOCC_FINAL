@@ -1,0 +1,129 @@
+<?php
+
+namespace Tests\Feature;
+
+use Illuminate\Support\Facades\DB;
+use RuntimeException;
+use Tests\TestCase;
+
+abstract class BackendTestCase extends TestCase
+{
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Se comprueba el destino antes de migrar o escribir cualquier dato.
+        if (! $this->app->environment('testing') || $this->app->configurationIsCached()) {
+            throw new RuntimeException('Las pruebas requieren APP_ENV=testing y configuración sin caché.');
+        }
+
+        $conexion = config('database.default');
+        $configuracion = config('database.connections.'.$conexion);
+
+        if (! empty($configuracion['url'])) {
+            throw new RuntimeException('Las pruebas no permiten DB_URL: declara explícitamente la base de pruebas.');
+        }
+
+        $sqliteSeguro = $conexion === 'sqlite' && $configuracion['database'] === ':memory:';
+        $mysqlSeguro = $conexion === 'mysql' && $configuracion['database'] === 'beesocc_v2_test';
+
+        if (! $sqliteSeguro && ! $mysqlSeguro) {
+            throw new RuntimeException('Destino inseguro. Solo se permite SQLite :memory: o MySQL beesocc_v2_test.');
+        }
+
+        $base = DB::connection();
+
+        if ($sqliteSeguro && (int) $base->selectOne('PRAGMA foreign_keys')->foreign_keys !== 1) {
+            throw new RuntimeException('SQLite debe tener las claves foráneas activadas.');
+        }
+
+        if ($mysqlSeguro && $base->selectOne('SELECT DATABASE() AS nombre')->nombre !== 'beesocc_v2_test') {
+            throw new RuntimeException('La conexión real no corresponde a beesocc_v2_test.');
+        }
+
+        // No se borran tablas: se aplican migraciones pendientes solo en la base aislada.
+        $this->artisan('migrate', ['--force' => true])->assertExitCode(0);
+        $base->beginTransaction();
+        $this->beforeApplicationDestroyed(function () use ($base) {
+            while ($base->transactionLevel() > 0) {
+                $base->rollBack();
+            }
+        });
+    }
+
+    protected function campeonato(string $nombre = 'Copa de prueba'): array
+    {
+        return $this->postJson('/api/campeonatos', [
+            'nombre' => $nombre, 'temporada' => '2026', 'formato' => 'todos_contra_todos',
+        ])->assertCreated()->json('campeonato');
+    }
+
+    protected function equipo(string $nombre = 'Equipo de prueba'): array
+    {
+        return $this->postJson('/api/equipos', ['nombre' => $nombre, 'ciudad' => 'Bogotá', 'escudo' => null])
+            ->assertCreated()->json('equipo');
+    }
+
+    protected function inscripcion(int $campeonatoId, string $nombre = 'Equipo de prueba'): array
+    {
+        $equipo = $this->equipo($nombre);
+
+        return $this->postJson('/api/campeonatos/'.$campeonatoId.'/inscripciones-equipos', ['equipo_id' => $equipo['id']])
+            ->assertCreated()->json('inscripcion');
+    }
+
+    protected function jugador(string $nombre = 'Carlos'): array
+    {
+        return $this->postJson('/api/jugadores', [
+            'nombre' => $nombre, 'apellido' => 'Pérez', 'fecha_nacimiento' => '2000-05-15', 'foto' => null,
+        ])->assertCreated()->json('jugador');
+    }
+
+    protected function plantilla(int $inscripcionId, ?int $jugadorId = null, int $dorsal = 10): array
+    {
+        $jugadorId = $jugadorId ?? $this->jugador()['id'];
+
+        return $this->postJson('/api/inscripciones-equipos/'.$inscripcionId.'/plantillas', [
+            'jugador_id' => $jugadorId, 'dorsal' => $dorsal, 'posicion' => 'Delantero', 'fecha_ingreso' => '2026-01-01',
+        ])->assertCreated()->json('plantilla');
+    }
+
+    protected function partido(int $campeonatoId, int $localId, int $visitanteId, int $jornada = 1): array
+    {
+        return $this->postJson('/api/campeonatos/'.$campeonatoId.'/partidos', [
+            'jornada' => $jornada, 'local_id' => $localId, 'visitante_id' => $visitanteId,
+        ])->assertCreated()->json('partido');
+    }
+
+    protected function participante(array $partido, string $rol): int
+    {
+        $participante = collect($partido['participantes'])->firstWhere('rol', $rol);
+        $this->assertNotNull($participante);
+
+        return $participante['id'];
+    }
+
+    protected function evento(array $partido, int $participanteId, int $plantillaId, string $tipo = 'gol', ?int $golId = null): array
+    {
+        return $this->postJson('/api/partidos/'.$partido['id'].'/eventos', [
+            'equipo_partido_id' => $participanteId, 'plantilla_id' => $plantillaId,
+            'tipo' => $tipo, 'minuto' => 15, 'gol_relacionado_id' => $golId,
+        ])->assertCreated()->json('evento');
+    }
+
+    protected function escenario(bool $iniciar = true): array
+    {
+        $campeonato = $this->campeonato();
+        $local = $this->inscripcion($campeonato['id'], 'Águilas');
+        $visitante = $this->inscripcion($campeonato['id'], 'Leones');
+        $plantillaLocal = $this->plantilla($local['id']);
+        $plantillaVisitante = $this->plantilla($visitante['id']);
+        $partido = $this->partido($campeonato['id'], $local['id'], $visitante['id']);
+
+        if ($iniciar) {
+            $this->patchJson('/api/partidos/'.$partido['id'], ['estado' => 'en_curso'])->assertOk();
+        }
+
+        return compact('campeonato', 'local', 'visitante', 'plantillaLocal', 'plantillaVisitante', 'partido');
+    }
+}

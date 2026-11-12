@@ -1,0 +1,20 @@
+@import "tailwindcss" important;
+
+@theme {
+  --color-marca: #16a34a;
+  --color-marca-oscuro: #0f3d2e;
+  --color-oscuro: #111827;
+  --color-gris: #6b7280;
+  --color-borde: #e5e7eb;
+  --color-blanco: #ffffff;
+  --font-sans: 'Inter', sans-serif;
+  --font-titulo: 'Montserrat', sans-serif;
+}
+
+/* Compatibilidad con los módulos que todavía usan los CSS existentes.
+   Las utilidades tienen prioridad solo en los elementos que las declaran. */
+@layer base {
+  h1, h2, h3, h4, h5, h6 { font-weight: revert; }
+  dialog { margin: auto; }
+  ul, ol { list-style: revert; }
+}

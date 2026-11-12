@@ -10,6 +10,8 @@ const api = axios.create({
     Accept: 'application/json',
   },
   timeout: 20000,
+  withCredentials: true,
+  withXSRFToken: true,
 })
 
 
@@ -22,6 +24,10 @@ function textoError(mensaje) {
   }
 
   const campos = {
+    name: 'nombre',
+    email: 'correo electrónico',
+    password: 'contraseña',
+    password_confirmation: 'confirmación de contraseña',
     campeonato_equipo_id: 'equipo inscrito',
     equipo_partido_id: 'equipo participante',
     gol_relacionado_id: 'gol relacionado',
@@ -55,6 +61,10 @@ export function mensajeError(error) {
   if (status >= 500) {
     return 'No se pudo completar la solicitud. Intenta de nuevo.'
   }
+
+  if (status === 401) return 'Tu sesión terminó. Inicia sesión de nuevo.'
+  if (status === 419) return 'La sesión de seguridad venció. Intenta de nuevo.'
+  if (status === 429) return 'Demasiados intentos. Espera un minuto.'
 
   if (status === 404) {
     return 'No encontramos este registro.'

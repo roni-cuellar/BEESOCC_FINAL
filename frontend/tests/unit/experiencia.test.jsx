@@ -51,9 +51,9 @@ describe('experiencia de las pantallas principales', () => {
     expect(html).not.toContain('<footer')
   })
 
-  it('el registro informa su alcance visual y conserva etiquetas explícitas', () => {
+  it('el registro conserva etiquetas y presenta el acceso real', () => {
     const html = render(<RegistroPage />)
-    expect(html).toContain('No se crea una cuenta ni se guardan tus datos.')
+    expect(html).toContain('Crea tu cuenta para organizar tus campeonatos.')
     expect(html).toContain('for="registro-confirmacion"')
     expect(html).toContain('href="/login"')
   })

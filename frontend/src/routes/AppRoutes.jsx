@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { Link, Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
+import RutaPrivada from '../components/RutaPrivada'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import DashboardLayout from '../components/DashboardLayout'
@@ -37,6 +38,7 @@ function AppRoutes() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/registro" element={<RegistroPage />} />
     </Route>
+    <Route element={<RutaPrivada />}>
     <Route element={<AplicacionLayout />}>
       <Route path="/mis-ligas" element={<MisLigasPage />} />
       <Route path="/ligas/nueva" element={<CrearLigaPage />} />
@@ -53,6 +55,7 @@ function AppRoutes() {
       <Route path="tabla" element={<TablaPage />} />
       <Route path="estadisticas" element={<EstadisticasPage />} />
       <Route path="*" element={<section className="panel"><h1>Página no encontrada</h1><Link to="/mis-ligas" className="enlace-texto">Volver a Mis Ligas</Link></section>} />
+    </Route>
     </Route>
   </Routes>
 }

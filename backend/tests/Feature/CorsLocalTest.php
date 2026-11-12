@@ -6,7 +6,7 @@ use Tests\TestCase;
 
 class CorsLocalTest extends TestCase
 {
-    public function test_permite_el_frontend_local_sin_credenciales(): void
+    public function test_permite_el_frontend_local_con_credenciales(): void
     {
         $this->withHeaders([
             'Origin' => 'http://127.0.0.1:5173',
@@ -15,7 +15,7 @@ class CorsLocalTest extends TestCase
         ])->options('/api/campeonatos')
             ->assertNoContent()
             ->assertHeader('Access-Control-Allow-Origin', 'http://127.0.0.1:5173')
-            ->assertHeaderMissing('Access-Control-Allow-Credentials');
+            ->assertHeader('Access-Control-Allow-Credentials', 'true');
     }
 
     public function test_no_autoriza_un_origen_externo(): void

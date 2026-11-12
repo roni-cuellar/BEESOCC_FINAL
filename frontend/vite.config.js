@@ -9,6 +9,7 @@ export default defineConfig(({ mode }) => {
     plugins: [react(), tailwindcss()],
     server: {
       proxy: {
+        '/sanctum': { target: destino, changeOrigin: true },
         '/api': { target: destino, changeOrigin: true },
         '/storage': { target: destino, changeOrigin: true },
       },

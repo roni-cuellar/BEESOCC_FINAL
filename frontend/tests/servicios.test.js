@@ -50,7 +50,7 @@ const casos = [
   ['crear configuración', () => liga.crearConfiguracion(8, datos), 'post', '/campeonatos/8/configuracion', null, datos],
   ['editar configuración', () => liga.actualizarConfiguracion(8, datos), 'patch', '/campeonatos/8/configuracion', null, datos],
   ['listar equipos', () => equipo.listar(), 'get', '/equipos'],
-  ['crear equipo', () => equipo.crear(datos), 'post', '/equipos', 'equipo', datos],
+  ['crear equipo', () => equipo.crear({ ...datos, ciudad: 'Bogotá' }), 'post', '/equipos', 'equipo', { ...datos, ciudad: 'Bogotá' }],
   ['editar equipo', () => equipo.actualizar(9, datos), 'patch', '/equipos/9', 'equipo', datos],
   ['eliminar equipo', () => equipo.eliminar(9), 'delete', '/equipos/9'],
   ['inscripciones', () => equipo.inscripciones(8), 'get', '/campeonatos/8/inscripciones-equipos'],
@@ -86,7 +86,10 @@ for (const [nombre, ejecutar, metodo, ruta, propiedad, cuerpo] of casos) {
       assert.equal(configuracion.method, metodo)
       assert.equal(configuracion.url, ruta)
       assert.equal(configuracion.headers.Accept, 'application/json')
-      assert.deepEqual(configuracion.data ? JSON.parse(configuracion.data) : undefined, cuerpo)
+      const enviado = configuracion.data instanceof FormData
+        ? Object.fromEntries(configuracion.data.entries())
+        : configuracion.data ? JSON.parse(configuracion.data) : undefined
+      assert.deepEqual(enviado, cuerpo)
       return { data: respuesta, status: 200, statusText: 'OK', headers: {}, config: configuracion }
     }
     try { assert.deepEqual(await ejecutar(), propiedad ? respuesta[propiedad] : respuesta) }

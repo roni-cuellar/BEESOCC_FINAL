@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CampeonatoController;
 use App\Http\Controllers\Api\CampeonatoEquipoController;
 use App\Http\Controllers\Api\ConfiguracionCampeonatoController;
@@ -11,6 +12,17 @@ use App\Http\Controllers\Api\PartidoController;
 use App\Http\Controllers\Api\PlantillaController;
 use App\Http\Controllers\Api\TablaPosicionesController;
 use Illuminate\Support\Facades\Route;
+use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
+
+// Estos endpoints siempre necesitan sesión y CSRF, incluso sin Origin.
+Route::middleware('web')->withoutMiddleware(EnsureFrontendRequestsAreStateful::class)->group(function () {
+    Route::post('/registro', [AuthController::class, 'registro'])->middleware('throttle:6,1');
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:6,1');
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::get('/usuario', [AuthController::class, 'usuario']);
+        Route::post('/logout', [AuthController::class, 'logout']);
+    });
+});
 
 Route::get('/campeonatos', [CampeonatoController::class, 'index']);
 Route::post('/campeonatos', [CampeonatoController::class, 'store']);

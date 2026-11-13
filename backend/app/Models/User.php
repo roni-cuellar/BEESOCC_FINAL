@@ -11,6 +11,16 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
+    public function equipos(): HasMany
+    {
+        return $this->hasMany(Equipo::class, 'administrador_id');
+    }
+
+    public function jugadores(): HasMany
+    {
+        return $this->hasMany(Jugador::class, 'administrador_id');
+    }
+
     public function campeonatos(): HasMany
     {
         return $this->hasMany(Campeonato::class, 'administrador_id');

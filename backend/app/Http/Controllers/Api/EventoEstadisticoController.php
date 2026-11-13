@@ -9,6 +9,7 @@ use App\Models\Plantilla;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 
 class EventoEstadisticoController extends Controller
 {
@@ -24,6 +25,7 @@ class EventoEstadisticoController extends Controller
 
     public function store(Request $request, Partido $partido): JsonResponse
     {
+        Gate::authorize('gestionarActa', $partido);
         $datos = $request->validate([
             'equipo_partido_id' => 'required|integer|exists:equipo_partido,id',
             'plantilla_id' => 'required|integer|exists:plantillas,id',
@@ -80,6 +82,8 @@ class EventoEstadisticoController extends Controller
                 return response()->json(['message' => 'La plantilla del jugador no corresponde al equipo participante.'], 422);
             }
 
+            Gate::authorize('participarEnActa', [$plantilla, $partido]);
+
             if ($datos['tipo'] === 'asistencia') {
                 $gol = EventoEstadistico::with('plantilla')->whereKey($datos['gol_relacionado_id'])
                     ->where('tipo', 'gol')->where('equipo_partido_id', $participante->id)->first();
@@ -121,6 +125,7 @@ class EventoEstadisticoController extends Controller
 
     public function update(Request $request, EventoEstadistico $evento): JsonResponse
     {
+        Gate::authorize('update', $evento);
         $datos = $request->validate([
             'minuto' => 'required|integer|between:0,150',
             'partido_id' => 'prohibited',
@@ -155,6 +160,7 @@ class EventoEstadisticoController extends Controller
 
     public function destroy(EventoEstadistico $evento): JsonResponse
     {
+        Gate::authorize('delete', $evento);
         $partidoId = $evento->equipoPartido->partido_id;
 
         return DB::transaction(function () use ($evento, $partidoId) {

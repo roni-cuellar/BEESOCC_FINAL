@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Campeonato;
+use App\Models\CampeonatoEquipo;
 use App\Models\Partido;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 
 class PartidoController extends Controller
@@ -65,6 +67,8 @@ class PartidoController extends Controller
 
     public function generarCalendario(Campeonato $campeonato): JsonResponse
     {
+        Gate::authorize('update', $campeonato);
+
         return DB::transaction(function () use ($campeonato) {
             // Dos generaciones del mismo campeonato deben esperar este bloqueo.
             $campeonato = Campeonato::whereKey($campeonato->id)->lockForUpdate()->firstOrFail();
@@ -82,6 +86,10 @@ class PartidoController extends Controller
 
             if (! in_array($vueltas, [1, 2], true)) {
                 return response()->json(['message' => 'El número de vueltas debe ser 1 o 2.'], 422);
+            }
+
+            foreach ($campeonato->inscripcionesEquipos()->where('estado', 'activo')->with('equipo')->get() as $inscripcion) {
+                Gate::authorize('update', $inscripcion);
             }
 
             $equipos = $campeonato->inscripcionesEquipos()->where('estado', 'activo')
@@ -162,6 +170,7 @@ class PartidoController extends Controller
 
     public function store(Request $request, Campeonato $campeonato): JsonResponse
     {
+        Gate::authorize('update', $campeonato);
         // Los IDs corresponden a inscripciones activas del campeonato de la URL.
         $equipoActivo = Rule::exists('campeonato_equipos', 'id')
             ->where('campeonato_id', $campeonato->id)->where('estado', 'activo');
@@ -185,6 +194,10 @@ class PartidoController extends Controller
             'different' => 'El equipo visitante debe ser diferente del local.',
             'prohibited' => 'No se permite enviar el campo :attribute al crear el partido.',
         ]);
+
+        foreach ([$datos['local_id'], $datos['visitante_id']] as $inscripcionId) {
+            Gate::authorize('update', CampeonatoEquipo::findOrFail($inscripcionId));
+        }
 
         return DB::transaction(function () use ($datos, $campeonato) {
             $partido = $campeonato->partidos()->create([
@@ -213,6 +226,10 @@ class PartidoController extends Controller
 
     public function update(Request $request, Partido $partido): JsonResponse
     {
+        Gate::authorize('update', $partido);
+        if ($request->has('estado')) {
+            Gate::authorize('gestionarActa', $partido);
+        }
         $equipoActivo = Rule::exists('campeonato_equipos', 'id')
             ->where('campeonato_id', $partido->campeonato_id)->where('estado', 'activo');
 
@@ -237,6 +254,10 @@ class PartidoController extends Controller
             'in' => 'El estado debe ser programado, en_curso, finalizado, suspendido o cancelado.',
             'prohibited' => 'No se permite cambiar el campeonato del partido.',
         ]);
+
+        foreach (array_filter([$datos['local_id'] ?? null, $datos['visitante_id'] ?? null]) as $inscripcionId) {
+            Gate::authorize('update', CampeonatoEquipo::findOrFail($inscripcionId));
+        }
 
         return DB::transaction(function () use ($request, $datos, $partido) {
             // Serializa las modificaciones del mismo partido.
@@ -295,6 +316,8 @@ class PartidoController extends Controller
 
     public function destroy(Partido $partido): JsonResponse
     {
+        Gate::authorize('delete', $partido);
+
         return DB::transaction(function () use ($partido) {
             $partido = Partido::whereKey($partido->id)->lockForUpdate()->firstOrFail();
 

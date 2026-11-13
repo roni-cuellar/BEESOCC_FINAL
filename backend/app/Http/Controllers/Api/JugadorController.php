@@ -4,9 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Jugador;
+use Cloudinary\Cloudinary;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Cloudinary\Cloudinary;
+use Illuminate\Support\Facades\Gate;
 
 class JugadorController extends Controller
 {
@@ -19,12 +20,16 @@ class JugadorController extends Controller
 
     public function store(Request $request): JsonResponse
     {
+        Gate::authorize('create', Jugador::class);
         $datos = $request->validate([
+            'administrador_id' => 'prohibited',
+            'user_id' => 'prohibited',
             'nombre' => 'required|string|max:100',
             'apellido' => 'required|string|max:100',
             'fecha_nacimiento' => 'required|date|before_or_equal:today',
             'foto' => 'nullable|string|max:255',
         ], [
+            'prohibited' => 'El propietario lo asigna el servidor y no se puede modificar.',
             'required' => 'El campo :attribute es obligatorio.',
             'string' => 'El campo :attribute debe ser un texto.',
             'max' => 'El campo :attribute no debe superar :max caracteres.',
@@ -33,34 +38,34 @@ class JugadorController extends Controller
         ]);
 
         // Si enviaron una fotografía
-    if ($request->hasFile('foto')) {
+        if ($request->hasFile('foto')) {
 
-        $file = $request->file('foto');
+            $file = $request->file('foto');
 
-        // Configurar Cloudinary
-        $cloudinary = new Cloudinary([
-            'cloud' => [
-                'cloud_name' => config('services.cloudinary.cloud_name'),
-                'api_key' => config('services.cloudinary.api_key'),
-                'api_secret' => config('services.cloudinary.api_secret'),
-            ],
-            'url' => ['secure' => true],
-        ]);
+            // Configurar Cloudinary
+            $cloudinary = new Cloudinary([
+                'cloud' => [
+                    'cloud_name' => config('services.cloudinary.cloud_name'),
+                    'api_key' => config('services.cloudinary.api_key'),
+                    'api_secret' => config('services.cloudinary.api_secret'),
+                ],
+                'url' => ['secure' => true],
+            ]);
 
-        // Subir fotografía
-        $resultado = $cloudinary->uploadApi()->upload(
-            $file->getRealPath(),
-            [
-                'folder' => 'beesocc/jugadores',
-                'resource_type' => 'image',
-            ]
-        );
+            // Subir fotografía
+            $resultado = $cloudinary->uploadApi()->upload(
+                $file->getRealPath(),
+                [
+                    'folder' => 'beesocc/jugadores',
+                    'resource_type' => 'image',
+                ]
+            );
 
-        // Guardar URL en los datos del jugador
-        $datos['foto'] = $resultado['secure_url'];
-    }
+            // Guardar URL en los datos del jugador
+            $datos['foto'] = $resultado['secure_url'];
+        }
 
-        $jugador = Jugador::create($datos);
+        $jugador = $request->user()->jugadores()->create($datos);
 
         return response()->json([
             'message' => 'Jugador creado correctamente.',
@@ -75,13 +80,17 @@ class JugadorController extends Controller
 
     public function update(Request $request, Jugador $jugador): JsonResponse
     {
+        Gate::authorize('update', $jugador);
         // Solo se actualizan los campos enviados y validados.
         $datos = $request->validate([
+            'administrador_id' => 'prohibited',
+            'user_id' => 'prohibited',
             'nombre' => 'sometimes|required|string|max:100',
             'apellido' => 'sometimes|required|string|max:100',
             'fecha_nacimiento' => 'sometimes|required|date|before_or_equal:today',
             'foto' => 'sometimes|nullable|image|mimes:jpg,jpeg,png,webp|max:255',
         ], [
+            'prohibited' => 'El propietario lo asigna el servidor y no se puede modificar.',
             'required' => 'El campo :attribute es obligatorio.',
             'string' => 'El campo :attribute debe ser un texto.',
             'max' => 'El campo :attribute no debe superar :max caracteres.',
@@ -99,6 +108,7 @@ class JugadorController extends Controller
 
     public function destroy(Jugador $jugador): JsonResponse
     {
+        Gate::authorize('delete', $jugador);
         if ($jugador->plantillas()->exists()) {
             return response()->json([
                 'message' => 'No se puede eliminar el jugador porque tiene inscripciones en plantillas.',

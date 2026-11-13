@@ -9,6 +9,7 @@ use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
@@ -38,6 +39,7 @@ class ConfiguracionCampeonatoController extends Controller
 
     public function store(Request $request, Campeonato $campeonato): JsonResponse
     {
+        Gate::authorize('update', $campeonato);
         $datos = $request->validate([
             'numero_vueltas' => 'required|integer|in:1,2',
             'orden_desempate' => ['required', 'string', Rule::in([
@@ -90,6 +92,8 @@ class ConfiguracionCampeonatoController extends Controller
 
     public function update(Request $request, Campeonato $campeonato): JsonResponse
     {
+        Gate::authorize('update', $campeonato);
+
         return DB::transaction(function () use ($request, $campeonato) {
             $campeonato = Campeonato::whereKey($campeonato->id)->lockForUpdate()->firstOrFail();
             $configuracion = $campeonato->configuracion()->lockForUpdate()->first();

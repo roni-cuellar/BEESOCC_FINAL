@@ -33,43 +33,43 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 Route::get('/equipos', [EquipoController::class, 'index']);
-Route::post('/equipos', [EquipoController::class, 'store']);
+Route::post('/equipos', [EquipoController::class, 'store'])->middleware('auth:sanctum');
 Route::get('/equipos/{equipo}', [EquipoController::class, 'show']);
-Route::match(['put', 'patch'], '/equipos/{equipo}', [EquipoController::class, 'update']);
-Route::delete('/equipos/{equipo}', [EquipoController::class, 'destroy']);
+Route::match(['put', 'patch'], '/equipos/{equipo}', [EquipoController::class, 'update'])->middleware('auth:sanctum');
+Route::delete('/equipos/{equipo}', [EquipoController::class, 'destroy'])->middleware('auth:sanctum');
 
 Route::get('/jugadores', [JugadorController::class, 'index']);
-Route::post('/jugadores', [JugadorController::class, 'store']);
+Route::post('/jugadores', [JugadorController::class, 'store'])->middleware('auth:sanctum');
 Route::get('/jugadores/{jugador}', [JugadorController::class, 'show']);
-Route::match(['put', 'patch'], '/jugadores/{jugador}', [JugadorController::class, 'update']);
-Route::delete('/jugadores/{jugador}', [JugadorController::class, 'destroy']);
+Route::match(['put', 'patch'], '/jugadores/{jugador}', [JugadorController::class, 'update'])->middleware('auth:sanctum');
+Route::delete('/jugadores/{jugador}', [JugadorController::class, 'destroy'])->middleware('auth:sanctum');
 
 Route::get('/campeonatos/{campeonato}/inscripciones-equipos', [CampeonatoEquipoController::class, 'index']);
-Route::post('/campeonatos/{campeonato}/inscripciones-equipos', [CampeonatoEquipoController::class, 'store']);
+Route::post('/campeonatos/{campeonato}/inscripciones-equipos', [CampeonatoEquipoController::class, 'store'])->middleware('auth:sanctum');
 Route::get('/inscripciones-equipos/{campeonatoEquipo}', [CampeonatoEquipoController::class, 'show']);
-Route::patch('/inscripciones-equipos/{campeonatoEquipo}', [CampeonatoEquipoController::class, 'update']);
-Route::delete('/inscripciones-equipos/{campeonatoEquipo}', [CampeonatoEquipoController::class, 'destroy']);
+Route::patch('/inscripciones-equipos/{campeonatoEquipo}', [CampeonatoEquipoController::class, 'update'])->middleware('auth:sanctum');
+Route::delete('/inscripciones-equipos/{campeonatoEquipo}', [CampeonatoEquipoController::class, 'destroy'])->middleware('auth:sanctum');
 
 Route::get('/inscripciones-equipos/{campeonatoEquipo}/plantillas', [PlantillaController::class, 'index']);
-Route::post('/inscripciones-equipos/{campeonatoEquipo}/plantillas', [PlantillaController::class, 'store']);
+Route::post('/inscripciones-equipos/{campeonatoEquipo}/plantillas', [PlantillaController::class, 'store'])->middleware('auth:sanctum');
 Route::get('/plantillas/{plantilla}', [PlantillaController::class, 'show']);
-Route::patch('/plantillas/{plantilla}', [PlantillaController::class, 'update']);
-Route::delete('/plantillas/{plantilla}', [PlantillaController::class, 'destroy']);
+Route::patch('/plantillas/{plantilla}', [PlantillaController::class, 'update'])->middleware('auth:sanctum');
+Route::delete('/plantillas/{plantilla}', [PlantillaController::class, 'destroy'])->middleware('auth:sanctum');
 
 Route::get('/campeonatos/{campeonato}/partidos', [PartidoController::class, 'index']);
-Route::post('/campeonatos/{campeonato}/partidos', [PartidoController::class, 'store']);
+Route::post('/campeonatos/{campeonato}/partidos', [PartidoController::class, 'store'])->middleware('auth:sanctum');
 Route::get('/partidos/{partido}', [PartidoController::class, 'show']);
 Route::get('/partidos/{partido}/marcador', [PartidoController::class, 'marcador']);
-Route::match(['put', 'patch'], '/partidos/{partido}', [PartidoController::class, 'update']);
-Route::delete('/partidos/{partido}', [PartidoController::class, 'destroy']);
+Route::match(['put', 'patch'], '/partidos/{partido}', [PartidoController::class, 'update'])->middleware('auth:sanctum');
+Route::delete('/partidos/{partido}', [PartidoController::class, 'destroy'])->middleware('auth:sanctum');
 
-Route::post('/campeonatos/{campeonato}/generar-calendario', [PartidoController::class, 'generarCalendario']);
+Route::post('/campeonatos/{campeonato}/generar-calendario', [PartidoController::class, 'generarCalendario'])->middleware('auth:sanctum');
 
 Route::get('/partidos/{partido}/eventos', [EventoEstadisticoController::class, 'index']);
-Route::post('/partidos/{partido}/eventos', [EventoEstadisticoController::class, 'store']);
+Route::post('/partidos/{partido}/eventos', [EventoEstadisticoController::class, 'store'])->middleware('auth:sanctum');
 Route::get('/eventos/{evento}', [EventoEstadisticoController::class, 'show']);
-Route::patch('/eventos/{evento}', [EventoEstadisticoController::class, 'update']);
-Route::delete('/eventos/{evento}', [EventoEstadisticoController::class, 'destroy']);
+Route::patch('/eventos/{evento}', [EventoEstadisticoController::class, 'update'])->middleware('auth:sanctum');
+Route::delete('/eventos/{evento}', [EventoEstadisticoController::class, 'destroy'])->middleware('auth:sanctum');
 
 Route::get('/campeonatos/{campeonato}/tabla-posiciones', [TablaPosicionesController::class, 'index']);
 
@@ -81,5 +81,5 @@ Route::get('/campeonatos/{campeonato}/estadisticas/faltas', [EstadisticaControll
 Route::get('/campeonatos/{campeonato}/estadisticas/equipos', [EstadisticaController::class, 'equipos']);
 
 Route::get('/campeonatos/{campeonato}/configuracion', [ConfiguracionCampeonatoController::class, 'show']);
-Route::post('/campeonatos/{campeonato}/configuracion', [ConfiguracionCampeonatoController::class, 'store']);
-Route::patch('/campeonatos/{campeonato}/configuracion', [ConfiguracionCampeonatoController::class, 'update']);
+Route::post('/campeonatos/{campeonato}/configuracion', [ConfiguracionCampeonatoController::class, 'store'])->middleware('auth:sanctum');
+Route::patch('/campeonatos/{campeonato}/configuracion', [ConfiguracionCampeonatoController::class, 'update'])->middleware('auth:sanctum');

@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\CampeonatoEquipo;
+use App\Models\Jugador;
 use App\Models\Plantilla;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class PlantillaController extends Controller
 {
@@ -20,6 +22,7 @@ class PlantillaController extends Controller
 
     public function store(Request $request, CampeonatoEquipo $campeonatoEquipo): JsonResponse
     {
+        Gate::authorize('update', $campeonatoEquipo);
         $datos = $request->validate([
             'jugador_id' => 'required|integer|exists:jugadores,id',
             'dorsal' => 'required|integer|between:1,99',
@@ -37,6 +40,8 @@ class PlantillaController extends Controller
             'date' => 'El campo :attribute debe ser una fecha válida.',
             'prohibited' => 'No se permite enviar el campo :attribute al crear la inscripción.',
         ]);
+
+        Gate::authorize('usar', Jugador::findOrFail($datos['jugador_id']));
 
         if ($campeonatoEquipo->estado !== 'activo') {
             return response()->json(['message' => 'Solo se pueden inscribir jugadores en un equipo activo.'], 409);
@@ -81,6 +86,7 @@ class PlantillaController extends Controller
 
     public function update(Request $request, Plantilla $plantilla): JsonResponse
     {
+        Gate::authorize('update', $plantilla);
         if ($plantilla->fecha_salida !== null) {
             return response()->json(['message' => 'La inscripción está cerrada y se conserva como historial. No se puede modificar ni reactivar.'], 409);
         }
@@ -124,6 +130,7 @@ class PlantillaController extends Controller
 
     public function destroy(Plantilla $plantilla): JsonResponse
     {
+        Gate::authorize('delete', $plantilla);
         if ($plantilla->eventos()->exists()) {
             return response()->json(['message' => 'No se puede eliminar la inscripción porque tiene eventos estadísticos. Registra la fecha de salida para retirarla si sigue activa.'], 409);
         }

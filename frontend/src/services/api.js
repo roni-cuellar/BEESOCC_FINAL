@@ -63,6 +63,7 @@ export function mensajeError(error) {
   }
 
   if (status === 401) return 'Tu sesión terminó. Inicia sesión de nuevo.'
+  if (status === 403) return 'No tienes permiso para realizar esta operación.'
   if (status === 419) return 'La sesión de seguridad venció. Intenta de nuevo.'
   if (status === 429) return 'Demasiados intentos. Espera un minuto.'
 

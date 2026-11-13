@@ -5,6 +5,19 @@ let solicitud = 0
 
 const useLigaStore = create((set, get) => ({
   ligas: [], liga: null, solicitada: '', cargando: false, error: '',
+  publicando: false,
+  cambiarPublicacion: async (id, publicado) => {
+    if (get().publicando) throw new Error('Hay una publicación en curso.')
+    set({ publicando: true })
+    try {
+      const actualizada = await ligaService.publicacion(id, publicado)
+      set(estado => ({
+        ligas: estado.ligas.map(liga => liga.id === actualizada.id ? actualizada : liga),
+        liga: estado.liga?.id === actualizada.id ? actualizada : estado.liga,
+      }))
+      return actualizada
+    } finally { set({ publicando: false }) }
+  },
   cargarLigas: async () => {
     const actual = ++solicitud
     set({ cargando: true, error: '', ligas: [] })

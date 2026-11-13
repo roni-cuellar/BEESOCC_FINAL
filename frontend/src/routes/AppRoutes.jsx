@@ -19,6 +19,8 @@ import PartidoDetallePage from '../pages/PartidoDetallePage'
 import CalendarioPage from '../pages/CalendarioPage'
 import TablaPage from '../pages/TablaPage'
 import EstadisticasPage from '../pages/EstadisticasPage'
+import CampeonatosPublicosPage from '../pages/CampeonatosPublicosPage'
+import DetallePublicoPage, { ResumenPublicoPage } from '../pages/DetallePublicoPage'
 
 function PublicLayout() {
   return <><a className="saltar-contenido" href="#contenido">Saltar al contenido</a><Navbar /><main id="contenido" tabIndex={-1}><Outlet /></main><Footer /></>
@@ -32,6 +34,12 @@ function AppRoutes() {
   return <Routes>
     <Route element={<PublicLayout />}>
       <Route path="/" element={<InicioPage />} />
+      <Route path="/campeonatos" element={<CampeonatosPublicosPage />} />
+      <Route path="/campeonatos/:ligaId" element={<DetallePublicoPage />}>
+        <Route index element={<ResumenPublicoPage />} />
+        <Route path="tabla" element={<TablaPage publica />} />
+        <Route path="estadisticas" element={<EstadisticasPage publica />} />
+      </Route>
       <Route path="*" element={<section className="pagina-provisional contenedor"><p className="etiqueta">404</p><h1>Página no encontrada</h1><Link className="boton boton-verde" to="/mis-ligas">Volver a Mis ligas</Link></section>} />
     </Route>
     <Route element={<AccesoLayout />}>

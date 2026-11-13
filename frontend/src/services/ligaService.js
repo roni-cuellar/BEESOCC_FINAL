@@ -5,6 +5,7 @@ const ligaService = {
   crear: async datos => (await api.post('/campeonatos', datos)).data.campeonato,
   actualizar: async (id, datos) => (await api.patch('/campeonatos/' + id, datos)).data.campeonato,
   eliminar: async id => (await api.delete('/campeonatos/' + id)).data,
+  publicacion: async (id, publicado) => (await api.patch('/campeonatos/' + id + '/publicacion', { publicado })).data.campeonato,
   tabla: async id => (await api.get('/campeonatos/' + id + '/tabla-posiciones')).data,
   estadisticas: async (id, tipo) => (await api.get('/campeonatos/' + id + '/estadisticas/' + tipo)).data,
   configuracion: async id => (await api.get('/campeonatos/' + id + '/configuracion')).data,

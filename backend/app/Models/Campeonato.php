@@ -12,6 +12,11 @@ class Campeonato extends Model
 {
     public const FORMATO_TODOS_CONTRA_TODOS = 'todos_contra_todos';
 
+    protected function casts(): array
+    {
+        return ['publicado' => 'boolean'];
+    }
+
     public function administrador(): BelongsTo
     {
         return $this->belongsTo(User::class, 'administrador_id');

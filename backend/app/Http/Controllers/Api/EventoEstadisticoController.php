@@ -15,6 +15,7 @@ class EventoEstadisticoController extends Controller
 {
     public function index(Partido $partido): JsonResponse
     {
+        Gate::authorize('update', $partido);
         $eventos = EventoEstadistico::whereHas('equipoPartido', function ($consulta) use ($partido) {
             $consulta->where('partido_id', $partido->id);
         })->with(['plantilla.jugador', 'plantilla.campeonatoEquipo.equipo', 'equipoPartido.campeonatoEquipo.equipo'])
@@ -117,6 +118,8 @@ class EventoEstadisticoController extends Controller
 
     public function show(EventoEstadistico $evento): JsonResponse
     {
+        Gate::authorize('update', $evento);
+
         return response()->json($evento->load([
             'plantilla.jugador', 'plantilla.campeonatoEquipo.equipo',
             'equipoPartido.campeonatoEquipo.equipo', 'golRelacionado',

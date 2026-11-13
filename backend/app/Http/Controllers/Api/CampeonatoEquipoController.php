@@ -15,6 +15,7 @@ class CampeonatoEquipoController extends Controller
 {
     public function index(Campeonato $campeonato): JsonResponse
     {
+        Gate::authorize('view', $campeonato);
         $inscripciones = $campeonato->inscripcionesEquipos()
             ->with('equipo')->latest()->orderByDesc('id')->get();
 
@@ -59,6 +60,8 @@ class CampeonatoEquipoController extends Controller
 
     public function show(CampeonatoEquipo $campeonatoEquipo): JsonResponse
     {
+        Gate::authorize('update', $campeonatoEquipo);
+
         return response()->json($campeonatoEquipo->load(['campeonato', 'equipo']));
     }
 

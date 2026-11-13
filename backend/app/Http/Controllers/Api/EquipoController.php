@@ -11,9 +11,9 @@ use Illuminate\Support\Facades\Gate;
 
 class EquipoController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $equipos = Equipo::latest()->orderByDesc('id')->get();
+        $equipos = $request->user()->equipos()->latest()->orderByDesc('id')->get();
 
         return response()->json($equipos);
     }
@@ -83,6 +83,8 @@ class EquipoController extends Controller
 
     public function show(Equipo $equipo): JsonResponse
     {
+        Gate::authorize('usar', $equipo);
+
         return response()->json($equipo);
     }
 

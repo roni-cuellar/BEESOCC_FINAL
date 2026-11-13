@@ -14,6 +14,7 @@ class PlantillaController extends Controller
 {
     public function index(CampeonatoEquipo $campeonatoEquipo): JsonResponse
     {
+        Gate::authorize('update', $campeonatoEquipo);
         $plantillas = $campeonatoEquipo->plantillas()
             ->with('jugador')->latest()->orderByDesc('id')->get();
 
@@ -81,6 +82,8 @@ class PlantillaController extends Controller
 
     public function show(Plantilla $plantilla): JsonResponse
     {
+        Gate::authorize('update', $plantilla);
+
         return response()->json($plantilla->load(['jugador', 'campeonatoEquipo.equipo']));
     }
 

@@ -248,7 +248,7 @@ class AutorizacionDeportivaTest extends BackendTestCase
         $this->assertGreaterThan(20, $cantidad);
     }
 
-    public function test_consultas_heredadas_siguen_accesibles_sin_ampliar_publicacion(): void
+    public function test_consultas_administrativas_exigen_sesion(): void
     {
         $escenario = $this->escenarioConEvento();
         auth('web')->logout();
@@ -262,9 +262,9 @@ class AutorizacionDeportivaTest extends BackendTestCase
             '/api/eventos/'.$escenario['evento']['id'],
             '/api/campeonatos/'.$escenario['campeonato']['id'].'/configuracion',
         ] as $ruta) {
-            $this->getJson($ruta)->assertOk();
+            $this->getJson($ruta)->assertUnauthorized();
         }
-        $this->getJson('/api/publico/campeonatos')->assertNotFound();
+        $this->getJson('/api/publico/campeonatos')->assertOk()->assertJsonCount(0);
     }
 
     public function test_equipo_y_jugador_se_reutilizan_entre_ligas_solo_del_mismo_propietario(): void

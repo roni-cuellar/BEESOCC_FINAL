@@ -22,6 +22,7 @@ class CampeonatoController extends Controller
     {
         Gate::authorize('create', Campeonato::class);
         $datos = $request->validate([
+            'publicado' => 'prohibited',
             'administrador_id' => 'prohibited',
             'user_id' => 'prohibited',
             'nombre' => 'required|string|max:150',
@@ -59,6 +60,7 @@ class CampeonatoController extends Controller
         Gate::authorize('update', $campeonato);
         // Solo se actualizan los campos enviados y validados.
         $datos = $request->validate([
+            'publicado' => 'prohibited',
             'administrador_id' => 'prohibited',
             'user_id' => 'prohibited',
             'nombre' => 'sometimes|required|string|max:150',
@@ -94,5 +96,21 @@ class CampeonatoController extends Controller
         $campeonato->delete();
 
         return response()->json(['message' => 'Campeonato eliminado correctamente.']);
+    }
+
+    public function publicacion(Request $request, Campeonato $campeonato): JsonResponse
+    {
+        Gate::authorize('publicar', $campeonato);
+        $datos = $request->validate(['publicado' => 'required|boolean'], [
+            'required' => 'Indica si deseas publicar u ocultar el campeonato.',
+            'boolean' => 'El estado de publicación debe ser verdadero o falso.',
+        ]);
+        $campeonato->publicado = $datos['publicado'];
+        $campeonato->save();
+
+        return response()->json([
+            'message' => $campeonato->publicado ? 'Campeonato publicado.' : 'Campeonato oculto.',
+            'campeonato' => $campeonato,
+        ])->header('Cache-Control', 'no-store');
     }
 }

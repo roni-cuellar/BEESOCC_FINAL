@@ -17,6 +17,7 @@ class ConfiguracionCampeonatoController extends Controller
 {
     public function show(Campeonato $campeonato): JsonResponse
     {
+        Gate::authorize('view', $campeonato);
         $configuracion = $campeonato->configuracion()->first();
 
         return response()->json([

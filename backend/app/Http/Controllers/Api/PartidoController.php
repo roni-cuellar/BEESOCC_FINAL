@@ -16,6 +16,7 @@ class PartidoController extends Controller
 {
     public function index(Campeonato $campeonato): JsonResponse
     {
+        Gate::authorize('view', $campeonato);
         $partidos = $campeonato->partidos()->with('participantes.campeonatoEquipo.equipo')
             ->orderBy('jornada')->orderBy('fecha_hora')->orderBy('id')->get();
 
@@ -24,6 +25,7 @@ class PartidoController extends Controller
 
     public function marcador(Partido $partido): JsonResponse
     {
+        Gate::authorize('update', $partido);
         $participantes = $partido->participantes()
             ->with(['campeonatoEquipo.equipo', 'eventos'])->get();
         $local = $participantes->firstWhere('rol', 'local');
@@ -221,6 +223,8 @@ class PartidoController extends Controller
 
     public function show(Partido $partido): JsonResponse
     {
+        Gate::authorize('update', $partido);
+
         return response()->json($partido->load(['campeonato', 'participantes.campeonatoEquipo.equipo']));
     }
 

@@ -31,4 +31,9 @@ class CampeonatoPolicy
     {
         return $this->view($user, $campeonato);
     }
+
+    public function publicar(User $user, Campeonato $campeonato): bool
+    {
+        return $this->view($user, $campeonato);
+    }
 }

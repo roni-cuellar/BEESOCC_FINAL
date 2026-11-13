@@ -94,14 +94,14 @@ class CampeonatoPropiedadTest extends BackendTestCase
         $this->deleteJson($ruta)->assertUnauthorized();
     }
 
-    public function test_consultas_deportivas_heredadas_conservan_su_acceso_actual(): void
+    public function test_consultas_deportivas_administrativas_exigen_sesion(): void
     {
         $campeonato = $this->campeonato();
         auth('web')->logout();
         app('auth')->forgetGuards();
-        $this->getJson('/api/campeonatos/'.$campeonato['id'].'/tabla-posiciones')->assertOk();
-        $this->getJson('/api/campeonatos/'.$campeonato['id'].'/estadisticas/goleadores')->assertOk();
-        $this->getJson('/api/campeonatos/'.$campeonato['id'].'/partidos')->assertOk();
+        $this->getJson('/api/campeonatos/'.$campeonato['id'].'/tabla-posiciones')->assertUnauthorized();
+        $this->getJson('/api/campeonatos/'.$campeonato['id'].'/estadisticas/goleadores')->assertUnauthorized();
+        $this->getJson('/api/campeonatos/'.$campeonato['id'].'/partidos')->assertUnauthorized();
     }
 
     public function test_migracion_conserva_un_campeonato_preexistente(): void

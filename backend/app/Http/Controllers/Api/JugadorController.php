@@ -11,9 +11,9 @@ use Illuminate\Support\Facades\Gate;
 
 class JugadorController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $jugadores = Jugador::latest()->orderByDesc('id')->get();
+        $jugadores = $request->user()->jugadores()->latest()->orderByDesc('id')->get();
 
         return response()->json($jugadores);
     }
@@ -75,6 +75,8 @@ class JugadorController extends Controller
 
     public function show(Jugador $jugador): JsonResponse
     {
+        Gate::authorize('usar', $jugador);
+
         return response()->json($jugador);
     }
 

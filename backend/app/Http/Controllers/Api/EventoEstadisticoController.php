@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\EventoEstadistico;
 use App\Models\Partido;
 use App\Models\Plantilla;
+use App\Services\ControlPartidoService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,7 +16,7 @@ class EventoEstadisticoController extends Controller
 {
     public function index(Partido $partido): JsonResponse
     {
-        Gate::authorize('update', $partido);
+        Gate::authorize('view', $partido);
         $eventos = EventoEstadistico::whereHas('equipoPartido', function ($consulta) use ($partido) {
             $consulta->where('partido_id', $partido->id);
         })->with(['plantilla.jugador', 'plantilla.campeonatoEquipo.equipo', 'equipoPartido.campeonatoEquipo.equipo'])
@@ -26,7 +27,7 @@ class EventoEstadisticoController extends Controller
 
     public function store(Request $request, Partido $partido): JsonResponse
     {
-        Gate::authorize('gestionarActa', $partido);
+        Gate::authorize('arbitrar', $partido);
         $datos = $request->validate([
             'equipo_partido_id' => 'required|integer|exists:equipo_partido,id',
             'plantilla_id' => 'required|integer|exists:plantillas,id',
@@ -34,6 +35,8 @@ class EventoEstadisticoController extends Controller
             'minuto' => 'required|integer|between:0,150',
             'gol_relacionado_id' => 'required_if:tipo,asistencia|nullable|integer|exists:eventos_estadisticos,id',
             'partido_id' => 'prohibited',
+            'jugador_id' => 'prohibited',
+            'equipo_id' => 'prohibited',
         ], [
             'required' => 'El campo :attribute es obligatorio.',
             'required_if' => 'Una asistencia debe indicar su gol_relacionado_id.',
@@ -50,7 +53,7 @@ class EventoEstadisticoController extends Controller
 
         return DB::transaction(function () use ($datos, $partido) {
             // Comparte el bloqueo usado por el controlador de partidos.
-            $partido = Partido::whereKey($partido->id)->lockForUpdate()->firstOrFail();
+            $partido = app(ControlPartidoService::class)->bloquearActa($partido);
 
             if ($partido->estado !== 'en_curso') {
                 return response()->json(['message' => 'Solo se pueden registrar eventos en un partido en curso.'], 409);
@@ -85,6 +88,13 @@ class EventoEstadisticoController extends Controller
 
             Gate::authorize('participarEnActa', [$plantilla, $partido]);
 
+            // Si aún no hay fecha programada, se comprueba la fecha del registro.
+            $fecha = ($partido->fecha_hora ?? now())->toDateString();
+            if ($plantilla->fecha_ingreso->toDateString() > $fecha
+                || ($plantilla->fecha_salida && $plantilla->fecha_salida->toDateString() < $fecha)) {
+                return response()->json(['message' => 'El jugador no está habilitado en la fecha del partido.'], 422);
+            }
+
             if ($datos['tipo'] === 'asistencia') {
                 $gol = EventoEstadistico::with('plantilla')->whereKey($datos['gol_relacionado_id'])
                     ->where('tipo', 'gol')->where('equipo_partido_id', $participante->id)->first();
@@ -118,7 +128,7 @@ class EventoEstadisticoController extends Controller
 
     public function show(EventoEstadistico $evento): JsonResponse
     {
-        Gate::authorize('update', $evento);
+        Gate::authorize('view', $evento);
 
         return response()->json($evento->load([
             'plantilla.jugador', 'plantilla.campeonatoEquipo.equipo',
@@ -148,8 +158,10 @@ class EventoEstadisticoController extends Controller
         $partidoId = $evento->equipoPartido->partido_id;
 
         return DB::transaction(function () use ($datos, $evento, $partidoId) {
-            $partido = Partido::whereKey($partidoId)->lockForUpdate()->firstOrFail();
+            $partido = app(ControlPartidoService::class)->bloquearActa(Partido::findOrFail($partidoId));
             $evento = EventoEstadistico::whereKey($evento->id)->lockForUpdate()->firstOrFail();
+
+            Gate::authorize('update', $evento);
 
             if ($partido->estado !== 'en_curso') {
                 return response()->json(['message' => 'Solo se pueden corregir eventos mientras el partido esté en curso.'], 409);
@@ -167,8 +179,10 @@ class EventoEstadisticoController extends Controller
         $partidoId = $evento->equipoPartido->partido_id;
 
         return DB::transaction(function () use ($evento, $partidoId) {
-            $partido = Partido::whereKey($partidoId)->lockForUpdate()->firstOrFail();
+            $partido = app(ControlPartidoService::class)->bloquearActa(Partido::findOrFail($partidoId));
             $evento = EventoEstadistico::whereKey($evento->id)->lockForUpdate()->firstOrFail();
+
+            Gate::authorize('update', $evento);
 
             if ($partido->estado !== 'en_curso') {
                 return response()->json(['message' => 'Solo se pueden eliminar eventos mientras el partido esté en curso.'], 409);

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import Boton from '../../src/components/ui/Boton.jsx'
 import Campo from '../../src/components/ui/Campo.jsx'
-import { fechaLocalCampo, transicionesPartido } from '../../src/utils/partidos.js'
+import { fechaLocalCampo, fechaParaGuardar, transicionesPartido } from '../../src/utils/partidos.js'
 
 describe('contratos accesibles de los componentes base', () => {
   it('un botón en carga no envía formularios ni permite nuevas acciones', () => {
@@ -30,6 +30,21 @@ describe('contratos accesibles de los componentes base', () => {
 })
 
 describe('reglas actuales de presentación de partidos', () => {
+  it('editar lugar o jornada conserva los segundos de la fecha sin cambios', () => {
+    const original = '2026-11-14T22:17:42.000000Z'
+    expect(fechaParaGuardar(fechaLocalCampo(original), original)).toBe(original)
+  })
+
+  it('permite cambiar explícitamente la programación sin conservar la fecha anterior', () => {
+    const original = '2026-11-14T22:17:42.000000Z'
+    const nueva = '2026-11-15T18:30'
+    expect(fechaParaGuardar(nueva, original)).toBe(new Date(nueva).toISOString())
+  })
+
+  it('permite quitar la fecha o crear un partido sin programación', () => {
+    expect(fechaParaGuardar('', '2026-11-14T22:17:42Z')).toBe(null)
+    expect(fechaParaGuardar('', undefined)).toBe(null)
+  })
   it('no ofrece transiciones desde estados definitivos', () => {
     expect(transicionesPartido.finalizado).toEqual([])
     expect(transicionesPartido.cancelado).toEqual([])

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Campeonato;
 use App\Models\CampeonatoEquipo;
 use App\Models\Partido;
+use App\Services\ControlPartidoService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -25,7 +26,7 @@ class PartidoController extends Controller
 
     public function marcador(Partido $partido): JsonResponse
     {
-        Gate::authorize('update', $partido);
+        Gate::authorize('view', $partido);
         $participantes = $partido->participantes()
             ->with(['campeonatoEquipo.equipo', 'eventos'])->get();
         $local = $participantes->firstWhere('rol', 'local');
@@ -223,17 +224,17 @@ class PartidoController extends Controller
 
     public function show(Partido $partido): JsonResponse
     {
-        Gate::authorize('update', $partido);
+        Gate::authorize('view', $partido);
 
         return response()->json($partido->load(['campeonato', 'participantes.campeonatoEquipo.equipo']));
     }
 
     public function update(Request $request, Partido $partido): JsonResponse
     {
-        Gate::authorize('update', $partido);
         if ($request->has('estado')) {
-            Gate::authorize('gestionarActa', $partido);
+            return $this->cambiarEstado($request, $partido);
         }
+        Gate::authorize('update', $partido);
         $equipoActivo = Rule::exists('campeonato_equipos', 'id')
             ->where('campeonato_id', $partido->campeonato_id)->where('estado', 'activo');
 
@@ -243,7 +244,7 @@ class PartidoController extends Controller
             'lugar' => 'sometimes|nullable|string|max:150',
             'local_id' => ['required_with:visitante_id', 'integer', $equipoActivo],
             'visitante_id' => ['required_with:local_id', 'integer', 'different:local_id', $equipoActivo],
-            'estado' => 'sometimes|required|in:programado,en_curso,finalizado,suspendido,cancelado',
+            'estado' => 'prohibited',
             'campeonato_id' => 'prohibited',
         ], [
             'required' => 'El campo :attribute no puede estar vacío.',
@@ -269,17 +270,6 @@ class PartidoController extends Controller
 
             if (in_array($partido->estado, ['finalizado', 'cancelado'])) {
                 return response()->json(['message' => 'Un partido finalizado o cancelado no se puede modificar.'], 409);
-            }
-
-            $transiciones = [
-                'programado' => ['en_curso', 'cancelado'],
-                'en_curso' => ['suspendido', 'finalizado', 'cancelado'],
-                'suspendido' => ['en_curso', 'cancelado'],
-            ];
-
-            if (isset($datos['estado']) && $datos['estado'] !== $partido->estado
-                && ! in_array($datos['estado'], $transiciones[$partido->estado] ?? [])) {
-                return response()->json(['message' => 'El cambio de estado solicitado no está permitido.'], 409);
             }
 
             if (isset($datos['local_id'], $datos['visitante_id'])) {
@@ -309,12 +299,43 @@ class PartidoController extends Controller
                 $visitante->update(['campeonato_equipo_id' => $datos['visitante_id']]);
             }
 
-            $partido->update($request->only(['jornada', 'fecha_hora', 'lugar', 'estado']));
+            $partido->update($request->only(['jornada', 'fecha_hora', 'lugar']));
 
             return response()->json([
                 'message' => 'Partido actualizado correctamente.',
                 'partido' => $partido->load('participantes.campeonatoEquipo.equipo'),
             ]);
+        });
+    }
+
+    public function cambiarEstado(Request $request, Partido $partido): JsonResponse
+    {
+        $cancelar = $request->input('estado') === 'cancelado';
+        Gate::authorize($cancelar ? 'update' : 'arbitrar', $partido);
+        $datos = $request->validate([
+            'estado' => 'required|in:en_curso,suspendido,finalizado,cancelado',
+            'jornada' => 'prohibited', 'fecha_hora' => 'prohibited', 'lugar' => 'prohibited',
+            'local_id' => 'prohibited', 'visitante_id' => 'prohibited', 'campeonato_id' => 'prohibited',
+        ]);
+
+        return DB::transaction(function () use ($partido, $datos, $cancelar) {
+            if ($cancelar) {
+                $partido = Partido::whereKey($partido->id)->lockForUpdate()->firstOrFail();
+                Gate::authorize('update', $partido);
+            } else {
+                $partido = app(ControlPartidoService::class)->bloquearActa($partido);
+            }
+            $transiciones = [
+                'programado' => ['en_curso', 'cancelado'],
+                'en_curso' => ['suspendido', 'finalizado', 'cancelado'],
+                'suspendido' => ['en_curso', 'cancelado'],
+            ];
+            abort_unless(in_array($datos['estado'], $transiciones[$partido->estado] ?? [], true),
+                409, 'El cambio de estado solicitado no está permitido.');
+            $partido->update(['estado' => $datos['estado']]);
+
+            return response()->json(['message' => 'Estado actualizado correctamente.',
+                'partido' => $partido->load('participantes.campeonatoEquipo.equipo')]);
         });
     }
 

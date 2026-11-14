@@ -36,4 +36,9 @@ class CampeonatoPolicy
     {
         return $this->view($user, $campeonato);
     }
+
+    public function gestionarArbitros(User $user, Campeonato $campeonato): bool
+    {
+        return $this->view($user, $campeonato);
+    }
 }

@@ -87,9 +87,9 @@ class CampeonatoController extends Controller
     public function destroy(Campeonato $campeonato): JsonResponse
     {
         Gate::authorize('delete', $campeonato);
-        if ($campeonato->inscripcionesEquipos()->exists() || $campeonato->partidos()->exists()) {
+        if ($campeonato->inscripcionesEquipos()->exists() || $campeonato->partidos()->exists() || $campeonato->asignacionesArbitro()->exists()) {
             return response()->json([
-                'message' => 'No se puede eliminar el campeonato porque tiene equipos inscritos o partidos asociados.',
+                'message' => 'No se puede eliminar el campeonato porque tiene inscripciones, partidos o historial arbitral.',
             ], 409);
         }
 

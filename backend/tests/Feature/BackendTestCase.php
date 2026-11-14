@@ -2,8 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Models\EventoEstadistico;
+use App\Models\Partido;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Testing\TestResponse;
 use RuntimeException;
 use Tests\TestCase;
 
@@ -103,7 +106,7 @@ abstract class BackendTestCase extends TestCase
 
     protected function evento(array $partido, int $participanteId, int $plantillaId, string $tipo = 'gol', ?int $golId = null): array
     {
-        return $this->postJson('/api/partidos/'.$partido['id'].'/eventos', [
+        return $this->solicitudArbitral('post', '/api/partidos/'.$partido['id'].'/eventos', [
             'equipo_partido_id' => $participanteId, 'plantilla_id' => $plantillaId,
             'tipo' => $tipo, 'minuto' => 15, 'gol_relacionado_id' => $golId,
         ])->assertCreated()->json('evento');
@@ -119,9 +122,36 @@ abstract class BackendTestCase extends TestCase
         $partido = $this->partido($campeonato['id'], $local['id'], $visitante['id']);
 
         if ($iniciar) {
-            $this->patchJson('/api/partidos/'.$partido['id'], ['estado' => 'en_curso'])->assertOk();
+            $this->solicitudArbitral('patch', '/api/partidos/'.$partido['id'], ['estado' => 'en_curso'])->assertOk();
         }
 
         return compact('campeonato', 'local', 'visitante', 'plantillaLocal', 'plantillaVisitante', 'partido');
+    }
+
+    protected function solicitudArbitral(string $metodo, string $ruta, array $datos = []): TestResponse
+    {
+        // Los casos deportivos anteriores ahora separan al organizador del árbitro.
+        preg_match('#/api/(partidos|eventos)/(\d+)#', $ruta, $coincidencia);
+        $partido = $coincidencia[1] === 'partidos'
+            ? Partido::findOrFail($coincidencia[2])
+            : EventoEstadistico::findOrFail($coincidencia[2])->equipoPartido->partido;
+        $administrador = auth('web')->user();
+        $asignacion = $partido->campeonato->asignacionesArbitro()->whereNull('fecha_fin')->first();
+        if (! $asignacion) {
+            $arbitro = User::factory()->create();
+            $this->postJson('/api/campeonatos/'.$partido->campeonato_id.'/arbitro', ['usuario_id' => $arbitro->id])->assertCreated();
+        } else {
+            $arbitro = $asignacion->usuario;
+        }
+
+        try {
+            app('auth')->forgetGuards();
+            $this->actingAs($arbitro, 'web');
+
+            return $this->{$metodo.'Json'}($ruta, $datos);
+        } finally {
+            app('auth')->forgetGuards();
+            $this->actingAs($administrador, 'web');
+        }
     }
 }

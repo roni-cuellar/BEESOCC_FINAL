@@ -22,6 +22,11 @@ class Campeonato extends Model
         return $this->belongsTo(User::class, 'administrador_id');
     }
 
+    public function asignacionesArbitro(): HasMany
+    {
+        return $this->hasMany(AsignacionArbitro::class);
+    }
+
     // Campos que se pueden asignar con create() o fill().
     protected $fillable = [
         'nombre',

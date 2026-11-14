@@ -132,13 +132,13 @@ class ApiDeportivaTest extends BackendTestCase
     {
         $escenario = $this->escenario(false);
         $ruta = '/api/partidos/'.$escenario['partido']['id'];
-        $this->patchJson($ruta, ['estado' => 'finalizado'])->assertConflict();
-        $this->patchJson($ruta, ['estado' => 'en_curso'])->assertOk();
+        $this->solicitudArbitral('patch', $ruta, ['estado' => 'finalizado'])->assertConflict();
+        $this->solicitudArbitral('patch', $ruta, ['estado' => 'en_curso'])->assertOk();
         $this->patchJson($ruta, ['local_id' => $escenario['visitante']['id'], 'visitante_id' => $escenario['local']['id']])->assertConflict();
-        $this->patchJson($ruta, ['estado' => 'suspendido'])->assertOk();
-        $this->patchJson($ruta, ['estado' => 'programado'])->assertConflict();
-        $this->patchJson($ruta, ['estado' => 'en_curso'])->assertOk();
-        $this->patchJson($ruta, ['estado' => 'finalizado'])->assertOk();
+        $this->solicitudArbitral('patch', $ruta, ['estado' => 'suspendido'])->assertOk();
+        $this->solicitudArbitral('patch', $ruta, ['estado' => 'programado'])->assertUnprocessable();
+        $this->solicitudArbitral('patch', $ruta, ['estado' => 'en_curso'])->assertOk();
+        $this->solicitudArbitral('patch', $ruta, ['estado' => 'finalizado'])->assertOk();
         $this->patchJson($ruta, ['jornada' => 2])->assertConflict();
     }
 
@@ -169,15 +169,15 @@ class ApiDeportivaTest extends BackendTestCase
         $ruta = '/api/partidos/'.$partido['id'].'/eventos';
         $datos = ['equipo_partido_id' => $local, 'plantilla_id' => $escenario['plantillaLocal']['id'],
             'tipo' => 'asistencia', 'minuto' => 15, 'gol_relacionado_id' => $gol['id']];
-        $this->postJson($ruta, $datos)->assertUnprocessable();
+        $this->solicitudArbitral('post', $ruta, $datos)->assertUnprocessable();
         $asistente = $this->plantilla($escenario['local']['id'], null, 11);
         $datos['plantilla_id'] = $asistente['id'];
-        $asistencia = $this->postJson($ruta, $datos)->assertCreated()->json('evento');
-        $this->postJson($ruta, $datos)->assertConflict();
+        $asistencia = $this->solicitudArbitral('post', $ruta, $datos)->assertCreated()->json('evento');
+        $this->solicitudArbitral('post', $ruta, $datos)->assertConflict();
         $this->getJson('/api/partidos/'.$partido['id'].'/marcador')->assertOk()->assertJsonPath('local.goles', 1);
-        $this->deleteJson('/api/eventos/'.$gol['id'])->assertConflict();
-        $this->deleteJson('/api/eventos/'.$asistencia['id'])->assertOk();
-        $this->deleteJson('/api/eventos/'.$gol['id'])->assertOk();
+        $this->solicitudArbitral('delete', '/api/eventos/'.$gol['id'])->assertConflict();
+        $this->solicitudArbitral('delete', '/api/eventos/'.$asistencia['id'])->assertOk();
+        $this->solicitudArbitral('delete', '/api/eventos/'.$gol['id'])->assertOk();
     }
 
     public function test_eventos_rechazan_jugador_ajeno_y_partido_no_iniciado(): void
@@ -187,15 +187,15 @@ class ApiDeportivaTest extends BackendTestCase
         $local = $this->participante($partido, 'local');
         $ruta = '/api/partidos/'.$partido['id'].'/eventos';
         $datos = ['equipo_partido_id' => $local, 'plantilla_id' => $escenario['plantillaLocal']['id'], 'tipo' => 'gol', 'minuto' => 10];
-        $this->postJson($ruta, $datos)->assertConflict();
-        $this->patchJson('/api/partidos/'.$partido['id'], ['estado' => 'en_curso'])->assertOk();
+        $this->solicitudArbitral('post', $ruta, $datos)->assertConflict();
+        $this->solicitudArbitral('patch', '/api/partidos/'.$partido['id'], ['estado' => 'en_curso'])->assertOk();
         $otro = $this->campeonato();
         $ajeno = $this->inscripcion($otro['id']);
         $plantilla = $this->plantilla($ajeno['id']);
         $datos['plantilla_id'] = $plantilla['id'];
-        $this->postJson($ruta, $datos)->assertUnprocessable();
+        $this->solicitudArbitral('post', $ruta, $datos)->assertUnprocessable();
         $datos['plantilla_id'] = $escenario['plantillaVisitante']['id'];
-        $this->postJson($ruta, $datos)->assertUnprocessable();
+        $this->solicitudArbitral('post', $ruta, $datos)->assertUnprocessable();
         $this->assertDatabaseCount('eventos_estadisticos', 0);
     }
 
@@ -204,10 +204,10 @@ class ApiDeportivaTest extends BackendTestCase
         $escenario = $this->escenario();
         $partido = $escenario['partido'];
         $gol = $this->evento($partido, $this->participante($partido, 'local'), $escenario['plantillaLocal']['id']);
-        $this->patchJson('/api/eventos/'.$gol['id'], ['minuto' => 20])->assertOk();
-        $this->patchJson('/api/partidos/'.$partido['id'], ['estado' => 'finalizado'])->assertOk();
-        $this->patchJson('/api/eventos/'.$gol['id'], ['minuto' => 21])->assertConflict();
-        $this->deleteJson('/api/eventos/'.$gol['id'])->assertConflict();
+        $this->solicitudArbitral('patch', '/api/eventos/'.$gol['id'], ['minuto' => 20])->assertOk();
+        $this->solicitudArbitral('patch', '/api/partidos/'.$partido['id'], ['estado' => 'finalizado'])->assertOk();
+        $this->solicitudArbitral('patch', '/api/eventos/'.$gol['id'], ['minuto' => 21])->assertConflict();
+        $this->solicitudArbitral('delete', '/api/eventos/'.$gol['id'])->assertConflict();
         $this->assertDatabaseHas('eventos_estadisticos', ['id' => $gol['id'], 'minuto' => 20]);
     }
 }

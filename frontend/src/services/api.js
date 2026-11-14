@@ -33,6 +33,7 @@ function textoError(mensaje) {
     gol_relacionado_id: 'gol relacionado',
     campeonato_id: 'campeonato',
     jugador_id: 'jugador',
+    plantilla_id: 'jugador de la plantilla',
     equipo_id: 'equipo',
     local_id: 'equipo local',
     visitante_id: 'equipo visitante',

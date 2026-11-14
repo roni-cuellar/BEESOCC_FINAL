@@ -184,11 +184,11 @@ class AutorizacionDeportivaTest extends BackendTestCase
     {
         $primero = $this->escenario();
         $segundo = $this->escenario();
-        $this->postJson('/api/partidos/'.$primero['partido']['id'].'/eventos', [
+        $this->solicitudArbitral('post', '/api/partidos/'.$primero['partido']['id'].'/eventos', [
             'equipo_partido_id' => $this->participante($primero['partido'], 'local'),
             'plantilla_id' => $segundo['plantillaLocal']['id'], 'tipo' => 'gol', 'minuto' => 10,
         ])->assertUnprocessable();
-        $this->postJson('/api/partidos/'.$primero['partido']['id'].'/eventos', [
+        $this->solicitudArbitral('post', '/api/partidos/'.$primero['partido']['id'].'/eventos', [
             'equipo_partido_id' => $this->participante($segundo['partido'], 'local'),
             'plantilla_id' => $primero['plantillaLocal']['id'], 'tipo' => 'gol', 'minuto' => 10,
         ])->assertUnprocessable();

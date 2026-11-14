@@ -25,7 +25,7 @@ class FlujoCompletoTest extends BackendTestCase
         $partido = $partidos[0];
         $local = collect($partido['participantes'])->firstWhere('rol', 'local');
         $visitante = collect($partido['participantes'])->firstWhere('rol', 'visitante');
-        $this->patchJson('/api/partidos/'.$partido['id'], ['estado' => 'en_curso'])->assertOk();
+        $this->solicitudArbitral('patch', '/api/partidos/'.$partido['id'], ['estado' => 'en_curso'])->assertOk();
 
         for ($gol = 0; $gol < 2; $gol++) {
             $this->evento($partido, $local['id'], $plantillas[$local['campeonato_equipo_id']]['id']);
@@ -33,7 +33,7 @@ class FlujoCompletoTest extends BackendTestCase
         $this->evento($partido, $visitante['id'], $plantillas[$visitante['campeonato_equipo_id']]['id']);
         $this->getJson('/api/partidos/'.$partido['id'].'/marcador')
             ->assertOk()->assertJsonPath('local.goles', 2)->assertJsonPath('visitante.goles', 1);
-        $this->patchJson('/api/partidos/'.$partido['id'], ['estado' => 'finalizado'])->assertOk();
+        $this->solicitudArbitral('patch', '/api/partidos/'.$partido['id'], ['estado' => 'finalizado'])->assertOk();
 
         $this->getJson('/api/campeonatos/'.$id.'/tabla-posiciones')->assertOk()
             ->assertJsonPath('tabla.0.equipo_id', $inscripciones[$local['campeonato_equipo_id']]['equipo_id'])

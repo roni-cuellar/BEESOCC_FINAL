@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import partidoService from '../services/partidoService'
 import { mensajeError } from '../services/api'
-function PartidoCard({ partido, ligaId, publica = false }) {
+function PartidoCard({ partido, ligaId, publica = false, arbitral = false }) {
   const [marcador, setMarcador] = useState(null)
   const [error, setError] = useState('')
   useEffect(() => {
@@ -22,7 +22,7 @@ function PartidoCard({ partido, ligaId, publica = false }) {
     <div className="partido-equipos"><strong>{local}</strong><span className="partido-marcador">{resultado}</span><strong>{visitante}</strong></div>
     {!publica && error && <p className="nota" role="alert">{error}</p>}
     <p className="texto-suave">{partido.fecha_hora ? new Date(partido.fecha_hora).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' }) : 'Fecha por programar'} · {partido.lugar || 'Lugar por definir'}</p>
-    {!publica && <Link className="enlace-texto" to={'/ligas/' + ligaId + '/partidos/' + partido.id}>Ver partido y eventos</Link>}
+    {!publica && <Link className="enlace-texto" to={(arbitral ? '/mis-arbitrajes/' : '/ligas/') + ligaId + '/partidos/' + partido.id}>Ver partido y eventos</Link>}
   </article>
 }
 export default PartidoCard

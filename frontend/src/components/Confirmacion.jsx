@@ -7,12 +7,16 @@ function Confirmacion({ titulo, texto, onConfirmar, onCerrar }) {
   const [guardando, setGuardando] = useState(false)
   const [error, setError] = useState('')
   const confirmarRef = useRef(null)
+  const enviando = useRef(false)
   useEffect(() => { if (error) confirmarRef.current?.focus() }, [error])
   async function confirmar() {
+    if (enviando.current) return
+    enviando.current = true
     setGuardando(true)
     setError('')
     try { await onConfirmar(); onCerrar() }
     catch (error) { setError(mensajeError(error)); setGuardando(false) }
+    finally { enviando.current = false }
   }
   return <Modal titulo={titulo} onCerrar={onCerrar} bloqueado={guardando}>
     <p className="texto-suave">{texto}</p><Aviso error={error} />

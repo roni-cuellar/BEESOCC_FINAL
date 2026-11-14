@@ -14,16 +14,16 @@ class ApiResultadosTest extends BackendTestCase
         $this->evento($primero, $this->participante($primero, 'local'), $escenario['plantillaLocal']['id']);
         $this->evento($primero, $this->participante($primero, 'local'), $escenario['plantillaVisitante']['id'], 'autogol');
         $this->evento($primero, $this->participante($primero, 'visitante'), $escenario['plantillaVisitante']['id']);
-        $this->patchJson('/api/partidos/'.$primero['id'], ['estado' => 'finalizado'])->assertOk();
+        $this->solicitudArbitral('patch', '/api/partidos/'.$primero['id'], ['estado' => 'finalizado'])->assertOk();
 
         $segundo = $this->partido($escenario['campeonato']['id'], $escenario['local']['id'], $escenario['visitante']['id'], 2);
-        $this->patchJson('/api/partidos/'.$segundo['id'], ['estado' => 'en_curso'])->assertOk();
-        $this->patchJson('/api/partidos/'.$segundo['id'], ['estado' => 'finalizado'])->assertOk();
+        $this->solicitudArbitral('patch', '/api/partidos/'.$segundo['id'], ['estado' => 'en_curso'])->assertOk();
+        $this->solicitudArbitral('patch', '/api/partidos/'.$segundo['id'], ['estado' => 'finalizado'])->assertOk();
 
         $tercero = $this->partido($escenario['campeonato']['id'], $escenario['local']['id'], $escenario['visitante']['id'], 3);
-        $this->patchJson('/api/partidos/'.$tercero['id'], ['estado' => 'en_curso'])->assertOk();
+        $this->solicitudArbitral('patch', '/api/partidos/'.$tercero['id'], ['estado' => 'en_curso'])->assertOk();
         $this->evento($tercero, $this->participante($tercero, 'visitante'), $escenario['plantillaVisitante']['id']);
-        $this->patchJson('/api/partidos/'.$tercero['id'], ['estado' => 'finalizado'])->assertOk();
+        $this->solicitudArbitral('patch', '/api/partidos/'.$tercero['id'], ['estado' => 'finalizado'])->assertOk();
         $sinPartidos = $this->inscripcion($escenario['campeonato']['id'], 'Sin partidos');
 
         $tabla = $this->getJson('/api/campeonatos/'.$escenario['campeonato']['id'].'/tabla-posiciones')
@@ -46,7 +46,11 @@ class ApiResultadosTest extends BackendTestCase
         $ruta = '/api/campeonatos/'.$escenario['campeonato']['id'].'/tabla-posiciones';
         foreach (['en_curso', 'suspendido', 'cancelado'] as $estado) {
             if ($estado !== 'en_curso') {
-                $this->patchJson('/api/partidos/'.$partido['id'], ['estado' => $estado])->assertOk();
+                if ($estado === 'cancelado') {
+                    $this->patchJson('/api/partidos/'.$partido['id'], ['estado' => $estado])->assertOk();
+                } else {
+                    $this->solicitudArbitral('patch', '/api/partidos/'.$partido['id'], ['estado' => $estado])->assertOk();
+                }
             }
             foreach ($this->getJson($ruta)->assertOk()->json('tabla') as $fila) {
                 $this->assertSame(0, $fila['PJ']);
@@ -72,13 +76,13 @@ class ApiResultadosTest extends BackendTestCase
         }
         foreach ([[0, 1, 2, 0], [2, 3, 4, 3]] as [$local, $visitante, $golesLocal, $golesVisitante]) {
             $partido = $this->partido($campeonato['id'], $inscripciones[$local]['id'], $inscripciones[$visitante]['id']);
-            $this->patchJson('/api/partidos/'.$partido['id'], ['estado' => 'en_curso'])->assertOk();
+            $this->solicitudArbitral('patch', '/api/partidos/'.$partido['id'], ['estado' => 'en_curso'])->assertOk();
             foreach ([['local', $local, $golesLocal], ['visitante', $visitante, $golesVisitante]] as [$rol, $indice, $cantidad]) {
                 for ($gol = 0; $gol < $cantidad; $gol++) {
                     $this->evento($partido, $this->participante($partido, $rol), $plantillas[$indice]['id']);
                 }
             }
-            $this->patchJson('/api/partidos/'.$partido['id'], ['estado' => 'finalizado'])->assertOk();
+            $this->solicitudArbitral('patch', '/api/partidos/'.$partido['id'], ['estado' => 'finalizado'])->assertOk();
         }
         $ruta = '/api/campeonatos/'.$campeonato['id'].'/tabla-posiciones';
         $this->getJson($ruta)->assertOk()->assertJsonPath('tabla.0.equipo_id', $inscripciones[0]['equipo_id']);
@@ -98,13 +102,13 @@ class ApiResultadosTest extends BackendTestCase
         foreach (['amarilla', 'roja', 'falta'] as $tipo) {
             $this->evento($partido, $local, $escenario['plantillaLocal']['id'], $tipo);
         }
-        $this->patchJson('/api/partidos/'.$partido['id'], ['estado' => 'finalizado'])->assertOk();
+        $this->solicitudArbitral('patch', '/api/partidos/'.$partido['id'], ['estado' => 'finalizado'])->assertOk();
         $this->patchJson('/api/plantillas/'.$escenario['plantillaLocal']['id'], ['fecha_salida' => '2026-02-01'])->assertOk();
         $traslado = $this->plantilla($escenario['visitante']['id'], $escenario['plantillaLocal']['jugador_id'], 11);
         $segundo = $this->partido($escenario['campeonato']['id'], $escenario['local']['id'], $escenario['visitante']['id'], 2);
-        $this->patchJson('/api/partidos/'.$segundo['id'], ['estado' => 'en_curso'])->assertOk();
+        $this->solicitudArbitral('patch', '/api/partidos/'.$segundo['id'], ['estado' => 'en_curso'])->assertOk();
         $this->evento($segundo, $this->participante($segundo, 'visitante'), $traslado['id']);
-        $this->patchJson('/api/partidos/'.$segundo['id'], ['estado' => 'suspendido'])->assertOk();
+        $this->solicitudArbitral('patch', '/api/partidos/'.$segundo['id'], ['estado' => 'suspendido'])->assertOk();
         $this->patchJson('/api/inscripciones-equipos/'.$escenario['local']['id'], ['estado' => 'retirado'])->assertOk();
         $sinEventos = $this->inscripcion($escenario['campeonato']['id'], 'Sin eventos');
         $base = '/api/campeonatos/'.$escenario['campeonato']['id'].'/estadisticas/';

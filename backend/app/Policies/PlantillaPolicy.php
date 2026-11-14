@@ -25,7 +25,7 @@ class PlantillaPolicy
         $inscripcion = $plantilla->campeonatoEquipo;
         $propietario = $partido->campeonato->administrador_id;
 
-        return Gate::forUser($user)->allows('gestionarActa', $partido)
+        return Gate::forUser($user)->allows('arbitrar', $partido)
             && $inscripcion && $propietario !== null
             && (int) $inscripcion->campeonato_id === (int) $partido->campeonato_id
             && (int) $inscripcion->equipo->administrador_id === (int) $propietario

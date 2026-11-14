@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import Aviso from './Aviso'
 import { mensajeError } from '../services/api'
-import { fechaLocalCampo } from '../utils/partidos'
+import { fechaLocalCampo, fechaParaGuardar } from '../utils/partidos'
 function PartidoForm({ partido, inscripciones, permitirEquipos = true, onGuardar, onCancelar }) {
   const [datos, setDatos] = useState({
     jornada: partido?.jornada || 1, fecha_hora: fechaLocalCampo(partido?.fecha_hora), lugar: partido?.lugar || '',
@@ -15,7 +15,7 @@ function PartidoForm({ partido, inscripciones, permitirEquipos = true, onGuardar
   async function guardar(e) {
     e.preventDefault(); setError('')
     if (cambiarEquipos && Number(datos.local_id) === Number(datos.visitante_id)) { setError('El local y el visitante deben ser diferentes.'); return }
-    const envio = { jornada: Number(datos.jornada), fecha_hora: datos.fecha_hora ? new Date(datos.fecha_hora).toISOString() : null, lugar: datos.lugar.trim() || null }
+    const envio = { jornada: Number(datos.jornada), fecha_hora: fechaParaGuardar(datos.fecha_hora, partido?.fecha_hora), lugar: datos.lugar.trim() || null }
     if (cambiarEquipos) { envio.local_id = Number(datos.local_id); envio.visitante_id = Number(datos.visitante_id) }
     setGuardando(true)
     try { await onGuardar(envio) }

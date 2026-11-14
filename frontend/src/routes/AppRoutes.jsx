@@ -12,6 +12,9 @@ import RegistroPage from '../pages/RegistroPage'
 import MisLigasPage from '../pages/MisLigasPage'
 import CrearLigaPage from '../pages/CrearLigaPage'
 import DashboardPage from '../pages/DashboardPage'
+import ArbitrosPage from '../pages/ArbitrosPage'
+import MisArbitrajesPage from '../pages/MisArbitrajesPage'
+import PartidosArbitrajePage from '../pages/PartidosArbitrajePage'
 import EquiposPage from '../pages/EquiposPage'
 import JugadoresPage from '../pages/JugadoresPage'
 import PartidosPage from '../pages/PartidosPage'
@@ -49,12 +52,16 @@ function AppRoutes() {
     <Route element={<RutaPrivada />}>
     <Route element={<AplicacionLayout />}>
       <Route path="/mis-ligas" element={<MisLigasPage />} />
+      <Route path="/mis-arbitrajes" element={<MisArbitrajesPage />} />
+      <Route path="/mis-arbitrajes/:ligaId/partidos" element={<PartidosArbitrajePage />} />
+      <Route path="/mis-arbitrajes/:ligaId/partidos/:partidoId" element={<section className="mx-auto max-w-7xl px-5 py-8 sm:px-8"><PartidoDetallePage arbitral /></section>} />
       <Route path="/ligas/nueva" element={<CrearLigaPage />} />
       <Route path="/ligas/:ligaId/editar" element={<CrearLigaPage />} />
     </Route>
     <Route path="/ligas/:ligaId" element={<DashboardLayout />}>
       <Route index element={<Navigate to="dashboard" replace />} />
       <Route path="dashboard" element={<DashboardPage />} />
+      <Route path="arbitros" element={<ArbitrosPage />} />
       <Route path="equipos" element={<EquiposPage />} />
       <Route path="jugadores" element={<JugadoresPage />} />
       <Route path="partidos" element={<PartidosPage />} />

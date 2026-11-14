@@ -1,0 +1,176 @@
+{
+  "base": "beesocc_23c_test_20261114_223814_c6e2ea82",
+  "motor": "MariaDB 10.4.32",
+  "entorno": "React y Laravel Sanctum reales; sin adaptador simulado",
+  "comprobaciones_http": 30,
+  "fases": {
+    "activo": [
+      {
+        "prueba": "Sesión arbitral con cookie real",
+        "estado": 200
+      },
+      {
+        "prueba": "Lectura autorizada",
+        "estado": 200
+      },
+      {
+        "prueba": "CSRF sin token incluso autenticado",
+        "estado": 419
+      },
+      {
+        "prueba": "Administrador sin permiso de acta",
+        "estado": 403
+      },
+      {
+        "prueba": "Usuario ajeno",
+        "estado": 403
+      },
+      {
+        "prueba": "Segundo árbitro sin asignación",
+        "estado": 403
+      },
+      {
+        "prueba": "ID de participante manipulado",
+        "estado": 422
+      },
+      {
+        "prueba": "Tipo de evento inválido",
+        "estado": 422
+      },
+      {
+        "prueba": "Partido inexistente",
+        "estado": 404
+      },
+      {
+        "prueba": "Transición repetida",
+        "estado": 409
+      },
+      {
+        "prueba": "Sin permiso organizativo",
+        "estado": 403
+      },
+      {
+        "prueba": "Invitado sin sesión",
+        "estado": 401
+      }
+    ],
+    "revocado": [
+      {
+        "prueba": "La sesión sigue autenticada tras revocar",
+        "estado": 200
+      },
+      {
+        "prueba": "Revocado no consulta",
+        "estado": 403
+      },
+      {
+        "prueba": "Revocado no registra",
+        "estado": 403
+      },
+      {
+        "prueba": "Revocado no cambia estado",
+        "estado": 403
+      },
+      {
+        "prueba": "Revocado no corrige",
+        "estado": 403
+      },
+      {
+        "prueba": "Revocado no elimina",
+        "estado": 403
+      }
+    ],
+    "finalizado": [
+      {
+        "prueba": "Finalizado no registra",
+        "estado": 409
+      },
+      {
+        "prueba": "Finalizado no se reabre",
+        "estado": 409
+      },
+      {
+        "prueba": "Finalizado no corrige",
+        "estado": 409
+      },
+      {
+        "prueba": "Estadística real de goleadores",
+        "estado": 200
+      },
+      {
+        "prueba": "Estadística real de asistencias",
+        "estado": 200
+      },
+      {
+        "prueba": "Estadística real de amarillas",
+        "estado": 200
+      },
+      {
+        "prueba": "Estadística real de rojas",
+        "estado": 200
+      },
+      {
+        "prueba": "Estadística real de faltas",
+        "estado": 200
+      },
+      {
+        "prueba": "Estadística real de equipos",
+        "estado": 200
+      },
+      {
+        "prueba": "Tabla real tras finalizar",
+        "estado": 200
+      }
+    ],
+    "preparar-fecha": [
+      {
+        "prueba": "Preparar fecha ficticia con segundos para reproducir regresión",
+        "estado": 200
+      }
+    ],
+    "verificar-fecha": [
+      {
+        "prueba": "Guardar solo lugar conserva fecha exacta",
+        "estado": 200
+      }
+    ]
+  },
+  "peticiones_por_estado": [
+    {
+      "Name": "200",
+      "Count": 208
+    },
+    {
+      "Name": "201",
+      "Count": 9
+    },
+    {
+      "Name": "204",
+      "Count": 13
+    },
+    {
+      "Name": "401",
+      "Count": 2
+    },
+    {
+      "Name": "403",
+      "Count": 14
+    },
+    {
+      "Name": "404",
+      "Count": 1
+    },
+    {
+      "Name": "409",
+      "Count": 4
+    },
+    {
+      "Name": "419",
+      "Count": 1
+    },
+    {
+      "Name": "422",
+      "Count": 2
+    }
+  ]
+}

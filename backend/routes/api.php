@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Api\AsignacionArbitroController;
+use App\Http\Controllers\Api\ArbitrajeController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CampeonatoController;
 use App\Http\Controllers\Api\CampeonatoEquipoController;
@@ -26,6 +28,15 @@ Route::middleware('web')->withoutMiddleware(EnsureFrontendRequestsAreStateful::c
 });
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/mis-arbitrajes/{campeonato}/partidos', [ArbitrajeController::class, 'partidos']);
+    Route::get('/partidos/{partido}/plantillas-arbitrales', [ArbitrajeController::class, 'plantillas']);
+    Route::get('/mis-arbitrajes', [AsignacionArbitroController::class, 'misArbitrajes']);
+    Route::post('/campeonatos/{campeonato}/arbitro/buscar-usuario', [AsignacionArbitroController::class, 'buscarUsuario'])->middleware('throttle:10,1');
+    Route::get('/campeonatos/{campeonato}/arbitro', [AsignacionArbitroController::class, 'vigente']);
+    Route::get('/campeonatos/{campeonato}/arbitro/historial', [AsignacionArbitroController::class, 'historial']);
+    Route::post('/campeonatos/{campeonato}/arbitro', [AsignacionArbitroController::class, 'store']);
+    Route::patch('/campeonatos/{campeonato}/arbitro', [AsignacionArbitroController::class, 'update']);
+    Route::delete('/campeonatos/{campeonato}/arbitro', [AsignacionArbitroController::class, 'revocar']);
     Route::patch('/campeonatos/{campeonato}/publicacion', [CampeonatoController::class, 'publicacion']);
     Route::get('/campeonatos', [CampeonatoController::class, 'index']);
     Route::post('/campeonatos', [CampeonatoController::class, 'store']);

@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Campeonato;
 use App\Models\CampeonatoEquipo;
 use App\Models\Equipo;
+use App\Models\FaseEquipo;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 
 class CampeonatoEquipoController extends Controller
@@ -43,10 +45,12 @@ class CampeonatoEquipoController extends Controller
 
         try {
             // La relación asigna el campeonato indicado en la URL.
-            $inscripcion = $campeonato->inscripcionesEquipos()->create([
-                'equipo_id' => $datos['equipo_id'],
-                'estado' => 'activo',
-            ]);
+            $inscripcion = DB::transaction(function () use ($campeonato, $datos) {
+                $campeonato = Campeonato::whereKey($campeonato->id)->lockForUpdate()->firstOrFail();
+                abort_if($campeonato->formato === 'eliminacion_directa' && $campeonato->fases()->whereHas('rondas')->exists(), 409, 'La siembra ya está confirmada; no se agregan inscripciones al cuadro.');
+
+                return $campeonato->inscripcionesEquipos()->create(['equipo_id' => $datos['equipo_id'], 'estado' => 'activo']);
+            });
         } catch (UniqueConstraintViolationException $exception) {
             // MySQL también protege contra inscripciones simultáneas duplicadas.
             return response()->json(['message' => 'El equipo ya está inscrito en este campeonato.'], 409);
@@ -90,7 +94,7 @@ class CampeonatoEquipoController extends Controller
     public function destroy(CampeonatoEquipo $campeonatoEquipo): JsonResponse
     {
         Gate::authorize('delete', $campeonatoEquipo);
-        if ($campeonatoEquipo->plantillas()->exists() || $campeonatoEquipo->participacionesPartidos()->exists()) {
+        if (FaseEquipo::where('campeonato_equipo_id', $campeonatoEquipo->id)->exists() || $campeonatoEquipo->plantillas()->exists() || $campeonatoEquipo->participacionesPartidos()->exists()) {
             return response()->json([
                 'message' => 'No se puede eliminar la inscripción porque tiene jugadores inscritos o participaciones en partidos. Cambia su estado a retirado para conservar el historial.',
             ], 409);

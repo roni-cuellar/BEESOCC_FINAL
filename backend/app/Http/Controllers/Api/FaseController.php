@@ -1,0 +1,94 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Models\AuditoriaCambio;
+use App\Models\Campeonato;
+use App\Models\Fase;
+use App\Models\Llave;
+use App\Services\AvanceEliminacionService;
+use App\Services\GeneracionEliminacionService;
+use App\Services\SiembraEliminacionService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
+
+class FaseController extends Controller
+{
+    public function index(Campeonato $campeonato): JsonResponse
+    {
+        Gate::authorize('verFases', $campeonato);
+
+        return response()->json($campeonato->fases()->get());
+    }
+
+    public function store(Request $request, Campeonato $campeonato, GeneracionEliminacionService $servicio): JsonResponse
+    {
+        Gate::authorize('update', $campeonato);
+        $datos = $request->validate(['nombre' => 'required|string|max:80', 'tipo' => 'required|in:eliminacion',
+            'campeonato_id' => 'prohibited', 'estado' => 'prohibited', 'orden' => 'prohibited']);
+
+        return response()->json(['fase' => $servicio->crearFase($campeonato, $datos['nombre'])], 201);
+    }
+
+    public function show(Fase $fase): JsonResponse
+    {
+        Gate::authorize('view', $fase);
+
+        return response()->json($fase->load('equipos.inscripcion.equipo', 'rondas.llaves.plazas', 'rondas.llaves.partidos.participantes'));
+    }
+
+    public function previsualizar(Request $request, Fase $fase, SiembraEliminacionService $servicio): JsonResponse
+    {
+        Gate::authorize('update', $fase);
+
+        return response()->json($servicio->previsualizar($fase, $this->validarCuadro($request)));
+    }
+
+    public function generar(Request $request, Fase $fase, GeneracionEliminacionService $servicio): JsonResponse
+    {
+        Gate::authorize('update', $fase);
+        $datos = $this->validarCuadro($request);
+        $datos += $request->validate(['confirmacion' => 'required|string|size:64']);
+
+        return response()->json(['fase' => $servicio->generar($fase, $datos)], 201);
+    }
+
+    private function validarCuadro(Request $request): array
+    {
+        return $request->validate(['siembra' => 'required|array|list|min:2|max:32768', 'siembra.*' => 'required|integer|distinct',
+            'rondas' => 'required|array|list|min:1|max:15', 'rondas.*' => 'required|array:modalidad,desempate',
+            'rondas.*.modalidad' => 'required|in:unico,ida_vuelta', 'rondas.*.desempate' => 'required|in:penales,prorroga_penales',
+            'fase_id' => 'prohibited', 'estado' => 'prohibited', 'ganador_fase_equipo_id' => 'prohibited']);
+    }
+
+    public function avanzar(Request $request, Llave $llave, AvanceEliminacionService $servicio): JsonResponse
+    {
+        Gate::authorize('avanzar', $llave);
+        $request->validate(['ganador_fase_equipo_id' => 'prohibited', 'estado' => 'prohibited', 'metodo_resolucion' => 'prohibited']);
+
+        return response()->json(['llave' => $servicio->avanzar($llave)]);
+    }
+
+    public function penales(Request $request, Llave $llave, AvanceEliminacionService $servicio): JsonResponse
+    {
+        Gate::authorize('registrarPenales', $llave);
+        $datos = $request->validate(['penales_plaza_1' => 'required|integer|between:0,255',
+            'penales_plaza_2' => 'required|integer|between:0,255|different:penales_plaza_1',
+            'motivo' => 'required|string|max:1000', 'ganador_fase_equipo_id' => 'prohibited', 'estado' => 'prohibited']);
+
+        return response()->json(['llave' => $servicio->registrarPenales($llave, $datos)]);
+    }
+
+    public function auditoria(Fase $fase): JsonResponse
+    {
+        Gate::authorize('view', $fase);
+        $llaves = Llave::whereHas('ronda', fn ($q) => $q->where('fase_id', $fase->id))->pluck('id');
+
+        return response()->json(AuditoriaCambio::where('campeonato_id', $fase->campeonato_id)->where(function ($q) use ($fase, $llaves) {
+            $q->where(fn ($q) => $q->where('entidad_tipo', 'fase')->where('entidad_id', $fase->id))
+                ->orWhere(fn ($q) => $q->where('entidad_tipo', 'llave')->whereIn('entidad_id', $llaves));
+        })->orderBy('id')->get());
+    }
+}

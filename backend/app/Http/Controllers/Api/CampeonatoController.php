@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Campeonato;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 
 class CampeonatoController extends Controller
@@ -28,14 +29,14 @@ class CampeonatoController extends Controller
             'nombre' => 'required|string|max:150',
             'descripcion' => 'nullable|string',
             'temporada' => 'required|string|max:50',
-            'formato' => 'required|in:todos_contra_todos',
+            'formato' => 'required|in:todos_contra_todos,eliminacion_directa',
         ], [
             'administrador_id.prohibited' => 'El propietario lo asigna el servidor y no se puede modificar.',
             'user_id.prohibited' => 'El propietario lo asigna el servidor y no se puede modificar.',
             'required' => 'El campo :attribute es obligatorio.',
             'string' => 'El campo :attribute debe ser un texto.',
             'max' => 'El campo :attribute no debe superar :max caracteres.',
-            'in' => 'El campo :attribute solo permite todos_contra_todos.',
+            'in' => 'El formato debe ser todos_contra_todos o eliminacion_directa.',
         ]);
 
         // El estado inicial lo asigna la base de datos.
@@ -66,17 +67,25 @@ class CampeonatoController extends Controller
             'nombre' => 'sometimes|required|string|max:150',
             'descripcion' => 'sometimes|nullable|string',
             'temporada' => 'sometimes|required|string|max:50',
-            'formato' => 'sometimes|required|in:todos_contra_todos',
+            'formato' => 'sometimes|required|in:todos_contra_todos,eliminacion_directa',
         ], [
             'administrador_id.prohibited' => 'El propietario lo asigna el servidor y no se puede modificar.',
             'user_id.prohibited' => 'El propietario lo asigna el servidor y no se puede modificar.',
             'required' => 'El campo :attribute es obligatorio.',
             'string' => 'El campo :attribute debe ser un texto.',
             'max' => 'El campo :attribute no debe superar :max caracteres.',
-            'in' => 'El campo :attribute solo permite todos_contra_todos.',
+            'in' => 'El formato debe ser todos_contra_todos o eliminacion_directa.',
         ]);
 
-        $campeonato->update($datos);
+        $campeonato = DB::transaction(function () use ($campeonato, $datos) {
+            $campeonato = Campeonato::whereKey($campeonato->id)->lockForUpdate()->firstOrFail();
+            if (isset($datos['formato']) && $datos['formato'] !== $campeonato->formato) {
+                abort_if($campeonato->fases()->exists() || $campeonato->partidos()->exists() || $campeonato->estado !== 'planificacion', 409, 'No se puede cambiar el formato con estructura deportiva o competición iniciada.');
+            }
+            $campeonato->update($datos);
+
+            return $campeonato;
+        });
 
         return response()->json([
             'message' => 'Campeonato actualizado correctamente.',
@@ -87,7 +96,7 @@ class CampeonatoController extends Controller
     public function destroy(Campeonato $campeonato): JsonResponse
     {
         Gate::authorize('delete', $campeonato);
-        if ($campeonato->inscripcionesEquipos()->exists() || $campeonato->partidos()->exists() || $campeonato->asignacionesArbitro()->exists()) {
+        if ($campeonato->fases()->exists() || $campeonato->inscripcionesEquipos()->exists() || $campeonato->partidos()->exists() || $campeonato->asignacionesArbitro()->exists()) {
             return response()->json([
                 'message' => 'No se puede eliminar el campeonato porque tiene inscripciones, partidos o historial arbitral.',
             ], 409);

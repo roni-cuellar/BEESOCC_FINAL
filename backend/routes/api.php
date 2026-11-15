@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\CorreccionPartidoController;
 use App\Http\Controllers\Api\EquipoController;
 use App\Http\Controllers\Api\EstadisticaController;
 use App\Http\Controllers\Api\EventoEstadisticoController;
+use App\Http\Controllers\Api\FaseController;
 use App\Http\Controllers\Api\JugadorController;
 use App\Http\Controllers\Api\PartidoController;
 use App\Http\Controllers\Api\PlantillaController;
@@ -29,6 +30,14 @@ Route::middleware('web')->withoutMiddleware(EnsureFrontendRequestsAreStateful::c
 });
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/campeonatos/{campeonato}/fases', [FaseController::class, 'index']);
+    Route::post('/campeonatos/{campeonato}/fases', [FaseController::class, 'store']);
+    Route::get('/fases/{fase}', [FaseController::class, 'show']);
+    Route::get('/fases/{fase}/auditoria', [FaseController::class, 'auditoria']);
+    Route::post('/fases/{fase}/previsualizar-llaves', [FaseController::class, 'previsualizar']);
+    Route::post('/fases/{fase}/generar-llaves', [FaseController::class, 'generar']);
+    Route::post('/llaves/{llave}/avanzar', [FaseController::class, 'avanzar']);
+    Route::post('/llaves/{llave}/penales', [FaseController::class, 'penales']);
     Route::get('/partidos/{partido}/auditoria', [CorreccionPartidoController::class, 'auditoria']);
     Route::get('/partidos/{partido}/correcciones', [CorreccionPartidoController::class, 'index']);
     Route::post('/partidos/{partido}/correcciones', [CorreccionPartidoController::class, 'store']);

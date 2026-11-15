@@ -41,4 +41,9 @@ class CampeonatoPolicy
     {
         return $this->view($user, $campeonato);
     }
+
+    public function verFases(User $user, Campeonato $campeonato): bool
+    {
+        return $this->view($user, $campeonato) || $user->esArbitroDe($campeonato);
+    }
 }

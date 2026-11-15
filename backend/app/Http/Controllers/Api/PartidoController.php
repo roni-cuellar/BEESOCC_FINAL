@@ -8,6 +8,7 @@ use App\Models\Campeonato;
 use App\Models\CampeonatoEquipo;
 use App\Models\Partido;
 use App\Services\AuditoriaPartidoService;
+use App\Services\AvanceEliminacionService;
 use App\Services\ControlPartidoService;
 use App\Services\MarcadorService;
 use App\Services\ResultadoOficialService;
@@ -151,7 +152,7 @@ class PartidoController extends Controller
             'lugar' => 'nullable|string|max:150',
             'local_id' => ['required', 'integer', $equipoActivo],
             'visitante_id' => ['required', 'integer', 'different:local_id', $equipoActivo],
-            'campeonato_id' => 'prohibited', 'oficializado_at' => 'prohibited', 'tipo_resultado' => 'prohibited', 'goles_admin_local' => 'prohibited', 'goles_admin_visitante' => 'prohibited',
+            'fase_id' => 'prohibited', 'grupo_id' => 'prohibited', 'llave_id' => 'prohibited', 'numero_serie' => 'prohibited', 'tipo_partido' => 'prohibited', 'campeonato_id' => 'prohibited', 'oficializado_at' => 'prohibited', 'tipo_resultado' => 'prohibited', 'goles_admin_local' => 'prohibited', 'goles_admin_visitante' => 'prohibited',
             'estado' => 'prohibited',
         ], [
             'required' => 'El campo :attribute es obligatorio.',
@@ -170,6 +171,8 @@ class PartidoController extends Controller
         }
 
         return DB::transaction(function () use ($datos, $campeonato) {
+            $campeonato = Campeonato::whereKey($campeonato->id)->lockForUpdate()->firstOrFail();
+            abort_unless($campeonato->formato === 'todos_contra_todos', 409, 'Los partidos eliminatorios se generan desde las llaves.');
             $partido = $campeonato->partidos()->create([
                 'jornada' => $datos['jornada'],
                 'fecha_hora' => $datos['fecha_hora'] ?? null,
@@ -212,7 +215,7 @@ class PartidoController extends Controller
             'local_id' => ['required_with:visitante_id', 'integer', $equipoActivo],
             'visitante_id' => ['required_with:local_id', 'integer', 'different:local_id', $equipoActivo],
             'estado' => 'prohibited',
-            'campeonato_id' => 'prohibited', 'oficializado_at' => 'prohibited', 'tipo_resultado' => 'prohibited', 'goles_admin_local' => 'prohibited', 'goles_admin_visitante' => 'prohibited',
+            'fase_id' => 'prohibited', 'grupo_id' => 'prohibited', 'llave_id' => 'prohibited', 'numero_serie' => 'prohibited', 'tipo_partido' => 'prohibited', 'campeonato_id' => 'prohibited', 'oficializado_at' => 'prohibited', 'tipo_resultado' => 'prohibited', 'goles_admin_local' => 'prohibited', 'goles_admin_visitante' => 'prohibited',
         ], [
             'required' => 'El campo :attribute no puede estar vacío.',
             'required_with' => 'Para cambiar participantes debes enviar local_id y visitante_id.',
@@ -233,7 +236,9 @@ class PartidoController extends Controller
 
         return DB::transaction(function () use ($request, $datos, $partido) {
             // Serializa las modificaciones del mismo partido.
+            Campeonato::whereKey($partido->campeonato_id)->lockForUpdate()->firstOrFail();
             $partido = Partido::whereKey($partido->id)->lockForUpdate()->firstOrFail();
+            abort_if($partido->llave_id && (isset($datos['local_id']) || isset($datos['visitante_id']) || (isset($datos['jornada']) && (int) $datos['jornada'] !== (int) $partido->jornada)), 409, 'Las plazas y la ronda se gestionan desde el cuadro eliminatorio.');
 
             if (in_array($partido->estado, ['finalizado', 'cancelado'])) {
                 return response()->json(['message' => 'Un partido finalizado o cancelado no se puede modificar.'], 409);
@@ -286,11 +291,12 @@ class PartidoController extends Controller
         $datos = $request->validate([
             'estado' => 'required|in:en_curso,suspendido,finalizado,cancelado',
             'jornada' => 'prohibited', 'fecha_hora' => 'prohibited', 'lugar' => 'prohibited',
-            'local_id' => 'prohibited', 'visitante_id' => 'prohibited', 'campeonato_id' => 'prohibited', 'oficializado_at' => 'prohibited', 'tipo_resultado' => 'prohibited', 'goles_admin_local' => 'prohibited', 'goles_admin_visitante' => 'prohibited',
+            'local_id' => 'prohibited', 'visitante_id' => 'prohibited', 'fase_id' => 'prohibited', 'grupo_id' => 'prohibited', 'llave_id' => 'prohibited', 'numero_serie' => 'prohibited', 'tipo_partido' => 'prohibited', 'campeonato_id' => 'prohibited', 'oficializado_at' => 'prohibited', 'tipo_resultado' => 'prohibited', 'goles_admin_local' => 'prohibited', 'goles_admin_visitante' => 'prohibited',
         ]);
 
         return DB::transaction(function () use ($partido, $datos, $cancelar) {
             if ($cancelar) {
+                Campeonato::whereKey($partido->campeonato_id)->lockForUpdate()->firstOrFail();
                 $partido = Partido::whereKey($partido->id)->lockForUpdate()->firstOrFail();
                 Gate::authorize('update', $partido);
             } else {
@@ -312,6 +318,10 @@ class PartidoController extends Controller
                 $auditoria->registrar($partido, 'cambiar_estado', 'Cambio de estado del partido.', $anterior, $auditoria->capturar($partido));
             }
 
+            if ($partido->fase_id) {
+                app(AvanceEliminacionService::class)->actualizarEstados($partido->fase);
+            }
+
             return response()->json(['message' => 'Estado actualizado correctamente.',
                 'partido' => $partido->load('participantes.campeonatoEquipo.equipo')]);
         });
@@ -331,7 +341,9 @@ class PartidoController extends Controller
         Gate::authorize('delete', $partido);
 
         return DB::transaction(function () use ($partido) {
+            Campeonato::whereKey($partido->campeonato_id)->lockForUpdate()->firstOrFail();
             $partido = Partido::whereKey($partido->id)->lockForUpdate()->firstOrFail();
+            abort_if($partido->llave_id, 409, 'No se eliminan partidos del cuadro eliminatorio.');
 
             if ($partido->oficializado_at || $partido->correcciones()->exists()
                 || AuditoriaCambio::where('entidad_tipo', 'partido')->where('entidad_id', $partido->id)->exists()) {

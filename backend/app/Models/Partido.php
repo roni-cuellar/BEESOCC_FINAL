@@ -43,4 +43,14 @@ class Partido extends Model
     {
         return $this->hasMany(AutorizacionCorreccion::class);
     }
+
+    public function fase(): BelongsTo
+    {
+        return $this->belongsTo(Fase::class);
+    }
+
+    public function llave(): BelongsTo
+    {
+        return $this->belongsTo(Llave::class);
+    }
 }

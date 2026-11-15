@@ -8,6 +8,20 @@ use App\Models\User;
 
 class ConsultaArbitrosTest extends BackendTestCase
 {
+    public function test_mis_arbitrajes_incluye_formato_para_navegar_al_cuadro_privado(): void
+    {
+        $liga = $this->postJson('/api/campeonatos', ['nombre' => 'Copa eliminatoria', 'temporada' => '2026', 'formato' => 'eliminacion_directa'])
+            ->assertCreated()->json('campeonato');
+        $arbitro = User::factory()->create();
+        $this->postJson('/api/campeonatos/'.$liga['id'].'/arbitro', ['usuario_id' => $arbitro->id])->assertCreated();
+        app('auth')->forgetGuards();
+        $this->actingAs($arbitro, 'web');
+        $this->getJson('/api/mis-arbitrajes')->assertOk()
+            ->assertJsonPath('asignaciones.0.campeonato.formato', 'eliminacion_directa')
+            ->assertJsonMissingPath('asignaciones.0.campeonato.administrador_id');
+        $this->getJson('/api/campeonatos/'.$liga['id'])->assertForbidden();
+    }
+
     public function test_busqueda_exacta_privada_solo_devuelve_identidad_minima(): void
     {
         $liga = $this->campeonato();

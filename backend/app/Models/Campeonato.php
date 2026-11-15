@@ -12,6 +12,13 @@ class Campeonato extends Model
 {
     public const FORMATO_TODOS_CONTRA_TODOS = 'todos_contra_todos';
 
+    public const FORMATO_ELIMINACION = 'eliminacion_directa';
+
+    public function fases(): HasMany
+    {
+        return $this->hasMany(Fase::class)->orderBy('orden');
+    }
+
     protected function casts(): array
     {
         return ['publicado' => 'boolean'];
@@ -54,11 +61,11 @@ class Campeonato extends Model
         return $this->hasMany(Partido::class);
     }
 
-    // Por ahora solo se permite el formato todos contra todos.
+    // Grupos queda fuera del alcance autorizado.
     public function setFormatoAttribute(string $value): void
     {
-        if ($value !== self::FORMATO_TODOS_CONTRA_TODOS) {
-            throw new InvalidArgumentException('El formato permitido es todos_contra_todos.');
+        if (! in_array($value, [self::FORMATO_TODOS_CONTRA_TODOS, self::FORMATO_ELIMINACION], true)) {
+            throw new InvalidArgumentException('El formato debe ser todos_contra_todos o eliminacion_directa.');
         }
 
         $this->attributes['formato'] = $value;

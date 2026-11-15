@@ -61,6 +61,7 @@ class CorreccionPartidoService
                 $this->aplicarOperacion($partido, $operacion);
             }
             app(ResultadoOficialService::class)->comprobarEventos($partido);
+            app(AvanceEliminacionService::class)->revisarCorreccion($partido, $correccion->motivo);
             // Eventos, consumo y bitácora se confirman juntos; un fallo revierte todo.
             $correccion->estado = 'consumida';
             $correccion->fecha_consumo = now();

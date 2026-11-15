@@ -33,7 +33,7 @@ class AsignacionArbitroController extends Controller
             ->whereNull('fecha_fin')->where('fecha_inicio', '<=', now())
             ->whereHas('campeonato', fn ($consulta) => $consulta->whereNotNull('administrador_id')
                 ->where('administrador_id', '!=', $request->user()->id))
-            ->with('campeonato:id,nombre,temporada,estado')->orderByDesc('id')->get()
+            ->with('campeonato:id,nombre,temporada,estado,formato')->orderByDesc('id')->get()
             ->map(fn ($asignacion) => [
                 'id' => $asignacion->id,
                 'fecha_inicio' => $asignacion->fecha_inicio,

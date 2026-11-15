@@ -9,6 +9,7 @@ class TablaPosicionesService
 {
     public function index(Campeonato $campeonato): JsonResponse
     {
+        abort_unless($campeonato->formato === 'todos_contra_todos', 409, 'La eliminación directa se consulta por fases y llaves, no por puntos de liga.');
         $configuracion = $campeonato->configuracion()->first();
         $orden = $configuracion ? $configuracion->orden_desempate : 'puntos,diferencia_goles,goles_favor';
         $criterios = array_map('trim', explode(',', $orden));

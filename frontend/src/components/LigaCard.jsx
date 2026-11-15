@@ -12,7 +12,7 @@ function LigaCard({ liga, onEliminar, onPublicacion, publicando = false, publica
       <span className="mb-3 text-xs font-semibold text-marca-oscuro">{publica || liga.publicado ? 'Publicado' : 'Privado'}</span>
       <h2 className="font-titulo text-xl leading-snug font-bold break-words text-oscuro">{liga.nombre}</h2>
       <p className="mt-3 line-clamp-2 text-sm leading-6 break-words text-gris">{liga.descripcion || 'Sin descripción'}</p>
-      <p className="mt-4 mb-6 flex items-center gap-2 text-xs text-gris"><Icono nombre="partidos" />{liga.formato === 'todos_contra_todos' ? 'Todos contra todos' : liga.formato}</p>
+      <p className="mt-4 mb-6 flex items-center gap-2 text-xs text-gris"><Icono nombre="partidos" />{liga.formato === 'todos_contra_todos' ? 'Todos contra todos' : liga.formato === 'eliminacion_directa' ? 'Eliminación directa' : liga.formato}</p>
       <Boton className="mt-auto w-full" to={publica ? '/campeonatos/' + liga.id : '/ligas/' + liga.id + '/dashboard'}>{publica ? 'Ver campeonato' : 'Administrar'}</Boton>
       {!publica && <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-borde pt-3">
         <Link className="inline-flex min-h-11 items-center rounded-lg px-2 text-sm font-semibold text-marca-oscuro hover:bg-green-50" to={'/ligas/' + liga.id + '/editar'} aria-label={'Editar ' + liga.nombre}>Editar liga</Link>

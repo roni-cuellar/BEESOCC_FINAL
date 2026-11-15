@@ -14,6 +14,7 @@ import Icono from '../components/Icono'
 
 function DashboardPage() {
   const { liga } = useOutletContext()
+  const eliminacion = liga.formato === 'eliminacion_directa'
   const { ligaId } = useParams()
   const { partidos, cargando, error, cargar } = usePartidoStore()
   const [resumen, setResumen] = useState({ equipos: null, jugadores: null, tabla: [], error: '', cargando: true })
@@ -23,7 +24,7 @@ function DashboardPage() {
     cargar(ligaId)
     async function consultar() {
       setResumen({ equipos: null, jugadores: null, tabla: [], error: '', cargando: true })
-      const [inscripciones, tabla] = await Promise.allSettled([equipoService.inscripciones(ligaId), ligaService.tabla(ligaId)])
+      const [inscripciones, tabla] = await Promise.allSettled([equipoService.inscripciones(ligaId), eliminacion ? Promise.resolve({ tabla: [] }) : ligaService.tabla(ligaId)])
       let equipos = null, jugadores = null
       const errores = []
       if (inscripciones.status === 'fulfilled') {
@@ -37,7 +38,7 @@ function DashboardPage() {
     }
     consultar()
     return () => { vigente = false }
-  }, [ligaId, cargar, intento])
+  }, [ligaId, cargar, intento, eliminacion])
   const proximos = partidos.filter(p => p.estado === 'programado').sort((a, b) => (a.fecha_hora ? new Date(a.fecha_hora).getTime() : Infinity) - (b.fecha_hora ? new Date(b.fecha_hora).getTime() : Infinity) || a.jornada - b.jornada).slice(0, 3)
   const ultimos = partidos.filter(p => p.estado === 'finalizado').sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at)).slice(0, 3)
   return <>
@@ -49,8 +50,10 @@ function DashboardPage() {
     <Aviso error={resumen.error}/><EstadoVista cargando={cargando} error={error} reintentar={()=>setIntento(v=>v+1)}/>
     <div className="mb-10 flex flex-wrap gap-3">{[['equipos','Inscribir equipos','equipos'],['jugadores','Gestionar plantillas','jugadores'],['calendario','Organizar calendario','calendario']].map(([ruta,texto,icono])=><Boton variante="secundario" key={ruta} to={'/ligas/'+ligaId+'/'+ruta}><Icono nombre={icono}/>{texto}</Boton>)}</div>
     {!cargando && !error && <><div className="mb-5 flex items-center justify-between gap-4"><h2 className="font-titulo text-xl font-bold text-oscuro">Próximos encuentros</h2><Boton variante="secundario" to={'/ligas/'+ligaId+'/partidos'}>Ver todos</Boton></div>{proximos.length ? <div className="mb-9 grid gap-4 md:grid-cols-2 xl:grid-cols-3">{proximos.map(p=><PartidoCard key={p.id} partido={p} ligaId={ligaId}/>)}</div> : <Tarjeta className="mb-9"><div className="flex items-start gap-4"><Icono nombre="calendario" className="mt-1 text-marca-oscuro"/><div><p className="text-sm font-semibold text-oscuro">La próxima jornada está por organizarse</p><p className="mt-2 text-sm text-gris">No hay encuentros programados. Revisa el calendario para preparar los siguientes partidos.</p></div></div></Tarjeta>}<h2 className="mb-5 font-titulo text-xl font-bold text-oscuro">Últimos resultados</h2>{ultimos.length ? <div className="mb-9 grid gap-4 md:grid-cols-2 xl:grid-cols-3">{ultimos.map(p=><PartidoCard key={p.id} partido={p} ligaId={ligaId}/>)}</div> : <Tarjeta className="mb-9"><p className="text-sm text-gris">Aún no hay partidos finalizados. Los resultados aparecerán aquí cuando termine un encuentro.</p></Tarjeta>}</>}
-    <div className="mb-5 flex items-center justify-between gap-4"><h2 className="font-titulo text-xl font-bold text-oscuro">Clasificación</h2><Boton variante="secundario" to={'/ligas/'+ligaId+'/tabla'}>Tabla completa</Boton></div>
-    <Tarjeta sinRelleno><div className="overflow-x-auto"><table className="w-full"><caption className="sr-only">Primeras posiciones del campeonato</caption><thead><tr><th>Pos.</th><th>Equipo</th><th>PJ</th><th>PTS</th></tr></thead><tbody>{resumen.tabla.slice(0,5).map(f=><tr key={f.equipo_id}><td>{f.posicion}</td><td>{f.nombre}</td><td>{f.PJ}</td><td><strong>{f.PTS}</strong></td></tr>)}</tbody></table></div>{!resumen.tabla.length && <p className="px-5 py-7 text-sm text-gris">{resumen.cargando ? 'Consultando clasificación…' : resumen.error ? 'No se pudo obtener toda la información. Vuelve a actualizar el resumen.' : 'Todavía no hay equipos en la clasificación.'}</p>}</Tarjeta>
+    {eliminacion ? <Tarjeta><h2>Clasificados por llaves</h2><p className="nota">Consulta las rondas, resultados oficiales y clasificados en el cuadro eliminatorio.</p><Boton to={'/ligas/' + ligaId + '/cuadro'}>Abrir cuadro eliminatorio</Boton></Tarjeta> : <>
+      <div className="mb-5 flex items-center justify-between gap-4"><h2 className="font-titulo text-xl font-bold text-oscuro">Clasificación</h2><Boton variante="secundario" to={'/ligas/'+ligaId+'/tabla'}>Tabla completa</Boton></div>
+      <Tarjeta sinRelleno><div className="overflow-x-auto"><table className="w-full"><caption className="sr-only">Primeras posiciones del campeonato</caption><thead><tr><th>Pos.</th><th>Equipo</th><th>PJ</th><th>PTS</th></tr></thead><tbody>{resumen.tabla.slice(0,5).map(f=><tr key={f.equipo_id}><td>{f.posicion}</td><td>{f.nombre}</td><td>{f.PJ}</td><td><strong>{f.PTS}</strong></td></tr>)}</tbody></table></div>{!resumen.tabla.length && <p className="px-5 py-7 text-sm text-gris">{resumen.cargando ? 'Consultando clasificación…' : resumen.error ? 'No se pudo obtener toda la información. Vuelve a actualizar el resumen.' : 'Todavía no hay equipos en la clasificación.'}</p>}</Tarjeta>
+    </>}
   </>
 }
 export default DashboardPage

@@ -124,11 +124,12 @@ function PartidoDetallePage({ arbitral = false }) {
       <Aviso error={errorOperacion || errorParcial || (!arbitral && errorEquipos)} exito={mensaje} />
       <div className="panel marcador-detalle"><div><span>LOCAL</span><strong>{marcador?.local.nombre || nombreParticipante(partido, 'local')}</strong></div><b>{marcador ? marcador.local.goles + ' – ' + marcador.visitante.goles : 'No disponible'}</b><div><span>VISITANTE</span><strong>{marcador?.visitante.nombre || nombreParticipante(partido, 'visitante')}</strong></div></div>
       <ResultadoOficial partido={partido} />
+      {partido.llave_id && <Link className="enlace-texto" to={(arbitral ? '/mis-arbitrajes/' : '/ligas/') + ligaId + '/cuadro'}>Ver cuadro actualizado, clasificados y penales</Link>}
       <div className="acciones acciones-compactas">
         <button className="boton boton-borde" disabled={operando} onClick={() => setRevision(v => v + 1)}>Actualizar acta</button>
         {!arbitral && editable && <button className="boton boton-borde" onClick={() => setEditar(true)}>Editar partido</button>}
         <AccionesEstadoPartido estado={partido.estado} arbitral={arbitral} bloqueado={operando} onCambiar={confirmarEstado} />
-        {!arbitral && !partido.oficializado_at && <button className="boton-texto peligro" onClick={() => setConfirmacion({ titulo: 'Eliminar partido', texto: '¿Eliminar el partido? Solo es posible si no tiene eventos ni trazabilidad.', accion: async () => { await partidoService.eliminar(partidoId); navegar('/ligas/' + ligaId + '/partidos') } })}>Eliminar partido</button>}
+        {!arbitral && !partido.llave_id && !partido.oficializado_at && <button className="boton-texto peligro" onClick={() => setConfirmacion({ titulo: 'Eliminar partido', texto: '¿Eliminar el partido? Solo es posible si no tiene eventos ni trazabilidad.', accion: async () => { await partidoService.eliminar(partidoId); navegar('/ligas/' + ligaId + '/partidos') } })}>Eliminar partido</button>}
       </div>
       <div className={arbitral ? 'detalle-eventos' : 'mt-6'}>
         <div className="panel"><h2>Historial de eventos</h2>{!eventos.length && <p className="nota">No hay eventos registrados.</p>}
@@ -139,7 +140,7 @@ function PartidoDetallePage({ arbitral = false }) {
           : <div className="panel"><h2>Registro de eventos</h2><p className="nota">{partido.estado === 'en_curso' ? 'No se pudieron cargar las plantillas.' : 'Los eventos se habilitan cuando el partido está en curso.'}</p></div>)}
       </div>
       <PanelCorrecciones partido={partido} arbitral={arbitral} eventos={eventos} plantillas={plantillas} bloqueado={operando} onOperacion={operar} onAccesoDenegado={bloquearAcceso} />
-      {editar && <Modal titulo="Editar partido" onCerrar={() => setEditar(false)}><PartidoForm partido={partido} inscripciones={inscripciones} permitirEquipos={partido.estado === 'programado' && eventos.length === 0} onCancelar={() => setEditar(false)} onGuardar={async datos => { await partidoService.actualizar(partidoId, datos); setEditar(false); recargar('Partido actualizado.') }} /></Modal>}
+      {editar && <Modal titulo="Editar partido" onCerrar={() => setEditar(false)}><PartidoForm partido={partido} inscripciones={inscripciones} permitirEquipos={!partido.llave_id && partido.estado === 'programado' && eventos.length === 0} onCancelar={() => setEditar(false)} onGuardar={async datos => { await partidoService.actualizar(partidoId, datos); setEditar(false); recargar('Partido actualizado.') }} /></Modal>}
       {corregir && <Modal bloqueado={operando} titulo="Corregir minuto del evento" onCerrar={() => setCorregir(null)}><MinutoForm evento={corregir} onGuardar={async minuto => { await operar(() => partidoService.actualizarEvento(corregir.id, minuto), 'Minuto corregido.'); setCorregir(null) }} /></Modal>}
     </>}
     {confirmacion && <Confirmacion titulo={confirmacion.titulo} texto={confirmacion.texto} onConfirmar={confirmacion.accion} onCerrar={() => setConfirmacion(null)} />}

@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Link, Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
+import { Link, Navigate, Outlet, Route, Routes, useLocation, useOutletContext } from 'react-router-dom'
 import RutaPrivada from '../components/RutaPrivada'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
@@ -24,9 +24,14 @@ import TablaPage from '../pages/TablaPage'
 import EstadisticasPage from '../pages/EstadisticasPage'
 import CampeonatosPublicosPage from '../pages/CampeonatosPublicosPage'
 import DetallePublicoPage, { ResumenPublicoPage } from '../pages/DetallePublicoPage'
+import EliminacionPage from '../pages/EliminacionPage'
 
 function PublicLayout() {
   return <><a className="saltar-contenido" href="#contenido">Saltar al contenido</a><Navbar /><main id="contenido" tabIndex={-1}><Outlet /></main><Footer /></>
+}
+function TablaPrivada() {
+  const { liga } = useOutletContext()
+  return liga.formato === 'eliminacion_directa' ? <Navigate to={'/ligas/' + liga.id + '/cuadro'} replace /> : <TablaPage />
 }
 function AppRoutes() {
   const { pathname, hash } = useLocation()
@@ -54,6 +59,7 @@ function AppRoutes() {
       <Route path="/mis-ligas" element={<MisLigasPage />} />
       <Route path="/mis-arbitrajes" element={<MisArbitrajesPage />} />
       <Route path="/mis-arbitrajes/:ligaId/partidos" element={<PartidosArbitrajePage />} />
+      <Route path="/mis-arbitrajes/:ligaId/cuadro" element={<EliminacionPage arbitral />} />
       <Route path="/mis-arbitrajes/:ligaId/partidos/:partidoId" element={<section className="mx-auto max-w-7xl px-5 py-8 sm:px-8"><PartidoDetallePage arbitral /></section>} />
       <Route path="/ligas/nueva" element={<CrearLigaPage />} />
       <Route path="/ligas/:ligaId/editar" element={<CrearLigaPage />} />
@@ -67,7 +73,8 @@ function AppRoutes() {
       <Route path="partidos" element={<PartidosPage />} />
       <Route path="partidos/:partidoId" element={<PartidoDetallePage />} />
       <Route path="calendario" element={<CalendarioPage />} />
-      <Route path="tabla" element={<TablaPage />} />
+      <Route path="cuadro" element={<EliminacionPage />} />
+      <Route path="tabla" element={<TablaPrivada />} />
       <Route path="estadisticas" element={<EstadisticasPage />} />
       <Route path="*" element={<section className="panel"><h1>Página no encontrada</h1><Link to="/mis-ligas" className="enlace-texto">Volver a Mis Ligas</Link></section>} />
     </Route>

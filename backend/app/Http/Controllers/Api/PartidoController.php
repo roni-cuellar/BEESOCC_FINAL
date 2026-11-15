@@ -3,10 +3,14 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\AuditoriaCambio;
 use App\Models\Campeonato;
 use App\Models\CampeonatoEquipo;
 use App\Models\Partido;
+use App\Services\AuditoriaPartidoService;
 use App\Services\ControlPartidoService;
+use App\Services\MarcadorService;
+use App\Services\ResultadoOficialService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -27,45 +31,8 @@ class PartidoController extends Controller
     public function marcador(Partido $partido): JsonResponse
     {
         Gate::authorize('view', $partido);
-        $participantes = $partido->participantes()
-            ->with(['campeonatoEquipo.equipo', 'eventos'])->get();
-        $local = $participantes->firstWhere('rol', 'local');
-        $visitante = $participantes->firstWhere('rol', 'visitante');
 
-        if ($participantes->count() !== 2 || ! $local || ! $visitante) {
-            return response()->json(['message' => 'No se puede calcular el marcador: el partido debe tener exactamente un local y un visitante.'], 409);
-        }
-
-        foreach ($participantes as $participante) {
-            if (! $participante->campeonatoEquipo || ! $participante->campeonatoEquipo->equipo
-                || (int) $participante->campeonatoEquipo->campeonato_id !== (int) $partido->campeonato_id) {
-                return response()->json(['message' => 'No se puede calcular el marcador: los participantes deben tener equipos válidos del campeonato.'], 409);
-            }
-        }
-
-        if ((int) $local->campeonatoEquipo->equipo_id === (int) $visitante->campeonatoEquipo->equipo_id) {
-            return response()->json(['message' => 'No se puede calcular el marcador: el local y el visitante deben ser equipos diferentes.'], 409);
-        }
-
-        // El autogol ya está asociado al participante beneficiado.
-        $golesLocal = $local->eventos->whereIn('tipo', ['gol', 'autogol'])->count();
-        $golesVisitante = $visitante->eventos->whereIn('tipo', ['gol', 'autogol'])->count();
-
-        return response()->json([
-            'partido_id' => $partido->id,
-            'jornada' => $partido->jornada,
-            'estado' => $partido->estado,
-            'local' => [
-                'id' => $local->campeonatoEquipo->equipo->id,
-                'nombre' => $local->campeonatoEquipo->equipo->nombre,
-                'goles' => $golesLocal,
-            ],
-            'visitante' => [
-                'id' => $visitante->campeonatoEquipo->equipo->id,
-                'nombre' => $visitante->campeonatoEquipo->equipo->nombre,
-                'goles' => $golesVisitante,
-            ],
-        ]);
+        return response()->json(app(MarcadorService::class)->calcular($partido));
     }
 
     public function generarCalendario(Campeonato $campeonato): JsonResponse
@@ -184,7 +151,7 @@ class PartidoController extends Controller
             'lugar' => 'nullable|string|max:150',
             'local_id' => ['required', 'integer', $equipoActivo],
             'visitante_id' => ['required', 'integer', 'different:local_id', $equipoActivo],
-            'campeonato_id' => 'prohibited',
+            'campeonato_id' => 'prohibited', 'oficializado_at' => 'prohibited', 'tipo_resultado' => 'prohibited', 'goles_admin_local' => 'prohibited', 'goles_admin_visitante' => 'prohibited',
             'estado' => 'prohibited',
         ], [
             'required' => 'El campo :attribute es obligatorio.',
@@ -245,7 +212,7 @@ class PartidoController extends Controller
             'local_id' => ['required_with:visitante_id', 'integer', $equipoActivo],
             'visitante_id' => ['required_with:local_id', 'integer', 'different:local_id', $equipoActivo],
             'estado' => 'prohibited',
-            'campeonato_id' => 'prohibited',
+            'campeonato_id' => 'prohibited', 'oficializado_at' => 'prohibited', 'tipo_resultado' => 'prohibited', 'goles_admin_local' => 'prohibited', 'goles_admin_visitante' => 'prohibited',
         ], [
             'required' => 'El campo :attribute no puede estar vacío.',
             'required_with' => 'Para cambiar participantes debes enviar local_id y visitante_id.',
@@ -271,6 +238,9 @@ class PartidoController extends Controller
             if (in_array($partido->estado, ['finalizado', 'cancelado'])) {
                 return response()->json(['message' => 'Un partido finalizado o cancelado no se puede modificar.'], 409);
             }
+
+            $auditoria = app(AuditoriaPartidoService::class);
+            $anterior = $auditoria->capturar($partido);
 
             if (isset($datos['local_id'], $datos['visitante_id'])) {
                 if ($partido->estado !== 'programado' || $partido->participantes()->whereHas('eventos')->exists()) {
@@ -300,6 +270,7 @@ class PartidoController extends Controller
             }
 
             $partido->update($request->only(['jornada', 'fecha_hora', 'lugar']));
+            $auditoria->registrar($partido, 'editar_programacion', 'Edición organizativa del partido.', $anterior, $auditoria->capturar($partido));
 
             return response()->json([
                 'message' => 'Partido actualizado correctamente.',
@@ -315,7 +286,7 @@ class PartidoController extends Controller
         $datos = $request->validate([
             'estado' => 'required|in:en_curso,suspendido,finalizado,cancelado',
             'jornada' => 'prohibited', 'fecha_hora' => 'prohibited', 'lugar' => 'prohibited',
-            'local_id' => 'prohibited', 'visitante_id' => 'prohibited', 'campeonato_id' => 'prohibited',
+            'local_id' => 'prohibited', 'visitante_id' => 'prohibited', 'campeonato_id' => 'prohibited', 'oficializado_at' => 'prohibited', 'tipo_resultado' => 'prohibited', 'goles_admin_local' => 'prohibited', 'goles_admin_visitante' => 'prohibited',
         ]);
 
         return DB::transaction(function () use ($partido, $datos, $cancelar) {
@@ -332,11 +303,27 @@ class PartidoController extends Controller
             ];
             abort_unless(in_array($datos['estado'], $transiciones[$partido->estado] ?? [], true),
                 409, 'El cambio de estado solicitado no está permitido.');
-            $partido->update(['estado' => $datos['estado']]);
+            if ($datos['estado'] === 'finalizado') {
+                app(ResultadoOficialService::class)->oficializar($partido);
+            } else {
+                $auditoria = app(AuditoriaPartidoService::class);
+                $anterior = $auditoria->capturar($partido);
+                $partido->update(['estado' => $datos['estado']]);
+                $auditoria->registrar($partido, 'cambiar_estado', 'Cambio de estado del partido.', $anterior, $auditoria->capturar($partido));
+            }
 
             return response()->json(['message' => 'Estado actualizado correctamente.',
                 'partido' => $partido->load('participantes.campeonatoEquipo.equipo')]);
         });
+    }
+
+    public function finalizar(Request $request, Partido $partido): JsonResponse
+    {
+        Gate::authorize('arbitrar', $partido);
+        $request->validate(['estado' => 'prohibited']);
+        $request->merge(['estado' => 'finalizado']);
+
+        return $this->cambiarEstado($request, $partido);
     }
 
     public function destroy(Partido $partido): JsonResponse
@@ -345,6 +332,11 @@ class PartidoController extends Controller
 
         return DB::transaction(function () use ($partido) {
             $partido = Partido::whereKey($partido->id)->lockForUpdate()->firstOrFail();
+
+            if ($partido->oficializado_at || $partido->correcciones()->exists()
+                || AuditoriaCambio::where('entidad_tipo', 'partido')->where('entidad_id', $partido->id)->exists()) {
+                return response()->json(['message' => 'No se puede eliminar un partido con resultado oficial o trazabilidad.'], 409);
+            }
 
             if ($partido->participantes()->whereHas('eventos')->exists()) {
                 return response()->json(['message' => 'No se puede eliminar el partido porque tiene eventos estadísticos.'], 409);

@@ -36,6 +36,10 @@ api.defaults.adapter = async config => {
   else if (method === 'get' && url === '/partidos/3/marcador') respuesta = { local: marcador('local'), visitante: marcador('visitante') }
   else if (method === 'get' && url === '/partidos/3/plantillas-arbitrales') respuesta = plantillas
   else if (method === 'get' && url === '/partidos/3/eventos') respuesta = eventos
+  else if (method === 'get' && ['/partidos/3/correcciones', '/partidos/3/auditoria'].includes(url)) respuesta = []
+  else if (method === 'post' && url === '/partidos/3/finalizar') {
+    partido.estado = 'finalizado'; partido.tipo_resultado = 'deportivo'; partido.oficializado_at = new Date().toISOString(); respuesta = { partido }
+  }
   else if (method === 'patch' && url === '/partidos/3') { partido.estado = datos.estado; respuesta = { partido } }
   else if (method === 'post' && url === '/partidos/3/eventos') {
     enviados++

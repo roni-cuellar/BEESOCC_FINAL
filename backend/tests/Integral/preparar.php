@@ -78,6 +78,9 @@ $entorno = [
     'LOG_CHANNEL' => 'single', 'QUEUE_CONNECTION' => 'sync', 'MAIL_MAILER' => 'log', 'BCRYPT_ROUNDS' => '4',
 ];
 file_put_contents($carpeta.'/entorno.json', json_encode($entorno, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
-copy(dirname($rutaServidor).'/principal_antes.json', $carpeta.'/principal_antes.json');
+// Con la principal activa se compara una instantánea lógica, no archivos InnoDB abiertos.
+if (is_file(dirname($rutaServidor).'/principal_antes.json')) {
+    copy(dirname($rutaServidor).'/principal_antes.json', $carpeta.'/principal_antes.json');
+}
 echo json_encode(['base_nueva' => $base, 'configuracion_temporal' => $carpeta.'/entorno.json',
     'motor' => $pdo->query('SELECT VERSION()')->fetchColumn(), 'directorio_aislado' => $directorioActivo], JSON_PRETTY_PRINT);

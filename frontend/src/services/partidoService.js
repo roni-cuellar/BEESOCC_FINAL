@@ -4,6 +4,7 @@ const partidoService = {
   obtener: async id => (await api.get('/partidos/' + id)).data,
   crear: async (ligaId, datos) => (await api.post('/campeonatos/' + ligaId + '/partidos', datos)).data.partido,
   actualizar: async (id, datos) => (await api.patch('/partidos/' + id, datos)).data.partido,
+  finalizar: async id => (await api.post('/partidos/' + id + '/finalizar')).data.partido,
   eliminar: async id => (await api.delete('/partidos/' + id)).data,
   generar: async ligaId => (await api.post('/campeonatos/' + ligaId + '/generar-calendario')).data,
   marcador: async id => (await api.get('/partidos/' + id + '/marcador')).data,

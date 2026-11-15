@@ -1,0 +1,144 @@
+{
+  "entorno": "HTTP real, Sanctum y MariaDB aislada",
+  "base": "beesocc_23c_test_20261115_023111_8d58dafe",
+  "fase": "activo",
+  "comprobaciones": 34,
+  "pruebas": [
+    {
+      "prueba": "CSRF real admin",
+      "estado": 204
+    },
+    {
+      "prueba": "Login real admin",
+      "estado": 200
+    },
+    {
+      "prueba": "CSRF real arbitro",
+      "estado": 204
+    },
+    {
+      "prueba": "Login real arbitro",
+      "estado": 200
+    },
+    {
+      "prueba": "CSRF real ajeno",
+      "estado": 204
+    },
+    {
+      "prueba": "Login real ajeno",
+      "estado": 200
+    },
+    {
+      "prueba": "Invitado no consulta expediente",
+      "estado": 401
+    },
+    {
+      "prueba": "Escritura requiere CSRF incluso con sesión",
+      "estado": 419
+    },
+    {
+      "prueba": "Resultado oficial consultado",
+      "estado": 200
+    },
+    {
+      "prueba": "Acta corregida desde React",
+      "estado": 200
+    },
+    {
+      "prueba": "Marcador real posterior",
+      "estado": 200
+    },
+    {
+      "prueba": "Estadísticas sin gol eliminado",
+      "estado": 200
+    },
+    {
+      "prueba": "Estadísticas sin asistencia eliminada",
+      "estado": 200
+    },
+    {
+      "prueba": "Expedientes creados desde React",
+      "estado": 200
+    },
+    {
+      "prueba": "No reutiliza autorización consumida",
+      "estado": 409
+    },
+    {
+      "prueba": "No aplica solicitud rechazada",
+      "estado": 409
+    },
+    {
+      "prueba": "No resuelve nuevamente el rechazo",
+      "estado": 409
+    },
+    {
+      "prueba": "Árbitro no decide solicitudes",
+      "estado": 403
+    },
+    {
+      "prueba": "Administrador no solicita como árbitro",
+      "estado": 403
+    },
+    {
+      "prueba": "Administrador no aplica",
+      "estado": 403
+    },
+    {
+      "prueba": "Privacidad frente a ajeno /correcciones",
+      "estado": 403
+    },
+    {
+      "prueba": "Privacidad frente a ajeno /auditoria",
+      "estado": 403
+    },
+    {
+      "prueba": "Ajeno no solicita",
+      "estado": 403
+    },
+    {
+      "prueba": "Ajeno no aplica",
+      "estado": 403
+    },
+    {
+      "prueba": "Expediente inexistente",
+      "estado": 404
+    },
+    {
+      "prueba": "Motivo obligatorio",
+      "estado": 422
+    },
+    {
+      "prueba": "Alcance no implementado rechazado",
+      "estado": 422
+    },
+    {
+      "prueba": "Escritura ordinaria cerrada",
+      "estado": 409
+    },
+    {
+      "prueba": "No reabre resultado oficial",
+      "estado": 409
+    },
+    {
+      "prueba": "Auditoría privada real",
+      "estado": 200
+    },
+    {
+      "prueba": "Aprobación para fallo atómico adicional",
+      "estado": 201
+    },
+    {
+      "prueba": "Administrador aprueba ensayo",
+      "estado": 200
+    },
+    {
+      "prueba": "404 tardío revierte primera operación",
+      "estado": 404
+    },
+    {
+      "prueba": "422 tardío revierte primera operación",
+      "estado": 422
+    }
+  ]
+}

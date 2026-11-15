@@ -8,6 +8,7 @@ use App\Models\CampeonatoEquipo;
 use App\Models\Partido;
 use App\Models\Plantilla;
 use App\Services\EstadisticaService;
+use App\Services\MarcadorService;
 use App\Services\TablaPosicionesService;
 use Illuminate\Http\JsonResponse;
 
@@ -48,7 +49,7 @@ class PublicoCampeonatoController extends Controller
         $participantes = $partido->participantes->map(fn ($participante) => [
             'rol' => $participante->rol,
             'equipo' => $this->datosEquipo($participante->campeonatoEquipo, $campeonato),
-            'goles' => $participante->eventos->whereIn('tipo', ['gol', 'autogol'])->count(),
+            'goles' => app(MarcadorService::class)->goles($participante),
         ]);
 
         return $partido->only(['id', 'jornada', 'fecha_hora', 'lugar', 'estado']) + ['participantes' => $participantes];

@@ -68,8 +68,8 @@ class TablaPosicionesService
             }
 
             // Igual que en el marcador: el autogol pertenece al equipo beneficiado.
-            $golesLocal = $local->eventos->whereIn('tipo', ['gol', 'autogol'])->count();
-            $golesVisitante = $visitante->eventos->whereIn('tipo', ['gol', 'autogol'])->count();
+            $golesLocal = app(MarcadorService::class)->goles($local);
+            $golesVisitante = app(MarcadorService::class)->goles($visitante);
 
             foreach ([[$localId, $golesLocal, $golesVisitante], [$visitanteId, $golesVisitante, $golesLocal]] as $resultado) {
                 [$inscripcionId, $golesFavor, $golesContra] = $resultado;

@@ -1,11 +1,12 @@
 <?php
 
-use App\Http\Controllers\Api\AsignacionArbitroController;
 use App\Http\Controllers\Api\ArbitrajeController;
+use App\Http\Controllers\Api\AsignacionArbitroController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CampeonatoController;
 use App\Http\Controllers\Api\CampeonatoEquipoController;
 use App\Http\Controllers\Api\ConfiguracionCampeonatoController;
+use App\Http\Controllers\Api\CorreccionPartidoController;
 use App\Http\Controllers\Api\EquipoController;
 use App\Http\Controllers\Api\EstadisticaController;
 use App\Http\Controllers\Api\EventoEstadisticoController;
@@ -28,6 +29,12 @@ Route::middleware('web')->withoutMiddleware(EnsureFrontendRequestsAreStateful::c
 });
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/partidos/{partido}/auditoria', [CorreccionPartidoController::class, 'auditoria']);
+    Route::get('/partidos/{partido}/correcciones', [CorreccionPartidoController::class, 'index']);
+    Route::post('/partidos/{partido}/correcciones', [CorreccionPartidoController::class, 'store']);
+    Route::post('/partidos/{partido}/finalizar', [PartidoController::class, 'finalizar']);
+    Route::patch('/correcciones/{correccion}/autorizar', [CorreccionPartidoController::class, 'resolver']);
+    Route::post('/correcciones/{correccion}/aplicar', [CorreccionPartidoController::class, 'aplicar']);
     Route::get('/mis-arbitrajes/{campeonato}/partidos', [ArbitrajeController::class, 'partidos']);
     Route::get('/partidos/{partido}/plantillas-arbitrales', [ArbitrajeController::class, 'plantillas']);
     Route::get('/mis-arbitrajes', [AsignacionArbitroController::class, 'misArbitrajes']);

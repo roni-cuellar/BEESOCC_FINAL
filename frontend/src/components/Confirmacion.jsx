@@ -19,7 +19,7 @@ function Confirmacion({ titulo, texto, onConfirmar, onCerrar }) {
     finally { enviando.current = false }
   }
   return <Modal titulo={titulo} onCerrar={onCerrar} bloqueado={guardando}>
-    <p className="texto-suave">{texto}</p><Aviso error={error} />
+    <div className="texto-suave">{texto}</div><Aviso error={error} />
     <div className="flex flex-wrap justify-end gap-3"><Boton variante="secundario" disabled={guardando} onClick={onCerrar}>Cancelar</Boton>
       <Boton ref={confirmarRef} disabled={guardando} aria-busy={guardando || undefined} onClick={confirmar}>{guardando ? 'Procesando…' : 'Confirmar'}</Boton></div>
   </Modal>

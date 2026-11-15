@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import partidoService from '../services/partidoService'
 import arbitroService from '../services/arbitroService'
@@ -13,6 +13,8 @@ import Modal from '../components/Modal'
 import PartidoForm from '../components/PartidoForm'
 import EventoForm, { MinutoForm } from '../components/EventoForm'
 import { useNavigate } from 'react-router-dom'
+import ResultadoOficial from '../components/ResultadoOficial'
+import PanelCorrecciones from '../components/PanelCorrecciones'
 
 function PartidoDetallePage({ arbitral = false }) {
   const { ligaId, partidoId } = useParams()
@@ -35,11 +37,11 @@ function PartidoDetallePage({ arbitral = false }) {
   const operacionPendiente = useRef(false)
   const accesoBloqueado = useRef(false)
   useEffect(() => { if (!arbitral) cargarEquipos(ligaId) }, [ligaId, cargarEquipos, arbitral])
-  function bloquearAcceso(e) {
+  const bloquearAcceso = useCallback(e => {
     accesoBloqueado.current = true
     setError(mensajeError(e)); setPartido(null); setEventos([]); setMarcador(null); setPlantillas({})
     setConfirmacion(null); setCorregir(null); setEditar(false); setMensaje('')
-  }
+  }, [])
   useEffect(() => {
     if (!arbitral) return
     let vigente = true
@@ -55,7 +57,7 @@ function PartidoDetallePage({ arbitral = false }) {
     window.addEventListener('focus', comprobar)
     const intervalo = window.setInterval(comprobar, 30000)
     return () => { vigente = false; window.removeEventListener('focus', comprobar); window.clearInterval(intervalo) }
-  }, [ligaId, arbitral])
+  }, [ligaId, arbitral, bloquearAcceso])
   useEffect(() => {
     let vigente = true
     async function consultar() {
@@ -82,7 +84,7 @@ function PartidoDetallePage({ arbitral = false }) {
     }
     consultar()
     return () => { vigente = false }
-  }, [ligaId, partidoId, revision, arbitral])
+  }, [ligaId, partidoId, revision, arbitral, bloquearAcceso])
   function recargar(texto) { setMensaje(texto); setRevision(v => v + 1) }
   async function operar(accion, texto) {
     if (accesoBloqueado.current) throw { response: { status: 403 } }
@@ -102,6 +104,16 @@ function PartidoDetallePage({ arbitral = false }) {
       throw e
     } finally { operacionPendiente.current = false; setOperando(false) }
   }
+  function confirmarEstado(estado) {
+    const finalizar = estado === 'finalizado'
+    setConfirmacion({
+      titulo: finalizar ? 'Finalizar y oficializar resultado' : 'Cambiar estado del partido',
+      texto: finalizar
+        ? 'Se confirmarán los eventos y el resultado quedará oficializado. Después solo podrá corregirse mediante un expediente aprobado. ¿Deseas continuar?'
+        : '¿Cambiar de ' + partido.estado.replaceAll('_', ' ') + ' a ' + estado.replaceAll('_', ' ') + '? Los estados finalizado y cancelado son definitivos.',
+      accion: () => operar(() => finalizar ? partidoService.finalizar(partidoId) : partidoService.actualizar(partidoId, { estado }), finalizar ? 'Resultado oficializado.' : 'Estado actualizado.'),
+    })
+  }
   const editable = partido && !['finalizado', 'cancelado'].includes(partido.estado)
   const plantillasListas = partido?.participantes.length === 2 && partido.participantes.every(p => Boolean(plantillas[p.campeonato_equipo_id]))
   return <>
@@ -111,11 +123,12 @@ function PartidoDetallePage({ arbitral = false }) {
       <div className="titulo-pagina"><div><h1>Partido</h1><p className="texto-suave">Jornada {partido.jornada} · {partido.fecha_hora ? new Date(partido.fecha_hora).toLocaleString('es-CO') : 'Fecha por programar'} · {partido.lugar || 'Lugar por definir'}</p></div><span className={'estado estado-' + partido.estado}>{partido.estado.replaceAll('_', ' ')}</span></div>
       <Aviso error={errorOperacion || errorParcial || (!arbitral && errorEquipos)} exito={mensaje} />
       <div className="panel marcador-detalle"><div><span>LOCAL</span><strong>{marcador?.local.nombre || nombreParticipante(partido, 'local')}</strong></div><b>{marcador ? marcador.local.goles + ' – ' + marcador.visitante.goles : 'No disponible'}</b><div><span>VISITANTE</span><strong>{marcador?.visitante.nombre || nombreParticipante(partido, 'visitante')}</strong></div></div>
+      <ResultadoOficial partido={partido} />
       <div className="acciones acciones-compactas">
         <button className="boton boton-borde" disabled={operando} onClick={() => setRevision(v => v + 1)}>Actualizar acta</button>
         {!arbitral && editable && <button className="boton boton-borde" onClick={() => setEditar(true)}>Editar partido</button>}
-        <AccionesEstadoPartido estado={partido.estado} arbitral={arbitral} bloqueado={operando} onCambiar={estado => setConfirmacion({ titulo: 'Cambiar estado del partido', texto: '¿Cambiar de ' + partido.estado.replaceAll('_', ' ') + ' a ' + estado.replaceAll('_', ' ') + '? Los estados finalizado y cancelado son definitivos.', accion: () => operar(() => partidoService.actualizar(partidoId, { estado }), 'Estado actualizado.') })} />
-        {!arbitral && <button className="boton-texto peligro" onClick={() => setConfirmacion({ titulo: 'Eliminar partido', texto: '¿Eliminar el partido? Solo es posible si no tiene eventos.', accion: async () => { await partidoService.eliminar(partidoId); navegar('/ligas/' + ligaId + '/partidos') } })}>Eliminar partido</button>}
+        <AccionesEstadoPartido estado={partido.estado} arbitral={arbitral} bloqueado={operando} onCambiar={confirmarEstado} />
+        {!arbitral && !partido.oficializado_at && <button className="boton-texto peligro" onClick={() => setConfirmacion({ titulo: 'Eliminar partido', texto: '¿Eliminar el partido? Solo es posible si no tiene eventos ni trazabilidad.', accion: async () => { await partidoService.eliminar(partidoId); navegar('/ligas/' + ligaId + '/partidos') } })}>Eliminar partido</button>}
       </div>
       <div className={arbitral ? 'detalle-eventos' : 'mt-6'}>
         <div className="panel"><h2>Historial de eventos</h2>{!eventos.length && <p className="nota">No hay eventos registrados.</p>}
@@ -125,6 +138,7 @@ function PartidoDetallePage({ arbitral = false }) {
         {arbitral && (partido.estado === 'en_curso' && plantillasListas ? <EventoForm bloqueado={operando} partido={partido} eventos={eventos} plantillas={plantillas} onGuardar={datos => operar(() => partidoService.crearEvento(partidoId, datos), 'Evento registrado correctamente.')} />
           : <div className="panel"><h2>Registro de eventos</h2><p className="nota">{partido.estado === 'en_curso' ? 'No se pudieron cargar las plantillas.' : 'Los eventos se habilitan cuando el partido está en curso.'}</p></div>)}
       </div>
+      <PanelCorrecciones partido={partido} arbitral={arbitral} eventos={eventos} plantillas={plantillas} bloqueado={operando} onOperacion={operar} onAccesoDenegado={bloquearAcceso} />
       {editar && <Modal titulo="Editar partido" onCerrar={() => setEditar(false)}><PartidoForm partido={partido} inscripciones={inscripciones} permitirEquipos={partido.estado === 'programado' && eventos.length === 0} onCancelar={() => setEditar(false)} onGuardar={async datos => { await partidoService.actualizar(partidoId, datos); setEditar(false); recargar('Partido actualizado.') }} /></Modal>}
       {corregir && <Modal bloqueado={operando} titulo="Corregir minuto del evento" onCerrar={() => setCorregir(null)}><MinutoForm evento={corregir} onGuardar={async minuto => { await operar(() => partidoService.actualizarEvento(corregir.id, minuto), 'Minuto corregido.'); setCorregir(null) }} /></Modal>}
     </>}

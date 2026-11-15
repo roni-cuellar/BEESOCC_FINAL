@@ -1,0 +1,28 @@
+{
+  "entorno": "HTTP real, Sanctum y MariaDB aislada",
+  "base": "beesocc_23c_test_20261115_023111_8d58dafe",
+  "fase": "revocado",
+  "comprobaciones": 5,
+  "pruebas": [
+    {
+      "prueba": "Sesión sigue vigente tras revocar",
+      "estado": 200
+    },
+    {
+      "prueba": "Revocado sin lectura /correcciones",
+      "estado": 403
+    },
+    {
+      "prueba": "Revocado sin lectura /auditoria",
+      "estado": 403
+    },
+    {
+      "prueba": "Revocado no solicita",
+      "estado": 403
+    },
+    {
+      "prueba": "Revocado no consume aprobación pendiente",
+      "estado": 403
+    }
+  ]
+}

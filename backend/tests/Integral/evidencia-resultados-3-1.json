@@ -1,0 +1,18 @@
+{
+    "motor": "10.4.32-MariaDB",
+    "base": "beesocc_23c_test_20261114_232534_c59fae0b",
+    "tipo_prueba": "Servicios Laravel y transacciones MariaDB, sin HTTP ni navegador",
+    "aprobadas": 10,
+    "pruebas": [
+        "Escenario ficticio sin oficialización previa",
+        "Oficialización persistida en MariaDB",
+        "Actor y JSON de oficialización recuperables",
+        "Aprobación consumida con fecha",
+        "Marcador derivado de gol y autogol",
+        "Reutilización rechazada sin duplicar eventos",
+        "Auditoría JSON antes y después conservada",
+        "Corrección sin reapertura ni cambio de fecha oficial original",
+        "Rollback real de eventos, autorización y auditoría",
+        "Cinco FK RESTRICT en MariaDB"
+    ]
+}

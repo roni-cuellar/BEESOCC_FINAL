@@ -243,6 +243,30 @@ tr:last-child td { border-bottom: 0; }
 /* Aplicación: cabecera propia, sin navegación ni pie públicos. */
 .aplicacion-layout { min-height: 100dvh; background: #f5f7f6; display: flex; flex-direction: column; }
 .aplicacion-layout .contenedor { width: min(1240px, calc(100% - 64px)); }
+
+/* Expedientes privados: el marcador siempre procede de Laravel. */
+.resultado-oficial { display: flex; flex-wrap: wrap; gap: 6px 18px; padding: 12px 16px; margin: 16px 0; border-radius: 10px; background: #f3f5f4; color: var(--gris); font-size: 13px; }
+.resultado-confirmado { background: #eaf5ee; color: var(--verde-oscuro); border-left: 4px solid var(--verde); }
+.panel-resultados { display: grid; gap: 22px; margin-top: 26px; min-width: 0; }
+.expediente-correccion, .registro-auditoria { border-top: 1px solid var(--borde); padding: 18px 0; min-width: 0; }
+.expediente-correccion summary, .registro-auditoria summary { cursor: pointer; line-height: 1.7; overflow-wrap: anywhere; }
+.expediente-correccion summary .estado { margin-left: 14px; }
+.correccion-solicitada { background: #fff6dd; color: #715600; }
+.correccion-aprobada { background: #eaf5ee; color: var(--verde-oscuro); }
+.correccion-rechazada { background: #fff0ee; color: #9b3428; }
+.correccion-consumida { background: #eef1f3; color: #46535e; }
+.motivo-expediente { margin: 16px 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.datos-expediente { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin: 16px 0; }
+.datos-expediente dt { color: var(--gris); font-size: 12px; }
+.datos-expediente dd { margin: 4px 0 0; font-size: 14px; overflow-wrap: anywhere; }
+.solicitud-correccion, .operaciones-correccion { border-top: 1px solid var(--borde); padding-top: 20px; margin-top: 18px; display: grid; gap: 16px; }
+.solicitud-correccion textarea { width: 100%; resize: vertical; min-height: 100px; }
+.lote-correccion { display: grid; gap: 12px; }
+.lote-correccion li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; padding: 12px; background: #f6f8f7; border-radius: 8px; overflow-wrap: anywhere; }
+.valores-auditoria > section { padding: 14px; background: #f6f8f7; border-radius: 10px; min-width: 0; }
+.valores-auditoria h5 { margin: 16px 0 8px; }
+.eventos-auditoria { display: grid; gap: 8px; font-size: 13px; overflow-wrap: anywhere; }
+@media (max-width: 560px) { .datos-expediente { grid-template-columns: 1fr; } .operaciones-correccion .boton { width: 100%; } }
 .aplicacion-cabecera { background: white; border-bottom: 1px solid var(--borde); }
 .aplicacion-barra { min-height: 80px; display: flex; justify-content: space-between; align-items: center; gap: 24px; }
 .aplicacion-barra .marca-logo { width: 165px; height: 50px; background: var(--verde-oscuro); border-radius: 6px; }

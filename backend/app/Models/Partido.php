@@ -23,6 +23,7 @@ class Partido extends Model
     {
         return [
             'fecha_hora' => 'datetime',
+            'oficializado_at' => 'datetime',
         ];
     }
 
@@ -36,5 +37,10 @@ class Partido extends Model
     public function participantes(): HasMany
     {
         return $this->hasMany(EquipoPartido::class);
+    }
+
+    public function correcciones(): HasMany
+    {
+        return $this->hasMany(AutorizacionCorreccion::class);
     }
 }

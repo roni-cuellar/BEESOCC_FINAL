@@ -1,0 +1,17 @@
+{
+  "ok": true,
+  "identidad": {
+    "base": "beesocc_v2",
+    "servidor": "SERVIDOR_LOCAL",
+    "puerto": 3306,
+    "motor": "10.4.32-MariaDB"
+  },
+  "tablas_finales": 27,
+  "registros_originales_conservados": 49,
+  "unica_migracion": "2026_11_15_000100_create_estructura_eliminacion",
+  "ligas_intactas": 3,
+  "comprobaciones_metadatos": 111,
+  "sanctum_no_ejecutada": true,
+  "sha256_respaldo": "[HUELLA_PRIVADA_EXCLUIDA]",
+  "sha256_migracion": "1be7544f67bdb47f4ba22511b0085d138f404e35c83799928d20ff9baf20ae96"
+}

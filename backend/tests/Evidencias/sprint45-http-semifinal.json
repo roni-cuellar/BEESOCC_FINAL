@@ -1,0 +1,176 @@
+{
+  "ok": true,
+  "base": "BASE_LABORATORIO",
+  "modo": "semifinal",
+  "comprobaciones": 42,
+  "pruebas": [
+    {
+      "prueba": "CSRF real admin",
+      "estado": 204
+    },
+    {
+      "prueba": "Login real admin",
+      "estado": 200
+    },
+    {
+      "prueba": "CSRF real arbitro",
+      "estado": 204
+    },
+    {
+      "prueba": "Login real arbitro",
+      "estado": 200
+    },
+    {
+      "prueba": "CSRF real ajeno",
+      "estado": 204
+    },
+    {
+      "prueba": "Login real ajeno",
+      "estado": 200
+    },
+    {
+      "prueba": "Lista de fases real",
+      "estado": 200
+    },
+    {
+      "prueba": "Detalle de cuadro real",
+      "estado": 200
+    },
+    {
+      "prueba": "Invitado sin cuadro",
+      "estado": 401
+    },
+    {
+      "prueba": "Ajeno sin cuadro",
+      "estado": 403
+    },
+    {
+      "prueba": "Ajeno sin auditoría",
+      "estado": 403
+    },
+    {
+      "prueba": "Árbitro autorizado consulta",
+      "estado": 200
+    },
+    {
+      "prueba": "Fase inexistente",
+      "estado": 404
+    },
+    {
+      "prueba": "Grupos rechazados",
+      "estado": 422
+    },
+    {
+      "prueba": "Auditoría real de generación React",
+      "estado": 200
+    },
+    {
+      "prueba": "Segunda generación bloqueada",
+      "estado": 409
+    },
+    {
+      "prueba": "Árbitro no avanza",
+      "estado": 403
+    },
+    {
+      "prueba": "CSRF requerido",
+      "estado": 419
+    },
+    {
+      "prueba": "Avance administrativo real",
+      "estado": 200
+    },
+    {
+      "prueba": "Iniciar encuentro real",
+      "estado": 200
+    },
+    {
+      "prueba": "Registrar gol real",
+      "estado": 201
+    },
+    {
+      "prueba": "Oficializar encuentro real",
+      "estado": 200
+    },
+    {
+      "prueba": "Avance administrativo real",
+      "estado": 200
+    },
+    {
+      "prueba": "Lista de fases real",
+      "estado": 200
+    },
+    {
+      "prueba": "Detalle de cuadro real",
+      "estado": 200
+    },
+    {
+      "prueba": "Iniciar encuentro real",
+      "estado": 200
+    },
+    {
+      "prueba": "Registrar gol real",
+      "estado": 201
+    },
+    {
+      "prueba": "Oficializar encuentro real",
+      "estado": 200
+    },
+    {
+      "prueba": "Serie incompleta no avanza",
+      "estado": 409
+    },
+    {
+      "prueba": "Iniciar encuentro real",
+      "estado": 200
+    },
+    {
+      "prueba": "Registrar gol real",
+      "estado": 201
+    },
+    {
+      "prueba": "Oficializar encuentro real",
+      "estado": 200
+    },
+    {
+      "prueba": "Empate global no avanza",
+      "estado": 409
+    },
+    {
+      "prueba": "Propietario no certifica penales",
+      "estado": 403
+    },
+    {
+      "prueba": "Tanda empatada inválida",
+      "estado": 422
+    },
+    {
+      "prueba": "Iniciar encuentro real",
+      "estado": 200
+    },
+    {
+      "prueba": "Registrar gol real",
+      "estado": 201
+    },
+    {
+      "prueba": "Oficializar encuentro real",
+      "estado": 200
+    },
+    {
+      "prueba": "Serie incompleta no avanza",
+      "estado": 409
+    },
+    {
+      "prueba": "Iniciar encuentro real",
+      "estado": 200
+    },
+    {
+      "prueba": "Oficializar encuentro real",
+      "estado": 200
+    },
+    {
+      "prueba": "Avance administrativo real",
+      "estado": 200
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "ok": true,
+  "motor": "10.4.32-MariaDB",
+  "base": "BASE_LABORATORIO",
+  "cuenta_limitada": "CUENTA_LIMITADA_LABORATORIO",
+  "permisos_solo_laboratorio": true,
+  "estados_finales": {
+    "1": "consumida",
+    "2": "rechazada",
+    "3": "aprobada"
+  },
+  "evento_final": {
+    "tipo": "autogol",
+    "minuto": 22
+  },
+  "aplicaciones_auditadas": 1,
+  "eventos_antes": 3,
+  "eventos_despues": 1,
+  "sesiones_reales": 6,
+  "peticiones_laboratorio": 259,
+  "codigos_http": {
+    "200": 214,
+    "201": 7,
+    "204": 6,
+    "401": 4,
+    "403": 16,
+    "404": 2,
+    "409": 6,
+    "419": 1,
+    "422": 3
+  },
+  "navegador_real": [
+    "asignacion_desde_react",
+    "sesiones_admin_y_arbitro",
+    "inicio_y_eventos",
+    "oficializacion_2_0",
+    "solicitud_y_aprobacion",
+    "fallo_atomico_409_sin_consumo",
+    "correccion_y_consumo_unico",
+    "marcador_1_0",
+    "auditoria_antes_despues_y_actores",
+    "rechazo_administrativo",
+    "estadisticas_reconsultadas",
+    "movil_390_sin_desbordamiento",
+    "preparar_y_cancelar_lote_movil",
+    "revocacion_bloquea_acta",
+    "ajeno_sin_expediente"
+  ],
+  "adaptadores_simulados": false,
+  "regresion": {
+    "build": "aprobado",
+    "frontend": {
+      "unitarias": 105,
+      "servicios": 47,
+      "total": 152
+    },
+    "backend_sqlite": {
+      "aserciones": 2404,
+      "pruebas": 125
+    },
+    "pint": "aprobado",
+    "lint": "aprobado"
+  },
+  "principal": {
+    "comparacion": "estructuras, huellas de datos y configuración idénticas",
+    "registros": 49,
+    "tablas": 21,
+    "base": "beesocc_v2"
+  },
+  "laboratorio_detenido": true
+}

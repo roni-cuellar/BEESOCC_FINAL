@@ -1,0 +1,71 @@
+{
+  "ok": true,
+  "principal": "beesocc_v2",
+  "principal_intacta": true,
+  "respaldo": "[RUTA_O_RESPALDO_PRIVADO_EXCLUIDO]",
+  "sha256_respaldo": "[HUELLA_PRIVADA_EXCLUIDA]",
+  "bytes": 26046,
+  "sha256_migracion": "670A6234907F85A4B1809A034268EA129DD0DF5710F8B50D617244B00B4EA644",
+  "copia": {
+    "ok": true,
+    "base": "BASE_LABORATORIO",
+    "tablas_restauradas": 19,
+    "filas_conservadas": 48,
+    "migracion_aislada": true
+  },
+  "segundos_bloqueo_lectura": 2.27,
+  "esquema_copia": {
+    "tablas": 21,
+    "claves_nuevas": [
+      {
+        "TABLE_NAME": "auditoria_cambios",
+        "CONSTRAINT_NAME": "auditoria_cambios_campeonato_id_foreign",
+        "REFERENCED_TABLE_NAME": "campeonatos",
+        "DELETE_RULE": "RESTRICT"
+      },
+      {
+        "TABLE_NAME": "auditoria_cambios",
+        "CONSTRAINT_NAME": "auditoria_cambios_usuario_id_foreign",
+        "REFERENCED_TABLE_NAME": "users",
+        "DELETE_RULE": "RESTRICT"
+      },
+      {
+        "TABLE_NAME": "autorizaciones_correccion",
+        "CONSTRAINT_NAME": "autorizaciones_correccion_autorizado_por_id_foreign",
+        "REFERENCED_TABLE_NAME": "users",
+        "DELETE_RULE": "RESTRICT"
+      },
+      {
+        "TABLE_NAME": "autorizaciones_correccion",
+        "CONSTRAINT_NAME": "autorizaciones_correccion_partido_id_foreign",
+        "REFERENCED_TABLE_NAME": "partidos",
+        "DELETE_RULE": "RESTRICT"
+      },
+      {
+        "TABLE_NAME": "autorizaciones_correccion",
+        "CONSTRAINT_NAME": "autorizaciones_correccion_solicitado_por_id_foreign",
+        "REFERENCED_TABLE_NAME": "users",
+        "DELETE_RULE": "RESTRICT"
+      }
+    ],
+    "columnas_partidos": [
+      {
+        "COLUMN_NAME": "oficializado_at",
+        "COLUMN_TYPE": "datetime",
+        "IS_NULLABLE": "YES",
+        "COLUMN_DEFAULT": "NULL"
+      },
+      {
+        "COLUMN_NAME": "tipo_resultado",
+        "COLUMN_TYPE": "enum('deportivo','administrativo')",
+        "IS_NULLABLE": "NO",
+        "COLUMN_DEFAULT": "'deportivo'"
+      }
+    ],
+    "indice_compuesto": [
+      "campeonato_id",
+      "entidad_tipo",
+      "entidad_id"
+    ]
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "ok": true,
+  "base": "BASE_LABORATORIO",
+  "tipo": "Servicios y controlador Laravel sobre MariaDB real",
+  "eliminacion": {
+    "finalizada": true,
+    "partidos": 7,
+    "eventos_y_goles_individuales": 7,
+    "penales_sin_goles_ficticios": true
+  },
+  "liga": {
+    "partidos": 3,
+    "equipos_en_tabla": 3,
+    "puntos_ganador": 3,
+    "goles_ganador": 1,
+    "fase_id_permanece_null": true
+  },
+  "grupos_sin_activar": true
+}

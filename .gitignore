@@ -37,3 +37,43 @@ Thumbs.db
 # Archivos subidos durante la ejecución
 backend/storage/app/private/
 backend/storage/app/public/
+
+# Propuesta: resultados locales del laboratorio, sin ocultar pruebas ni código.
+/backend/tests/Integral/entorno*.json
+/backend/tests/Integral/mariadb*.json
+/backend/tests/Integral/*cookie*.json
+/backend/tests/Integral/*fixture*.json
+/backend/tests/Integral/*carrera*.json
+/backend/tests/Integral/*respaldo*.json
+/backend/tests/Integral/principal*-antes.json
+/backend/tests/Integral/http.jsonl
+/backend/tests/Integral/cliente*.cnf
+# Guardar evidencia revisada en un directorio separado, con selección explícita.
+/backend/tests/Integral/sprint*-evidencia.json
+/backend/tests/Integral/sprint*-http*.json
+/backend/tests/Integral/sprint*-migracion.json
+/backend/tests/Integral/sprint*-esquema.json
+/backend/tests/Integral/sprint*-detalle-esquema.json
+/backend/tests/Integral/sprint*-concurrencia.json
+/backend/tests/Integral/sprint*-compatibilidad.json
+/backend/tests/Integral/sprint*-aislamiento.json
+/backend/tests/Integral/sprint*-navegador.json
+/backend/tests/Integral/sprint*-principal-resultado.json
+/backend/tests/Integral/sprint*-aplicacion.json
+/backend/tests/Integral/beesocc_23c_*/
+
+# Originales privados y operación puntual: conservar solo localmente.
+/backend/tests/Integral/privadas-locales/
+/backend/tests/Integral/sprint43-aplicar-principal.php
+/backend/tests/Integral/*session*.json
+/backend/tests/Integral/*sesion*.json
+/backend/tests/Integral/*token*.json
+/backend/tests/Integral/*credencial*.json
+/backend/tests/Integral/*credentials*.json
+# Estas seis evidencias agregadas se mantienen publicables.
+!/backend/tests/Integral/evidencia-http-20261114.json
+!/backend/tests/Integral/evidencia-resultados-3-1.json
+!/backend/tests/Integral/sprint35-http-activo.json
+!/backend/tests/Integral/sprint35-http-revocado.json
+!/backend/tests/Integral/sprint42-preservacion.json
+!/backend/tests/Integral/sprint45-principal.json

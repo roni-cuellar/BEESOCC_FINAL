@@ -1,0 +1,16 @@
+{
+  "ok": true,
+  "base": "BASE_LABORATORIO",
+  "puerto": 3317,
+  "motor": "10.4.32-MariaDB",
+  "permisos": [
+    "USAGE global sin acceso a datos",
+    "Privilegios limitados a BASE_LABORATORIO"
+  ],
+  "principal_inaccesible": true,
+  "torneos": {
+    "copa": 1,
+    "correccion": 2,
+    "liga": 3
+  }
+}

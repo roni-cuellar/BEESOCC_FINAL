@@ -1,0 +1,332 @@
+{
+  "destino": "beesocc_v2",
+  "respaldo": "[RUTA_O_RESPALDO_PRIVADO_EXCLUIDO]",
+  "sha256_respaldo": "[HUELLA_PRIVADA_EXCLUIDA]",
+  "sha256_migracion": "670A6234907F85A4B1809A034268EA129DD0DF5710F8B50D617244B00B4EA644",
+  "migracion_pendiente_confirmada": true,
+  "fecha": "2026-11-15T02:07:32+00:00",
+  "ok": true,
+  "tablas_referencia": 19,
+  "registros_conservados": 48,
+  "tablas_actuales": 21,
+  "claves_foraneas_verificadas": 5,
+  "esquema_identico_a_copia": true,
+  "historicos_no_oficializados": true,
+  "otras_migraciones_ejecutadas": false,
+  "esquema_nuevas_tablas": {
+    "auditoria_cambios": {
+      "columnas": [
+        {
+          "Field": "id",
+          "Type": "bigint(20) unsigned",
+          "Null": "NO",
+          "Key": "PRI",
+          "Default": null,
+          "Extra": "auto_increment"
+        },
+        {
+          "Field": "campeonato_id",
+          "Type": "bigint(20) unsigned",
+          "Null": "NO",
+          "Key": "MUL",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "usuario_id",
+          "Type": "bigint(20) unsigned",
+          "Null": "NO",
+          "Key": "MUL",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "entidad_tipo",
+          "Type": "varchar(40)",
+          "Null": "NO",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "entidad_id",
+          "Type": "bigint(20) unsigned",
+          "Null": "NO",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "accion",
+          "Type": "varchar(40)",
+          "Null": "NO",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "motivo",
+          "Type": "text",
+          "Null": "NO",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "anterior_json",
+          "Type": "longtext",
+          "Null": "YES",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "posterior_json",
+          "Type": "longtext",
+          "Null": "YES",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "fecha",
+          "Type": "datetime",
+          "Null": "NO",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        }
+      ],
+      "indices": [
+        {
+          "Table": "auditoria_cambios",
+          "Non_unique": 0,
+          "Key_name": "PRIMARY",
+          "Seq_in_index": 1,
+          "Column_name": "id",
+          "Collation": "A",
+          "Cardinality": 0,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": ""
+        },
+        {
+          "Table": "auditoria_cambios",
+          "Non_unique": 1,
+          "Key_name": "auditoria_cambios_usuario_id_foreign",
+          "Seq_in_index": 1,
+          "Column_name": "usuario_id",
+          "Collation": "A",
+          "Cardinality": 0,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": ""
+        },
+        {
+          "Table": "auditoria_cambios",
+          "Non_unique": 1,
+          "Key_name": "auditoria_cambios_campeonato_id_entidad_tipo_entidad_id_index",
+          "Seq_in_index": 1,
+          "Column_name": "campeonato_id",
+          "Collation": "A",
+          "Cardinality": 0,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": ""
+        },
+        {
+          "Table": "auditoria_cambios",
+          "Non_unique": 1,
+          "Key_name": "auditoria_cambios_campeonato_id_entidad_tipo_entidad_id_index",
+          "Seq_in_index": 2,
+          "Column_name": "entidad_tipo",
+          "Collation": "A",
+          "Cardinality": 0,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": ""
+        },
+        {
+          "Table": "auditoria_cambios",
+          "Non_unique": 1,
+          "Key_name": "auditoria_cambios_campeonato_id_entidad_tipo_entidad_id_index",
+          "Seq_in_index": 3,
+          "Column_name": "entidad_id",
+          "Collation": "A",
+          "Cardinality": 0,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": ""
+        }
+      ],
+      "ddl": "CREATE TABLE `auditoria_cambios` (\n  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,\n  `campeonato_id` bigint(20) unsigned NOT NULL,\n  `usuario_id` bigint(20) unsigned NOT NULL,\n  `entidad_tipo` varchar(40) NOT NULL,\n  `entidad_id` bigint(20) unsigned NOT NULL,\n  `accion` varchar(40) NOT NULL,\n  `motivo` text NOT NULL,\n  `anterior_json` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`anterior_json`)),\n  `posterior_json` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`posterior_json`)),\n  `fecha` datetime NOT NULL,\n  PRIMARY KEY (`id`),\n  KEY `auditoria_cambios_usuario_id_foreign` (`usuario_id`),\n  KEY `auditoria_cambios_campeonato_id_entidad_tipo_entidad_id_index` (`campeonato_id`,`entidad_tipo`,`entidad_id`),\n  CONSTRAINT `auditoria_cambios_campeonato_id_foreign` FOREIGN KEY (`campeonato_id`) REFERENCES `campeonatos` (`id`),\n  CONSTRAINT `auditoria_cambios_usuario_id_foreign` FOREIGN KEY (`usuario_id`) REFERENCES `users` (`id`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+    },
+    "autorizaciones_correccion": {
+      "columnas": [
+        {
+          "Field": "id",
+          "Type": "bigint(20) unsigned",
+          "Null": "NO",
+          "Key": "PRI",
+          "Default": null,
+          "Extra": "auto_increment"
+        },
+        {
+          "Field": "partido_id",
+          "Type": "bigint(20) unsigned",
+          "Null": "NO",
+          "Key": "MUL",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "solicitado_por_id",
+          "Type": "bigint(20) unsigned",
+          "Null": "NO",
+          "Key": "MUL",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "autorizado_por_id",
+          "Type": "bigint(20) unsigned",
+          "Null": "YES",
+          "Key": "MUL",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "motivo",
+          "Type": "text",
+          "Null": "NO",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "estado",
+          "Type": "enum('solicitada','aprobada','rechazada','consumida')",
+          "Null": "NO",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "alcance",
+          "Type": "enum('eventos','resultado')",
+          "Null": "NO",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "fecha_resolucion",
+          "Type": "datetime",
+          "Null": "YES",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "fecha_consumo",
+          "Type": "datetime",
+          "Null": "YES",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        }
+      ],
+      "indices": [
+        {
+          "Table": "autorizaciones_correccion",
+          "Non_unique": 0,
+          "Key_name": "PRIMARY",
+          "Seq_in_index": 1,
+          "Column_name": "id",
+          "Collation": "A",
+          "Cardinality": 0,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": ""
+        },
+        {
+          "Table": "autorizaciones_correccion",
+          "Non_unique": 1,
+          "Key_name": "autorizaciones_correccion_partido_id_foreign",
+          "Seq_in_index": 1,
+          "Column_name": "partido_id",
+          "Collation": "A",
+          "Cardinality": 0,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": ""
+        },
+        {
+          "Table": "autorizaciones_correccion",
+          "Non_unique": 1,
+          "Key_name": "autorizaciones_correccion_solicitado_por_id_foreign",
+          "Seq_in_index": 1,
+          "Column_name": "solicitado_por_id",
+          "Collation": "A",
+          "Cardinality": 0,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": ""
+        },
+        {
+          "Table": "autorizaciones_correccion",
+          "Non_unique": 1,
+          "Key_name": "autorizaciones_correccion_autorizado_por_id_foreign",
+          "Seq_in_index": 1,
+          "Column_name": "autorizado_por_id",
+          "Collation": "A",
+          "Cardinality": 0,
+          "Sub_part": null,
+          "Packed": null,
+          "Null": "YES",
+          "Index_type": "BTREE",
+          "Comment": "",
+          "Index_comment": ""
+        }
+      ],
+      "ddl": "CREATE TABLE `autorizaciones_correccion` (\n  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,\n  `partido_id` bigint(20) unsigned NOT NULL,\n  `solicitado_por_id` bigint(20) unsigned NOT NULL,\n  `autorizado_por_id` bigint(20) unsigned DEFAULT NULL,\n  `motivo` text NOT NULL,\n  `estado` enum('solicitada','aprobada','rechazada','consumida') NOT NULL,\n  `alcance` enum('eventos','resultado') NOT NULL,\n  `fecha_resolucion` datetime DEFAULT NULL,\n  `fecha_consumo` datetime DEFAULT NULL,\n  PRIMARY KEY (`id`),\n  KEY `autorizaciones_correccion_partido_id_foreign` (`partido_id`),\n  KEY `autorizaciones_correccion_solicitado_por_id_foreign` (`solicitado_por_id`),\n  KEY `autorizaciones_correccion_autorizado_por_id_foreign` (`autorizado_por_id`),\n  CONSTRAINT `autorizaciones_correccion_autorizado_por_id_foreign` FOREIGN KEY (`autorizado_por_id`) REFERENCES `users` (`id`),\n  CONSTRAINT `autorizaciones_correccion_partido_id_foreign` FOREIGN KEY (`partido_id`) REFERENCES `partidos` (`id`),\n  CONSTRAINT `autorizaciones_correccion_solicitado_por_id_foreign` FOREIGN KEY (`solicitado_por_id`) REFERENCES `users` (`id`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+    }
+  },
+  "sanctum_tokens_sigue_pendiente": true,
+  "pruebas": {
+    "backend": {
+      "motor": "SQLite :memory:",
+      "pruebas": 125,
+      "aserciones": 2404
+    },
+    "frontend": {
+      "servicios": 47,
+      "unitarias": 74,
+      "total": 121
+    }
+  }
+}

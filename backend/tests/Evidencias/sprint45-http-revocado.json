@@ -1,0 +1,56 @@
+{
+  "ok": true,
+  "base": "BASE_LABORATORIO",
+  "modo": "revocado",
+  "comprobaciones": 12,
+  "pruebas": [
+    {
+      "prueba": "CSRF real admin",
+      "estado": 204
+    },
+    {
+      "prueba": "Login real admin",
+      "estado": 200
+    },
+    {
+      "prueba": "CSRF real arbitro",
+      "estado": 204
+    },
+    {
+      "prueba": "Login real arbitro",
+      "estado": 200
+    },
+    {
+      "prueba": "CSRF real ajeno",
+      "estado": 204
+    },
+    {
+      "prueba": "Login real ajeno",
+      "estado": 200
+    },
+    {
+      "prueba": "Lista de fases real",
+      "estado": 200
+    },
+    {
+      "prueba": "Detalle de cuadro real",
+      "estado": 200
+    },
+    {
+      "prueba": "Revocar árbitro real",
+      "estado": 200
+    },
+    {
+      "prueba": "Revocado sin cuadro",
+      "estado": 403
+    },
+    {
+      "prueba": "Revocado sin auditoría",
+      "estado": 403
+    },
+    {
+      "prueba": "Revocado sin acta",
+      "estado": 403
+    }
+  ]
+}

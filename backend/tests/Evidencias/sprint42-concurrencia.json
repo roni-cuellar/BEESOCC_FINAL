@@ -1,0 +1,34 @@
+{
+  "ok": true,
+  "base": "BASE_LABORATORIO",
+  "carreras": [
+    {
+      "caso": "avance",
+      "competidores_en_lock_wait": 2,
+      "estados": [
+        200,
+        409
+      ]
+    },
+    {
+      "caso": "correccion",
+      "competidores_en_lock_wait": 2,
+      "estados": [
+        200,
+        409
+      ]
+    },
+    {
+      "caso": "inicio_correccion",
+      "competidores_en_lock_wait": 2,
+      "estados": [
+        200,
+        409
+      ]
+    }
+  ],
+  "sin_duplicados": true,
+  "sin_cambios_parciales": true,
+  "final_id_conservado": 17,
+  "tipo": "Procesos PHP independientes, servicios/controlador Laravel y bloqueos InnoDB reales"
+}

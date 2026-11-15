@@ -1,0 +1,13 @@
+{
+  "ok": true,
+  "base_copia": "BASE_LABORATORIO",
+  "respaldo": "[RUTA_O_RESPALDO_PRIVADO_EXCLUIDO]",
+  "sha256_respaldo": "[HUELLA_PRIVADA_EXCLUIDA]",
+  "sha256_migracion": "1be7544f67bdb47f4ba22511b0085d138f404e35c83799928d20ff9baf20ae96",
+  "tablas_originales": 21,
+  "registros_originales_conservados": 49,
+  "verificaciones_estructurales": 116,
+  "ligas_compatibles": 3,
+  "otras_migraciones_ejecutadas": false,
+  "estado_principal": "Pendiente de autorización; sin migrate en este sprint"
+}

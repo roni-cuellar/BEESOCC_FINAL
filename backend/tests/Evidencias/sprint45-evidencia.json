@@ -1,0 +1,20 @@
+{
+  "ok": true,
+  "identidad": {
+    "base": "BASE_LABORATORIO",
+    "cuenta": "CUENTA_LIMITADA_LABORATORIO",
+    "puerto": 3317,
+    "motor": "10.4.32-MariaDB"
+  },
+  "http_reales": 109,
+  "desglose_http": {
+    "semifinal": 42,
+    "correccion": 43,
+    "verificar": 12,
+    "revocado": 12
+  },
+  "peticiones_capturadas": 409,
+  "verificaciones_dominio": 17,
+  "principal_usada_por_http": false,
+  "concurrencia_costosa_repetida": false
+}

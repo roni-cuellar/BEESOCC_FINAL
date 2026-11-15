@@ -1,0 +1,56 @@
+{
+  "ok": true,
+  "base": "BASE_LABORATORIO",
+  "modo": "verificar",
+  "comprobaciones": 12,
+  "pruebas": [
+    {
+      "prueba": "CSRF real admin",
+      "estado": 204
+    },
+    {
+      "prueba": "Login real admin",
+      "estado": 200
+    },
+    {
+      "prueba": "CSRF real arbitro",
+      "estado": 204
+    },
+    {
+      "prueba": "Login real arbitro",
+      "estado": 200
+    },
+    {
+      "prueba": "CSRF real ajeno",
+      "estado": 204
+    },
+    {
+      "prueba": "Login real ajeno",
+      "estado": 200
+    },
+    {
+      "prueba": "Lista de fases real",
+      "estado": 200
+    },
+    {
+      "prueba": "Detalle de cuadro real",
+      "estado": 200
+    },
+    {
+      "prueba": "Expediente consumido desde React",
+      "estado": 200
+    },
+    {
+      "prueba": "No consumir dos veces",
+      "estado": 409
+    },
+    {
+      "prueba": "Auditoría de cuadro corregido",
+      "estado": 200
+    },
+    {
+      "prueba": "Auditoría del partido corregido",
+      "estado": 200
+    }
+  ]
+}

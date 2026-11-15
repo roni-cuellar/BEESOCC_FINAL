@@ -1,0 +1,12 @@
+{
+  "ok": true,
+  "base": "BASE_LABORATORIO",
+  "tablas_restauradas": 21,
+  "registros_conservados": 49,
+  "sha256_migracion": "1be7544f67bdb47f4ba22511b0085d138f404e35c83799928d20ff9baf20ae96",
+  "otras_migraciones": false,
+  "ligas_comparadas": {
+    "cantidad_verificada": 3,
+    "detalle_historico_excluido": true
+  }
+}

@@ -1,0 +1,441 @@
+{
+  "ok": true,
+  "base": "BASE_LABORATORIO",
+  "comprobaciones": 108,
+  "pruebas": [
+    {
+      "prueba": "CSRF admin",
+      "estado": 204
+    },
+    {
+      "prueba": "Login admin",
+      "estado": 200
+    },
+    {
+      "prueba": "CSRF arbitro",
+      "estado": 204
+    },
+    {
+      "prueba": "Login arbitro",
+      "estado": 200
+    },
+    {
+      "prueba": "CSRF ajeno",
+      "estado": 204
+    },
+    {
+      "prueba": "Login ajeno",
+      "estado": 200
+    },
+    {
+      "prueba": "Crear Copa completa ficticia 4.2",
+      "estado": 201
+    },
+    {
+      "prueba": "Inscribir equipo ficticio",
+      "estado": 201
+    },
+    {
+      "prueba": "Plantilla ficticia",
+      "estado": 201
+    },
+    {
+      "prueba": "Inscribir equipo ficticio",
+      "estado": 201
+    },
+    {
+      "prueba": "Plantilla ficticia",
+      "estado": 201
+    },
+    {
+      "prueba": "Inscribir equipo ficticio",
+      "estado": 201
+    },
+    {
+      "prueba": "Plantilla ficticia",
+      "estado": 201
+    },
+    {
+      "prueba": "Inscribir equipo ficticio",
+      "estado": 201
+    },
+    {
+      "prueba": "Plantilla ficticia",
+      "estado": 201
+    },
+    {
+      "prueba": "Inscribir equipo ficticio",
+      "estado": 201
+    },
+    {
+      "prueba": "Plantilla ficticia",
+      "estado": 201
+    },
+    {
+      "prueba": "Inscribir equipo ficticio",
+      "estado": 201
+    },
+    {
+      "prueba": "Plantilla ficticia",
+      "estado": 201
+    },
+    {
+      "prueba": "Asignación real",
+      "estado": 201
+    },
+    {
+      "prueba": "Crear fase",
+      "estado": 201
+    },
+    {
+      "prueba": "Vista previa sin partidos",
+      "estado": 200
+    },
+    {
+      "prueba": "Confirmar cuadro",
+      "estado": 201
+    },
+    {
+      "prueba": "No generar dos veces",
+      "estado": 409
+    },
+    {
+      "prueba": "Consulta privada del cuadro",
+      "estado": 200
+    },
+    {
+      "prueba": "Árbitro consulta cuadro",
+      "estado": 200
+    },
+    {
+      "prueba": "Ajeno sin cuadro",
+      "estado": 403
+    },
+    {
+      "prueba": "Ajeno sin auditoría",
+      "estado": 403
+    },
+    {
+      "prueba": "No avanza programado",
+      "estado": 409
+    },
+    {
+      "prueba": "Árbitro no avanza",
+      "estado": 403
+    },
+    {
+      "prueba": "CSRF requerido",
+      "estado": 419
+    },
+    {
+      "prueba": "Iniciar",
+      "estado": 200
+    },
+    {
+      "prueba": "Gol real",
+      "estado": 201
+    },
+    {
+      "prueba": "Oficializar",
+      "estado": 200
+    },
+    {
+      "prueba": "Avanzar según resultado oficial",
+      "estado": 200
+    },
+    {
+      "prueba": "Iniciar",
+      "estado": 200
+    },
+    {
+      "prueba": "Gol real",
+      "estado": 201
+    },
+    {
+      "prueba": "Oficializar",
+      "estado": 200
+    },
+    {
+      "prueba": "Avanzar según resultado oficial",
+      "estado": 200
+    },
+    {
+      "prueba": "Consulta privada del cuadro",
+      "estado": 200
+    },
+    {
+      "prueba": "Iniciar",
+      "estado": 200
+    },
+    {
+      "prueba": "Gol real",
+      "estado": 201
+    },
+    {
+      "prueba": "Oficializar",
+      "estado": 200
+    },
+    {
+      "prueba": "No avanza serie incompleta",
+      "estado": 409
+    },
+    {
+      "prueba": "Iniciar",
+      "estado": 200
+    },
+    {
+      "prueba": "Gol real",
+      "estado": 201
+    },
+    {
+      "prueba": "Gol real",
+      "estado": 201
+    },
+    {
+      "prueba": "Gol real",
+      "estado": 201
+    },
+    {
+      "prueba": "Oficializar",
+      "estado": 200
+    },
+    {
+      "prueba": "Empate global sin gol visitante",
+      "estado": 409
+    },
+    {
+      "prueba": "Administrador no certifica tanda",
+      "estado": 403
+    },
+    {
+      "prueba": "Totales empatados inválidos",
+      "estado": 422
+    },
+    {
+      "prueba": "Tanda arbitral",
+      "estado": 200
+    },
+    {
+      "prueba": "Avanzar según resultado oficial",
+      "estado": 200
+    },
+    {
+      "prueba": "Iniciar",
+      "estado": 200
+    },
+    {
+      "prueba": "Gol real",
+      "estado": 201
+    },
+    {
+      "prueba": "Oficializar",
+      "estado": 200
+    },
+    {
+      "prueba": "No avanza serie incompleta",
+      "estado": 409
+    },
+    {
+      "prueba": "Iniciar",
+      "estado": 200
+    },
+    {
+      "prueba": "Oficializar",
+      "estado": 200
+    },
+    {
+      "prueba": "Avanzar según resultado oficial",
+      "estado": 200
+    },
+    {
+      "prueba": "Consulta privada del cuadro",
+      "estado": 200
+    },
+    {
+      "prueba": "Iniciar",
+      "estado": 200
+    },
+    {
+      "prueba": "Oficializar",
+      "estado": 200
+    },
+    {
+      "prueba": "Final empatada no clasifica",
+      "estado": 409
+    },
+    {
+      "prueba": "Penales de final",
+      "estado": 200
+    },
+    {
+      "prueba": "Avanzar según resultado oficial",
+      "estado": 200
+    },
+    {
+      "prueba": "Consulta privada del cuadro",
+      "estado": 200
+    },
+    {
+      "prueba": "Final no avanza dos veces",
+      "estado": 409
+    },
+    {
+      "prueba": "Auditoría del cuadro completo",
+      "estado": 200
+    },
+    {
+      "prueba": "Crear Liga ficticia compatible 4.2",
+      "estado": 201
+    },
+    {
+      "prueba": "Inscribir equipo ficticio",
+      "estado": 201
+    },
+    {
+      "prueba": "Plantilla ficticia",
+      "estado": 201
+    },
+    {
+      "prueba": "Inscribir equipo ficticio",
+      "estado": 201
+    },
+    {
+      "prueba": "Plantilla ficticia",
+      "estado": 201
+    },
+    {
+      "prueba": "Inscribir equipo ficticio",
+      "estado": 201
+    },
+    {
+      "prueba": "Plantilla ficticia",
+      "estado": 201
+    },
+    {
+      "prueba": "Asignación real",
+      "estado": 201
+    },
+    {
+      "prueba": "Calendario todos contra todos",
+      "estado": 201
+    },
+    {
+      "prueba": "Partidos de liga intactos",
+      "estado": 200
+    },
+    {
+      "prueba": "Tabla de liga operativa",
+      "estado": 200
+    },
+    {
+      "prueba": "No generar grupos",
+      "estado": 422
+    },
+    {
+      "prueba": "Crear Carrera ficticia 4.2",
+      "estado": 201
+    },
+    {
+      "prueba": "Inscribir equipo ficticio",
+      "estado": 201
+    },
+    {
+      "prueba": "Plantilla ficticia",
+      "estado": 201
+    },
+    {
+      "prueba": "Inscribir equipo ficticio",
+      "estado": 201
+    },
+    {
+      "prueba": "Plantilla ficticia",
+      "estado": 201
+    },
+    {
+      "prueba": "Inscribir equipo ficticio",
+      "estado": 201
+    },
+    {
+      "prueba": "Plantilla ficticia",
+      "estado": 201
+    },
+    {
+      "prueba": "Inscribir equipo ficticio",
+      "estado": 201
+    },
+    {
+      "prueba": "Plantilla ficticia",
+      "estado": 201
+    },
+    {
+      "prueba": "Asignación real",
+      "estado": 201
+    },
+    {
+      "prueba": "Crear fase",
+      "estado": 201
+    },
+    {
+      "prueba": "Vista previa sin partidos",
+      "estado": 200
+    },
+    {
+      "prueba": "Confirmar cuadro",
+      "estado": 201
+    },
+    {
+      "prueba": "No generar dos veces",
+      "estado": 409
+    },
+    {
+      "prueba": "Consulta privada del cuadro",
+      "estado": 200
+    },
+    {
+      "prueba": "Iniciar",
+      "estado": 200
+    },
+    {
+      "prueba": "Gol real",
+      "estado": 201
+    },
+    {
+      "prueba": "Gol real",
+      "estado": 201
+    },
+    {
+      "prueba": "Gol real",
+      "estado": 201
+    },
+    {
+      "prueba": "Oficializar",
+      "estado": 200
+    },
+    {
+      "prueba": "Iniciar",
+      "estado": 200
+    },
+    {
+      "prueba": "Gol real",
+      "estado": 201
+    },
+    {
+      "prueba": "Oficializar",
+      "estado": 200
+    },
+    {
+      "prueba": "Avanzar según resultado oficial",
+      "estado": 200
+    },
+    {
+      "prueba": "Solicitar revisión de clasificado",
+      "estado": 201
+    },
+    {
+      "prueba": "Aprobar revisión",
+      "estado": 200
+    }
+  ],
+  "campeonato_completo": 5,
+  "campeonato_liga": 6
+}

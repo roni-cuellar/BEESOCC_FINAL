@@ -1,8 +1,8 @@
 {
   "ok": true,
   "motor": "10.4.32-MariaDB",
-  "base": "beesocc_23c_test_20261115_023111_8d58dafe",
-  "cuenta_limitada": "beesocc23c_65cad9a92a@localhost",
+  "base": "BASE_LABORATORIO",
+  "cuenta_limitada": "CUENTA_LIMITADA_LABORATORIO",
   "permisos_solo_laboratorio": true,
   "estados_finales": {
     "1": "consumida",
@@ -19,14 +19,14 @@
   "sesiones_reales": 6,
   "peticiones_laboratorio": 259,
   "codigos_http": {
-    "401": 4,
-    "204": 6,
     "200": 214,
     "201": 7,
-    "409": 6,
-    "419": 1,
+    "204": 6,
+    "401": 4,
     "403": 16,
     "404": 2,
+    "409": 6,
+    "419": 1,
     "422": 3
   },
   "navegador_real": [

@@ -1,0 +1,39 @@
+{
+  "ok": true,
+  "identidad": {
+    "base": "BASE_LABORATORIO",
+    "cuenta": "CUENTA_LIMITADA_LABORATORIO",
+    "motor": "10.4.32-MariaDB",
+    "datos": "[RUTA_O_RESPALDO_PRIVADO_EXCLUIDO]"
+  },
+  "esquema_y_restricciones": 116,
+  "comprobaciones_http_reales": 108,
+  "carreras_reales": 3,
+  "clasificados_y_auditoria_consistentes": true,
+  "evidencias": [
+    "sprint42-migracion.json",
+    "sprint42-esquema.json",
+    "sprint42-detalle-esquema.json",
+    "sprint42-http.json",
+    "sprint42-concurrencia.json",
+    "sprint42-compatibilidad.json",
+    "sprint42-preservacion.json"
+  ],
+  "regresiones": {
+    "backend_sqlite": {
+      "pruebas": 141,
+      "aserciones": 2824
+    },
+    "frontend": 152,
+    "lint": true,
+    "build": true,
+    "pint": true
+  },
+  "errores_corregidos": [
+    "Comparación por valor de fechas en el ensayo",
+    "Campo autorizado_por correcto en fixture nueva",
+    "Prefijo propio de caché del laboratorio"
+  ],
+  "cambios_productivos": false,
+  "migracion_principal": "pendiente, no autorizada por este sprint"
+}

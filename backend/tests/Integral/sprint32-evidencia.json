@@ -1,17 +1,17 @@
 {
   "fecha_bogota": "2026-11-14",
   "motor": "MariaDB 10.4.32",
-  "base": "beesocc_23c_test_20261115_010527_db0cae7a",
+  "base": "BASE_LABORATORIO",
   "fuente": "Copia de respaldo del 12/11, no copia del estado actual de producción",
-  "respaldo": "beesocc_arbitros_20261112_202542_7a7f92.sql",
-  "sha256_respaldo": "5eaa69cbec6432296e86d0482368766ef5f9c507ec6ecda8dc04e53292b43347",
+  "respaldo": "[RUTA_O_RESPALDO_PRIVADO_EXCLUIDO]",
+  "sha256_respaldo": "[HUELLA_PRIVADA_EXCLUIDA]",
   "sha256_migracion": "670A6234907F85A4B1809A034268EA129DD0DF5710F8B50D617244B00B4EA644",
   "verificaciones_copia": 278,
   "tablas_conservadas": 20,
   "verificaciones_integridad": 41,
   "pruebas_http": 40,
   "concurrencia": {
-    "base": "beesocc_23c_test_20261115_010527_db0cae7a",
+    "base": "BASE_LABORATORIO",
     "competidores_en_lock_wait": 2,
     "estados": [
       200,

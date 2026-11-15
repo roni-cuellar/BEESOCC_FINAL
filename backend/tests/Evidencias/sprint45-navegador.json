@@ -1,0 +1,43 @@
+{
+  "ok": true,
+  "tipo": "Navegador con React, Laravel Sanctum y MariaDB reales; sin adaptadores simulados",
+  "base": "BASE_LABORATORIO",
+  "origenes": [
+    "http://beesocc23c-admin.localhost:5175",
+    "http://beesocc23c-arbitro.localhost:5175",
+    "http://beesocc23c-ajeno.localhost:5175"
+  ],
+  "escenarios_observados": [
+    "Login del propietario con cookies y CSRF reales",
+    "Crear fase desde React",
+    "Seleccionar seis siembras explicitas y configurar tres rondas",
+    "Previsualizar cruces reales con dos descansos",
+    "Confirmar generacion con doble clic sin duplicar el cuadro",
+    "Consultar cuadro privado y procedencias entre rondas",
+    "Login del arbitro vigente y acceso desde Mis arbitrajes",
+    "Iniciar partido, registrar gol con doble clic y oficializar 1-0 desde React",
+    "Consultar ida/vuelta y resultados oficiales preparados mediante HTTP real",
+    "Rechazo 409 de avance sin tanda y recarga del cuadro",
+    "Certificar tanda 4-3 con motivo desde el perfil arbitral",
+    "Avance administrativo desde React y aparicion de la final",
+    "Preparar y aplicar lote aprobado que elimina dos goles ficticios",
+    "Actualizar cuadro y ver cambio de clasificado de Aguilas a Condores",
+    "Consultar auditoria con usuario, motivo y antes/despues",
+    "Consultar tabla todos contra todos con tres puntos del ganador",
+    "Recurso inexistente muestra 404 sin datos anteriores",
+    "Usuario sin sesion vuelve al login por 401",
+    "Usuario ajeno recibe 403 y no ve datos del campeonato",
+    "Arbitro revocado recibe 403 y desaparecen cuadro y auditoria"
+  ],
+  "movil": {
+    "marco_real": true,
+    "ancho_viewport": 390,
+    "ancho_documento": 375,
+    "ancho_panel": 316,
+    "ancho_contenido_todas_las_rondas": 940,
+    "filtro_por_ronda": true,
+    "sin_desbordamiento_del_documento": true,
+    "clasificado_y_tanteo_legibles": true
+  },
+  "nota": "Registro de observacion UI; las aserciones HTTP y de dominio se documentan por separado. No se cuentan las peticiones capturadas como pruebas independientes."
+}

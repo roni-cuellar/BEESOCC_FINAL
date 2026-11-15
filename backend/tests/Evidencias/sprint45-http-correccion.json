@@ -1,0 +1,180 @@
+{
+  "ok": true,
+  "base": "BASE_LABORATORIO",
+  "modo": "correccion",
+  "comprobaciones": 43,
+  "pruebas": [
+    {
+      "prueba": "CSRF real admin",
+      "estado": 204
+    },
+    {
+      "prueba": "Login real admin",
+      "estado": 200
+    },
+    {
+      "prueba": "CSRF real arbitro",
+      "estado": 204
+    },
+    {
+      "prueba": "Login real arbitro",
+      "estado": 200
+    },
+    {
+      "prueba": "CSRF real ajeno",
+      "estado": 204
+    },
+    {
+      "prueba": "Login real ajeno",
+      "estado": 200
+    },
+    {
+      "prueba": "Lista de fases real",
+      "estado": 200
+    },
+    {
+      "prueba": "Detalle de cuadro real",
+      "estado": 200
+    },
+    {
+      "prueba": "Auditoría de tanda desde React",
+      "estado": 200
+    },
+    {
+      "prueba": "Iniciar encuentro real",
+      "estado": 200
+    },
+    {
+      "prueba": "Registrar gol real",
+      "estado": 201
+    },
+    {
+      "prueba": "Oficializar encuentro real",
+      "estado": 200
+    },
+    {
+      "prueba": "Avance administrativo real",
+      "estado": 200
+    },
+    {
+      "prueba": "Lista de fases real",
+      "estado": 200
+    },
+    {
+      "prueba": "Detalle de cuadro real",
+      "estado": 200
+    },
+    {
+      "prueba": "Fase para corrección",
+      "estado": 201
+    },
+    {
+      "prueba": "Siembra duplicada inválida",
+      "estado": 422
+    },
+    {
+      "prueba": "Previsualizar cuadro de corrección",
+      "estado": 200
+    },
+    {
+      "prueba": "Confirmación adulterada rechazada",
+      "estado": 409
+    },
+    {
+      "prueba": "Recuperación con confirmación correcta",
+      "estado": 201
+    },
+    {
+      "prueba": "Lista de fases real",
+      "estado": 200
+    },
+    {
+      "prueba": "Detalle de cuadro real",
+      "estado": 200
+    },
+    {
+      "prueba": "Iniciar encuentro real",
+      "estado": 200
+    },
+    {
+      "prueba": "Registrar gol real",
+      "estado": 201
+    },
+    {
+      "prueba": "Registrar gol real",
+      "estado": 201
+    },
+    {
+      "prueba": "Registrar gol real",
+      "estado": 201
+    },
+    {
+      "prueba": "Oficializar encuentro real",
+      "estado": 200
+    },
+    {
+      "prueba": "Iniciar encuentro real",
+      "estado": 200
+    },
+    {
+      "prueba": "Registrar gol real",
+      "estado": 201
+    },
+    {
+      "prueba": "Oficializar encuentro real",
+      "estado": 200
+    },
+    {
+      "prueba": "Avance administrativo real",
+      "estado": 200
+    },
+    {
+      "prueba": "Avance administrativo real",
+      "estado": 200
+    },
+    {
+      "prueba": "Lista de fases real",
+      "estado": 200
+    },
+    {
+      "prueba": "Detalle de cuadro real",
+      "estado": 200
+    },
+    {
+      "prueba": "Solicitud arbitral de corrección",
+      "estado": 201
+    },
+    {
+      "prueba": "Aprobación administrativa real",
+      "estado": 200
+    },
+    {
+      "prueba": "Ajeno no consume autorización",
+      "estado": 403
+    },
+    {
+      "prueba": "Calendario de liga real",
+      "estado": 201
+    },
+    {
+      "prueba": "Encuentros de liga real",
+      "estado": 200
+    },
+    {
+      "prueba": "Iniciar encuentro real",
+      "estado": 200
+    },
+    {
+      "prueba": "Registrar gol real",
+      "estado": 201
+    },
+    {
+      "prueba": "Oficializar encuentro real",
+      "estado": 200
+    },
+    {
+      "prueba": "Tabla todos contra todos real",
+      "estado": 200
+    }
+  ]
+}

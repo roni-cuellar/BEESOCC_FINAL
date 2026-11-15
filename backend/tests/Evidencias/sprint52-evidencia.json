@@ -1,0 +1,44 @@
+{
+  "sprint": "5.2",
+  "ok": true,
+  "motor": "MariaDB 10.4.32",
+  "aislamiento": {
+    "puerto_motor": 3317,
+    "puertos_http": [8013, 8014],
+    "cuenta_limitada": true,
+    "cuatro_rutas_fisicas_separadas": true,
+    "principal_inaccesible": true,
+    "autenticacion_principal_rechazada": true
+  },
+  "http_real": {
+    "grupos": 133,
+    "compatibilidad": 57,
+    "correcciones": 16,
+    "carreras": 37,
+    "total": 243,
+    "casos_previos_repetidos_al_reanudar": false
+  },
+  "concurrencia": {
+    "distribucion": [201, 409],
+    "calendario": [201, 409],
+    "clasificacion": [200, 409],
+    "conexiones_distintas_en_lock_wait_por_carrera": 2,
+    "duplicados": false,
+    "partidos_parciales": false,
+    "auditoria_unica_por_operacion": true
+  },
+  "automatizadas": {
+    "backend_sqlite": {"pruebas": 170, "aserciones": 3756},
+    "frontend_simulado": 196,
+    "runner_node": 5,
+    "pint": true,
+    "lint": true,
+    "build": true
+  },
+  "principal": {"tablas": 27, "registros": 50, "estructuras_y_huellas_identicas": true},
+  "incidencias_runner": ["429: respetar Retry-After y reutilizar sesion", "Observacion InnoDB: intervalo 250 ms y fallo CLI explicito"],
+  "cambios_productivos_sprint52": false,
+  "migraciones_nuevas": false,
+  "prueba_navegador_real_grupos": false,
+  "pendientes": ["Interfaz de grupos", "Cruces aprobados", "DP-01", "DP-05", "DP-07"]
+}

@@ -70,7 +70,7 @@ $entorno = [
     'DB_PORT' => '3317', 'DB_DATABASE' => $base,
     'DB_USERNAME' => $usuario, 'DB_PASSWORD' => $clave, 'DB_SOCKET' => '',
     'BEESOCC_MARIADB_DATADIR' => $directorioActivo,
-    'CACHE_STORE' => 'database', 'SESSION_DRIVER' => 'database',
+    'CACHE_STORE' => 'database', 'CACHE_PREFIX' => $base.'_cache_', 'SESSION_DRIVER' => 'database',
     'SESSION_COOKIE' => 'beesocc23c_'.bin2hex(random_bytes(4)), 'SESSION_DOMAIN' => 'null',
     'SESSION_SECURE_COOKIE' => 'false', 'SESSION_SAME_SITE' => 'lax',
     'SANCTUM_STATEFUL_DOMAINS' => 'beesocc23c-admin.localhost:5175,beesocc23c-arbitro.localhost:5175,beesocc23c-ajeno.localhost:5175',

@@ -1,0 +1,8 @@
+{
+    "ok": true,
+    "modo": "despues",
+    "base": "beesocc_v2",
+    "tablas": 27,
+    "registros": 50,
+    "solo_lectura": true
+}

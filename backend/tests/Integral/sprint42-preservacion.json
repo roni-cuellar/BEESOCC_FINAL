@@ -1,0 +1,14 @@
+{
+    "ok": true,
+    "principal_intacta": true,
+    "tablas_principal": 21,
+    "registros_principal": 49,
+    "referencias_persistentes_conservadas_en_copia": 46,
+    "tablas_transitorias_excluidas_en_copia": [
+        "cache",
+        "cache_locks",
+        "sessions"
+    ],
+    "sha256_respaldo": "7c774cbc72a26a260487f13dae90a980792a26bb9e2e6e0b82c53adbcc0266f0",
+    "sha256_migracion": "1be7544f67bdb47f4ba22511b0085d138f404e35c83799928d20ff9baf20ae96"
+}

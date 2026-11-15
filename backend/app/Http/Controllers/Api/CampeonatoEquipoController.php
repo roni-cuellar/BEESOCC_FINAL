@@ -48,6 +48,7 @@ class CampeonatoEquipoController extends Controller
             $inscripcion = DB::transaction(function () use ($campeonato, $datos) {
                 $campeonato = Campeonato::whereKey($campeonato->id)->lockForUpdate()->firstOrFail();
                 abort_if($campeonato->formato === 'eliminacion_directa' && $campeonato->fases()->whereHas('rondas')->exists(), 409, 'La siembra ya está confirmada; no se agregan inscripciones al cuadro.');
+                abort_if($campeonato->formato === 'grupos_eliminacion' && $campeonato->fases()->whereHas('grupos')->exists(), 409, 'La distribución de grupos ya está confirmada; no se agregan inscripciones.');
 
                 return $campeonato->inscripcionesEquipos()->create(['equipo_id' => $datos['equipo_id'], 'estado' => 'activo']);
             });

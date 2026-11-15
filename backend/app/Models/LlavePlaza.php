@@ -26,4 +26,9 @@ class LlavePlaza extends Model
     {
         return $this->belongsTo(Llave::class, 'origen_llave_id');
     }
+
+    public function origenGrupo()
+    {
+        return $this->belongsTo(Grupo::class, 'origen_grupo_id');
+    }
 }

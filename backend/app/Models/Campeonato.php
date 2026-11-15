@@ -14,6 +14,8 @@ class Campeonato extends Model
 
     public const FORMATO_ELIMINACION = 'eliminacion_directa';
 
+    public const FORMATO_GRUPOS = 'grupos_eliminacion';
+
     public function fases(): HasMany
     {
         return $this->hasMany(Fase::class)->orderBy('orden');
@@ -61,11 +63,10 @@ class Campeonato extends Model
         return $this->hasMany(Partido::class);
     }
 
-    // Grupos queda fuera del alcance autorizado.
     public function setFormatoAttribute(string $value): void
     {
-        if (! in_array($value, [self::FORMATO_TODOS_CONTRA_TODOS, self::FORMATO_ELIMINACION], true)) {
-            throw new InvalidArgumentException('El formato debe ser todos_contra_todos o eliminacion_directa.');
+        if (! in_array($value, [self::FORMATO_TODOS_CONTRA_TODOS, self::FORMATO_ELIMINACION, self::FORMATO_GRUPOS], true)) {
+            throw new InvalidArgumentException('El formato debe ser todos_contra_todos, eliminacion_directa o grupos_eliminacion.');
         }
 
         $this->attributes['formato'] = $value;

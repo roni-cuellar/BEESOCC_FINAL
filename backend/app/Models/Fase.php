@@ -10,7 +10,17 @@ class Fase extends Model
 
     public $timestamps = false;
 
-    protected $fillable = ['campeonato_id', 'orden', 'nombre', 'tipo', 'estado'];
+    protected $fillable = ['campeonato_id', 'orden', 'nombre', 'tipo', 'estado', 'clasificados_por_grupo'];
+
+    public function grupos()
+    {
+        return $this->hasMany(Grupo::class)->orderBy('orden');
+    }
+
+    public function partidos()
+    {
+        return $this->hasMany(Partido::class);
+    }
 
     public function campeonato()
     {

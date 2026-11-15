@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\EquipoController;
 use App\Http\Controllers\Api\EstadisticaController;
 use App\Http\Controllers\Api\EventoEstadisticoController;
 use App\Http\Controllers\Api\FaseController;
+use App\Http\Controllers\Api\GrupoController;
 use App\Http\Controllers\Api\JugadorController;
 use App\Http\Controllers\Api\PartidoController;
 use App\Http\Controllers\Api\PlantillaController;
@@ -30,6 +31,12 @@ Route::middleware('web')->withoutMiddleware(EnsureFrontendRequestsAreStateful::c
 });
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/fases/{fase}/previsualizar-grupos', [GrupoController::class, 'previsualizar']);
+    Route::post('/fases/{fase}/confirmar-grupos', [GrupoController::class, 'confirmar']);
+    Route::post('/fases/{fase}/generar-calendario-grupos', [GrupoController::class, 'calendario']);
+    Route::get('/grupos/{grupo}/tabla', [GrupoController::class, 'tabla']);
+    Route::get('/fases/{fase}/clasificacion-grupos', [GrupoController::class, 'clasificacion']);
+    Route::post('/fases/{fase}/clasificar-grupos', [GrupoController::class, 'clasificar']);
     Route::get('/campeonatos/{campeonato}/fases', [FaseController::class, 'index']);
     Route::post('/campeonatos/{campeonato}/fases', [FaseController::class, 'store']);
     Route::get('/fases/{fase}', [FaseController::class, 'show']);

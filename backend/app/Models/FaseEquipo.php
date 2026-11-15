@@ -10,7 +10,12 @@ class FaseEquipo extends Model
 
     public $timestamps = false;
 
-    protected $fillable = ['fase_id', 'campeonato_equipo_id', 'siembra', 'estado'];
+    protected $fillable = ['fase_id', 'campeonato_equipo_id', 'grupo_id', 'siembra', 'estado'];
+
+    public function grupo()
+    {
+        return $this->belongsTo(Grupo::class);
+    }
 
     public function fase()
     {

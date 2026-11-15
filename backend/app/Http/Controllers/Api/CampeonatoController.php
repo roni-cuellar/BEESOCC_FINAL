@@ -29,14 +29,14 @@ class CampeonatoController extends Controller
             'nombre' => 'required|string|max:150',
             'descripcion' => 'nullable|string',
             'temporada' => 'required|string|max:50',
-            'formato' => 'required|in:todos_contra_todos,eliminacion_directa',
+            'formato' => 'required|in:todos_contra_todos,eliminacion_directa,grupos_eliminacion',
         ], [
             'administrador_id.prohibited' => 'El propietario lo asigna el servidor y no se puede modificar.',
             'user_id.prohibited' => 'El propietario lo asigna el servidor y no se puede modificar.',
             'required' => 'El campo :attribute es obligatorio.',
             'string' => 'El campo :attribute debe ser un texto.',
             'max' => 'El campo :attribute no debe superar :max caracteres.',
-            'in' => 'El formato debe ser todos_contra_todos o eliminacion_directa.',
+            'in' => 'El formato debe ser todos_contra_todos, eliminacion_directa o grupos_eliminacion.',
         ]);
 
         // El estado inicial lo asigna la base de datos.
@@ -67,14 +67,14 @@ class CampeonatoController extends Controller
             'nombre' => 'sometimes|required|string|max:150',
             'descripcion' => 'sometimes|nullable|string',
             'temporada' => 'sometimes|required|string|max:50',
-            'formato' => 'sometimes|required|in:todos_contra_todos,eliminacion_directa',
+            'formato' => 'sometimes|required|in:todos_contra_todos,eliminacion_directa,grupos_eliminacion',
         ], [
             'administrador_id.prohibited' => 'El propietario lo asigna el servidor y no se puede modificar.',
             'user_id.prohibited' => 'El propietario lo asigna el servidor y no se puede modificar.',
             'required' => 'El campo :attribute es obligatorio.',
             'string' => 'El campo :attribute debe ser un texto.',
             'max' => 'El campo :attribute no debe superar :max caracteres.',
-            'in' => 'El formato debe ser todos_contra_todos o eliminacion_directa.',
+            'in' => 'El formato debe ser todos_contra_todos, eliminacion_directa o grupos_eliminacion.',
         ]);
 
         $campeonato = DB::transaction(function () use ($campeonato, $datos) {

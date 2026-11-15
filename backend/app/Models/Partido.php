@@ -53,4 +53,9 @@ class Partido extends Model
     {
         return $this->belongsTo(Llave::class);
     }
+
+    public function grupo(): BelongsTo
+    {
+        return $this->belongsTo(Grupo::class);
+    }
 }

@@ -9,6 +9,7 @@ use App\Models\CampeonatoEquipo;
 use App\Models\Partido;
 use App\Services\AuditoriaPartidoService;
 use App\Services\AvanceEliminacionService;
+use App\Services\ClasificacionGruposService;
 use App\Services\ControlPartidoService;
 use App\Services\MarcadorService;
 use App\Services\ResultadoOficialService;
@@ -238,7 +239,7 @@ class PartidoController extends Controller
             // Serializa las modificaciones del mismo partido.
             Campeonato::whereKey($partido->campeonato_id)->lockForUpdate()->firstOrFail();
             $partido = Partido::whereKey($partido->id)->lockForUpdate()->firstOrFail();
-            abort_if($partido->llave_id && (isset($datos['local_id']) || isset($datos['visitante_id']) || (isset($datos['jornada']) && (int) $datos['jornada'] !== (int) $partido->jornada)), 409, 'Las plazas y la ronda se gestionan desde el cuadro eliminatorio.');
+            abort_if(($partido->llave_id || $partido->grupo_id) && (isset($datos['local_id']) || isset($datos['visitante_id']) || (isset($datos['jornada']) && (int) $datos['jornada'] !== (int) $partido->jornada)), 409, 'Los participantes y la jornada se gestionan desde la estructura deportiva.');
 
             if (in_array($partido->estado, ['finalizado', 'cancelado'])) {
                 return response()->json(['message' => 'Un partido finalizado o cancelado no se puede modificar.'], 409);
@@ -318,7 +319,9 @@ class PartidoController extends Controller
                 $auditoria->registrar($partido, 'cambiar_estado', 'Cambio de estado del partido.', $anterior, $auditoria->capturar($partido));
             }
 
-            if ($partido->fase_id) {
+            if ($partido->grupo_id) {
+                app(ClasificacionGruposService::class)->actualizarEstado($partido->fase);
+            } elseif ($partido->fase_id) {
                 app(AvanceEliminacionService::class)->actualizarEstados($partido->fase);
             }
 
@@ -343,7 +346,7 @@ class PartidoController extends Controller
         return DB::transaction(function () use ($partido) {
             Campeonato::whereKey($partido->campeonato_id)->lockForUpdate()->firstOrFail();
             $partido = Partido::whereKey($partido->id)->lockForUpdate()->firstOrFail();
-            abort_if($partido->llave_id, 409, 'No se eliminan partidos del cuadro eliminatorio.');
+            abort_if($partido->llave_id || $partido->grupo_id, 409, 'No se eliminan partidos de la estructura deportiva.');
 
             if ($partido->oficializado_at || $partido->correcciones()->exists()
                 || AuditoriaCambio::where('entidad_tipo', 'partido')->where('entidad_id', $partido->id)->exists()) {

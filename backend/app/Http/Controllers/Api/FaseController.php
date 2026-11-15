@@ -8,6 +8,7 @@ use App\Models\Campeonato;
 use App\Models\Fase;
 use App\Models\Llave;
 use App\Services\AvanceEliminacionService;
+use App\Services\DistribucionGruposService;
 use App\Services\GeneracionEliminacionService;
 use App\Services\SiembraEliminacionService;
 use Illuminate\Http\JsonResponse;
@@ -26,15 +27,24 @@ class FaseController extends Controller
     public function store(Request $request, Campeonato $campeonato, GeneracionEliminacionService $servicio): JsonResponse
     {
         Gate::authorize('update', $campeonato);
-        $datos = $request->validate(['nombre' => 'required|string|max:80', 'tipo' => 'required|in:eliminacion',
+        $tipoPermitido = $campeonato->formato === 'grupos_eliminacion' ? 'grupos' : 'eliminacion';
+        $datos = $request->validate(['nombre' => 'required|string|max:80', 'tipo' => 'required|in:'.$tipoPermitido,
             'campeonato_id' => 'prohibited', 'estado' => 'prohibited', 'orden' => 'prohibited']);
 
-        return response()->json(['fase' => $servicio->crearFase($campeonato, $datos['nombre'])], 201);
+        $fase = $datos['tipo'] === 'grupos'
+            ? app(DistribucionGruposService::class)->crearFase($campeonato, $datos['nombre'])
+            : $servicio->crearFase($campeonato, $datos['nombre']);
+
+        return response()->json(['fase' => $fase], 201);
     }
 
     public function show(Fase $fase): JsonResponse
     {
         Gate::authorize('view', $fase);
+
+        if ($fase->tipo === 'grupos') {
+            return response()->json($fase->load('grupos.equipos.inscripcion.equipo', 'grupos.partidos.participantes', 'equipos.inscripcion.equipo'));
+        }
 
         return response()->json($fase->load('equipos.inscripcion.equipo', 'rondas.llaves.plazas', 'rondas.llaves.partidos.participantes'));
     }

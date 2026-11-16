@@ -63,7 +63,7 @@ function CrearLigaPage() {
       <Campo etiqueta="Nombre" name="nombre" required maxLength={150} value={datos.nombre} onChange={cambiar} disabled={guardando} error={errores.nombre?.[0]} />
       <Campo as="textarea" etiqueta="Descripción (opcional)" name="descripcion" value={datos.descripcion} onChange={cambiar} disabled={guardando} error={errores.descripcion?.[0]} />
       <div className="grid gap-4 sm:grid-cols-2"><Campo etiqueta="Temporada" name="temporada" required maxLength={50} placeholder="2026" value={datos.temporada} onChange={cambiar} disabled={guardando} error={errores.temporada?.[0]} />
-      <Campo as="select" etiqueta="Formato" name="formato" value={datos.formato} onChange={cambiar} disabled={guardando} error={errores.formato?.[0]}><option value="todos_contra_todos">Todos contra todos</option><option value="eliminacion_directa">Eliminación directa</option></Campo></div>
+      <Campo as="select" etiqueta="Formato" name="formato" value={datos.formato} onChange={cambiar} disabled={guardando} error={errores.formato?.[0]}><option value="todos_contra_todos">Todos contra todos</option><option value="eliminacion_directa">Eliminación directa</option><option value="grupos_eliminacion">Grupos + eliminación</option></Campo></div>
       
       <div className="flex flex-wrap justify-end gap-3 border-t border-borde pt-5"><Boton to="/mis-ligas" variante="secundario" disabled={guardando}>Cancelar</Boton><Boton type="submit" cargando={guardando} disabled={Boolean(ligaId) && !datos.nombre}>Guardar liga</Boton></div>
     </Tarjeta>}

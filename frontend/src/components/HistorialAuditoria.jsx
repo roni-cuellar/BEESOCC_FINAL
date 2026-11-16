@@ -1,6 +1,10 @@
 import { fechaExpediente } from '../utils/correcciones'
 
 const titulos = {
+  crear_fase_grupos: 'Fase de grupos creada', confirmar_grupos: 'Distribución de grupos confirmada',
+  generar_calendario_grupos: 'Calendario de grupos generado', clasificar_grupos: 'Clasificación oficial confirmada',
+  invalidar_clasificacion_grupos: 'Clasificación invalidada por corrección', actualizar_clasificacion_grupos: 'Clasificación actualizada',
+  generar_desempate_grupo: 'Desempate adicional confirmado', generar_eliminacion_grupos: 'Sorteo y cruces confirmados',
   solicitar_correccion: 'Solicitud de corrección', resolver_correccion: 'Resolución de solicitud',
   aplicar_correccion: 'Corrección aplicada', oficializar: 'Resultado oficializado',
   registrar_evento: 'Evento registrado', corregir_evento: 'Evento corregido', eliminar_evento: 'Evento eliminado',
@@ -9,6 +13,7 @@ const titulos = {
   registrar_penales: 'Tanda certificada', actualizar_plaza: 'Plaza actualizada', actualizar_clasificado: 'Clasificado actualizado',
 }
 const campos = {
+  origen_grupo_id: 'Grupo de procedencia', origen_puesto: 'Puesto de procedencia', clasificados_por_grupo: 'Cupo por grupo', posicion_inicio: 'Puesto inicial', grupo_id: 'Grupo',
   id: 'Identificador', campeonato_id: 'Campeonato', jornada: 'Jornada', fecha_hora: 'Fecha del partido',
   lugar: 'Lugar', estado: 'Estado', tipo_resultado: 'Tipo de resultado', oficializado_at: 'Oficialización',
   partido_id: 'Partido', solicitado_por_id: 'Usuario solicitante', autorizado_por_id: 'Usuario responsable de la decisión',
@@ -30,6 +35,9 @@ function ValoresAuditoria({ datos }) {
     {datos.participantes && <><h5>Participantes</h5><ul>{datos.participantes.map(p => <li key={p.id}>{p.rol} · equipo inscrito #{p.campeonato_equipo_id} · participante #{p.id}</li>)}</ul></>}
     {datos.eventos && <><h5>Eventos ({datos.eventos.length})</h5><ul className="eventos-auditoria">{datos.eventos.map(evento => <li key={evento.id}>#{evento.id} · {evento.tipo} · {evento.minuto}′ · jugador de plantilla #{evento.plantilla_id} · participante #{evento.equipo_partido_id}{evento.gol_relacionado_id ? ' · gol relacionado #' + evento.gol_relacionado_id : ''}</li>)}</ul></>}
     {datos.siembra && <p>Siembra confirmada (inscripciones): {datos.siembra.join(' → ')}</p>}
+    {Array.isArray(datos.sorteo) && <p>Orden del sorteo: {datos.sorteo.join(' → ')}</p>}
+    {Array.isArray(datos.cruces) && <ul>{datos.cruces.map((par, i) => <li key={i}>Llave {i + 1}: {Array.isArray(par) ? par.map(p => p ?? 'Descanso').join(' · ') : 'Cruce confirmado'}</li>)}</ul>}
+    {Array.isArray(datos.clasificados) && <details><summary>Clasificados ({datos.clasificados.length})</summary>{datos.clasificados.map((c, i) => <ValoresAuditoria key={i} datos={c} />)}</details>}
     {['plazas', 'partidos', 'rondas', 'llaves'].filter(c => Array.isArray(datos[c])).map(campo => <details key={campo}><summary>{campo} ({datos[campo].length})</summary>{datos[campo].map((valor, i) => <ValoresAuditoria key={valor.id ?? i} datos={valor} />)}</details>)}
     {datos.configuracion && <><h5>Configuración confirmada</h5><ValoresAuditoria datos={datos.configuracion} /></>}
   </>

@@ -12,6 +12,7 @@ export function ListaArbitrajes({ asignaciones }) {
     <p className="mt-3 text-sm text-gris">Temporada {a.campeonato.temporada} · {a.campeonato.estado.replaceAll('_', ' ')}</p>
     <p className="mt-3 text-sm">Autorización vigente desde {new Date(a.fecha_inicio).toLocaleDateString('es-CO')}.</p>
     <Link className="enlace-texto mt-4 inline-flex min-h-11 items-center" to={'/mis-arbitrajes/' + a.campeonato.id + '/partidos'}>Controlar partidos</Link>
+    {a.campeonato.formato === 'grupos_eliminacion' && <Link className="enlace-texto mt-4 ml-4 inline-flex min-h-11 items-center" to={'/mis-arbitrajes/' + a.campeonato.id + '/grupos'}>Grupos, desempates y cuadro</Link>}
     {a.campeonato.formato === 'eliminacion_directa' && <Link className="enlace-texto mt-4 ml-4 inline-flex min-h-11 items-center" to={'/mis-arbitrajes/' + a.campeonato.id + '/cuadro'}>Cuadro y penales</Link>}
   </Tarjeta>)}</div>
 }

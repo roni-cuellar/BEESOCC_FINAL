@@ -13,7 +13,7 @@ function DashboardLayout() {
   const ligaActual = String(liga?.id) === ligaId ? liga : null
   return <div className="min-h-dvh bg-[#f5f7f6] lg:pl-64">
     <a className="saltar-contenido" href="#contenido-dashboard">Saltar al contenido</a>
-    <Sidebar ligaId={ligaId} abierta={abierta} onCerrar={cerrar} eliminacion={ligaActual?.formato === 'eliminacion_directa'} />
+    <Sidebar ligaId={ligaId} abierta={abierta} onCerrar={cerrar} eliminacion={ligaActual?.formato === 'eliminacion_directa'} grupos={ligaActual?.formato === 'grupos_eliminacion'} />
     <div className="min-w-0" inert={abierta || undefined}>
       <HeaderDashboard liga={ligaActual} ligaId={ligaId} abierta={abierta} onMenu={() => setAbierta(!abierta)} />
       <main className="dashboard-main mx-auto w-full max-w-[1450px] px-4 py-7 sm:px-6 lg:px-8 lg:py-9" id="contenido-dashboard" tabIndex={-1}>

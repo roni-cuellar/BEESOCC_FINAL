@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { nombreEquipoFase, nombrePlaza, partidosOficiales } from '../utils/eliminacion'
 
-export default function CuadroEliminacion({ fase, ligaId, arbitral = false, marcadores, bloqueado, onAvanzar, onPenales }) {
+export default function CuadroEliminacion({ fase, grupos = [], ligaId, arbitral = false, marcadores, bloqueado, onAvanzar, onPenales }) {
   const [rondaVisible, setRondaVisible] = useState('')
   return <section aria-label="Cuadro eliminatorio" className="eliminacion-cuadro">
     <div className="fila-entre"><div><h2>Camino al título</h2><p className="nota">Clasificados y procedencias confirmados por Laravel. Abre un acta para consultar eventos o correcciones.</p></div>
@@ -14,7 +14,7 @@ export default function CuadroEliminacion({ fase, ligaId, arbitral = false, marc
         <header><p className="etiqueta">RONDA {ronda.numero}</p><h3>{ronda.nombre}</h3><p>{ronda.modalidad === 'unico' ? 'Partido único' : 'Ida y vuelta'} · {ronda.desempate === 'penales' ? 'Penales' : 'Prórroga y penales'}</p><span>{ronda.estado.replaceAll('_', ' ')}</span></header>
         <ol className="eliminacion-llaves">{ronda.llaves.map(llave => <li className="eliminacion-llave" key={llave.id}>
           <article aria-label={ronda.nombre + ', llave ' + llave.numero}><div className="fila-entre"><h4>Llave {llave.numero}</h4><span className={'estado estado-' + (llave.estado === 'resuelta' ? 'finalizado' : 'programado')}>{llave.estado === 'resuelta' ? 'Resuelta' : 'Pendiente'}</span></div>
-            <ul className="eliminacion-plazas">{llave.plazas.map(plaza => <li key={plaza.id} className={plaza.fase_equipo_id && plaza.fase_equipo_id === llave.ganador_fase_equipo_id ? 'eliminacion-clasificado' : ''}><span>{nombrePlaza(fase, plaza)}</span>{plaza.fase_equipo_id && plaza.fase_equipo_id === llave.ganador_fase_equipo_id && <small>Clasificado</small>}</li>)}</ul>
+            <ul className="eliminacion-plazas">{llave.plazas.map(plaza => <li key={plaza.id} className={plaza.fase_equipo_id && plaza.fase_equipo_id === llave.ganador_fase_equipo_id ? 'eliminacion-clasificado' : ''}><span>{nombrePlaza(fase, plaza)}{plaza.origen_tipo === 'grupo_puesto' && <small className="block">{grupos.find(g => g.id === plaza.origen_grupo_id)?.codigo || 'Grupo #' + plaza.origen_grupo_id} · puesto {plaza.origen_puesto}</small>}</span>{plaza.fase_equipo_id && plaza.fase_equipo_id === llave.ganador_fase_equipo_id && <small>Clasificado</small>}</li>)}</ul>
             {llave.metodo_resolucion === 'bye' && <p className="nota">Pase por descanso · sin partido</p>}
             {llave.ganador_fase_equipo_id && <p className="eliminacion-ganador">Clasificado: {nombreEquipoFase(fase, llave.ganador_fase_equipo_id)}</p>}
             <ul className="eliminacion-partidos">{llave.partidos.map(partido => {

@@ -21,7 +21,7 @@ export function crearEliminacionStore() {
       const actual = ++version
       set({ ...inicial, contexto: ligaId + ':' + arbitral, operando: pendiente })
       try {
-        const fases = await faseService.listar(ligaId)
+        const fases = (await faseService.listar(ligaId)).filter(f => f.tipo === 'eliminacion')
         if (actual !== version) return
         const [liga, inscripciones] = await Promise.all(arbitral
           ? [arbitroService.partidos(ligaId).then(() => null), Promise.resolve([])]

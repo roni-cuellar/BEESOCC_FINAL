@@ -25,13 +25,23 @@ import EstadisticasPage from '../pages/EstadisticasPage'
 import CampeonatosPublicosPage from '../pages/CampeonatosPublicosPage'
 import DetallePublicoPage, { ResumenPublicoPage } from '../pages/DetallePublicoPage'
 import EliminacionPage from '../pages/EliminacionPage'
+import GruposPage from '../pages/GruposPage'
 
 function PublicLayout() {
   return <><a className="saltar-contenido" href="#contenido">Saltar al contenido</a><Navbar /><main id="contenido" tabIndex={-1}><Outlet /></main><Footer /></>
 }
 function TablaPrivada() {
   const { liga } = useOutletContext()
+  if (liga.formato === 'grupos_eliminacion') return <Navigate to={'/ligas/' + liga.id + '/grupos'} replace />
   return liga.formato === 'eliminacion_directa' ? <Navigate to={'/ligas/' + liga.id + '/cuadro'} replace /> : <TablaPage />
+}
+function CalendarioPrivado() {
+  const { liga } = useOutletContext()
+  return liga.formato === 'grupos_eliminacion' ? <Navigate to={'/ligas/' + liga.id + '/grupos'} replace /> : <CalendarioPage />
+}
+function CuadroPrivado() {
+  const { liga } = useOutletContext()
+  return liga.formato === 'grupos_eliminacion' ? <Navigate to={'/ligas/' + liga.id + '/grupos'} replace /> : <EliminacionPage />
 }
 function AppRoutes() {
   const { pathname, hash } = useLocation()
@@ -60,6 +70,7 @@ function AppRoutes() {
       <Route path="/mis-arbitrajes" element={<MisArbitrajesPage />} />
       <Route path="/mis-arbitrajes/:ligaId/partidos" element={<PartidosArbitrajePage />} />
       <Route path="/mis-arbitrajes/:ligaId/cuadro" element={<EliminacionPage arbitral />} />
+      <Route path="/mis-arbitrajes/:ligaId/grupos" element={<GruposPage arbitral />} />
       <Route path="/mis-arbitrajes/:ligaId/partidos/:partidoId" element={<section className="mx-auto max-w-7xl px-5 py-8 sm:px-8"><PartidoDetallePage arbitral /></section>} />
       <Route path="/ligas/nueva" element={<CrearLigaPage />} />
       <Route path="/ligas/:ligaId/editar" element={<CrearLigaPage />} />
@@ -72,8 +83,9 @@ function AppRoutes() {
       <Route path="jugadores" element={<JugadoresPage />} />
       <Route path="partidos" element={<PartidosPage />} />
       <Route path="partidos/:partidoId" element={<PartidoDetallePage />} />
-      <Route path="calendario" element={<CalendarioPage />} />
-      <Route path="cuadro" element={<EliminacionPage />} />
+      <Route path="calendario" element={<CalendarioPrivado />} />
+      <Route path="cuadro" element={<CuadroPrivado />} />
+      <Route path="grupos" element={<GruposPage />} />
       <Route path="tabla" element={<TablaPrivada />} />
       <Route path="estadisticas" element={<EstadisticasPage />} />
       <Route path="*" element={<section className="panel"><h1>Página no encontrada</h1><Link to="/mis-ligas" className="enlace-texto">Volver a Mis Ligas</Link></section>} />

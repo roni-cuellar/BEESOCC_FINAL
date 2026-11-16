@@ -4,8 +4,8 @@ import { Link, NavLink } from 'react-router-dom'
 import logo from '../assets/branding/logo.png'
 import Icono from './Icono'
 const enlaces = [['dashboard','Resumen','resumen'],['arbitros','Árbitros','jugadores'],['equipos','Equipos','equipos'],['jugadores','Jugadores','jugadores'],['partidos','Partidos','partidos'],['calendario','Calendario','calendario'],['tabla','Tabla de posiciones','tabla'],['estadisticas','Estadísticas','estadisticas']]
-function Sidebar({ ligaId, abierta, onCerrar, eliminacion = false }) {
-  const modulos = eliminacion ? enlaces.map(e => e[0] === 'tabla' ? ['cuadro', 'Cuadro eliminatorio', 'tabla'] : e) : enlaces
+function Sidebar({ ligaId, abierta, onCerrar, eliminacion = false, grupos = false }) {
+  const modulos = grupos ? enlaces.map(e => e[0] === 'tabla' ? ['grupos', 'Grupos y eliminación', 'tabla'] : e) : eliminacion ? enlaces.map(e => e[0] === 'tabla' ? ['cuadro', 'Cuadro eliminatorio', 'tabla'] : e) : enlaces
   const panel = useRef(null)
   useEffect(()=>{
     const escritorio = window.matchMedia('(min-width:1024px)')

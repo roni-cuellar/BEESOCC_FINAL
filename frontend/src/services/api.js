@@ -24,6 +24,8 @@ function textoError(mensaje) {
   }
 
   const campos = {
+    cantidad_grupos: 'cantidad de grupos', clasificados_por_grupo: 'clasificados por grupo',
+    confirmacion_sorteo: 'confirmación del sorteo', origen_grupo_id: 'grupo de procedencia', origen_puesto: 'puesto de procedencia',
     name: 'nombre',
     email: 'correo electrónico',
     password: 'contraseña',

@@ -83,7 +83,8 @@ class CicloCampeonatoService
             $c = $integridad->bloquear($original->id);
             Gate::authorize('update', $c);
             abort_unless($c->estado === 'en_curso', 409, 'Solo se finaliza un campeonato en curso.');
-            abort_if(! $c->partidos()->exists() || $c->partidos()->where(fn ($q) => $q->where('estado', '!=', 'finalizado')->orWhereNull('oficializado_at')->orWhere('tipo_resultado', '!=', 'deportivo'))->exists(), 409, 'Faltan resultados deportivos oficiales completos.');
+            abort_if(! $c->partidos()->exists() || $c->partidos()->where(fn ($q) => $q->where('estado', '!=', 'finalizado')->orWhereNull('oficializado_at')->orWhereNotIn('tipo_resultado', ['deportivo', 'administrativo']))->exists(), 409, 'Faltan resultados oficiales completos.');
+            abort_unless($c->partidos()->get()->every(fn ($p) => $p->esOficial()), 409, 'Hay una resolución oficial incompleta o inconsistente.');
             abort_if(AutorizacionCorreccion::whereHas('partido', fn ($q) => $q->where('campeonato_id', $c->id))->whereIn('estado', ['solicitada', 'aprobada'])->exists(), 409, 'Resuelve las correcciones pendientes antes de finalizar.');
             if ($c->formato === 'todos_contra_todos') {
                 $this->comprobarCalendarioLiga($c, $c->inscripcionesEquipos()->pluck('id')->all(), $c->configuracion->numero_vueltas);

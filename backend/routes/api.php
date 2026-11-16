@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\JugadorController;
 use App\Http\Controllers\Api\PartidoController;
 use App\Http\Controllers\Api\PlantillaController;
 use App\Http\Controllers\Api\PublicoCampeonatoController;
+use App\Http\Controllers\Api\ResolucionAdministrativaController;
 use App\Http\Controllers\Api\TablaPosicionesController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
@@ -32,6 +33,8 @@ Route::middleware('web')->withoutMiddleware(EnsureFrontendRequestsAreStateful::c
 });
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/partidos/{partido}/resultado-administrativo', [ResolucionAdministrativaController::class, 'resultado']);
+    Route::post('/inscripciones-equipos/{campeonatoEquipo}/decision-administrativa', [ResolucionAdministrativaController::class, 'inactivar']);
     Route::patch('/campeonatos/{campeonato}/requisitos-inicio', [CicloCampeonatoController::class, 'requisitos']);
     Route::post('/campeonatos/{campeonato}/iniciar', [CicloCampeonatoController::class, 'iniciar']);
     Route::post('/campeonatos/{campeonato}/finalizar', [CicloCampeonatoController::class, 'finalizar']);

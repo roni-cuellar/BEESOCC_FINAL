@@ -71,7 +71,7 @@ export default function PanelCorrecciones({ partido, arbitral, eventos, plantill
   }
   return <section className="panel-resultados" aria-label="Resultados oficiales y correcciones">
     <div className="panel"><h2>Expedientes de corrección</h2>
-      <p className="nota">El administrador resuelve las solicitudes y el árbitro solicitante aplica los cambios aprobados. El partido permanece finalizado.</p>
+      <p className="nota">El administrador resuelve las solicitudes. El árbitro solicitante aplica cambios de eventos; las rectificaciones de resultado se aplican desde la resolución administrativa por el propietario. El partido permanece finalizado.</p>
       <EstadoVista cargando={cargando} error={error} reintentar={() => setRevision(v => v + 1)} />
       {!cargando && !error && <>
         {!correcciones.length && <p className="nota">No hay solicitudes para este partido.</p>}

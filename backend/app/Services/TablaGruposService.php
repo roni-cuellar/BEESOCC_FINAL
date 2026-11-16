@@ -14,14 +14,20 @@ class TablaGruposService
         $fase = $grupo->fase;
         abort_unless($fase->tipo === 'grupos' && $fase->campeonato->formato === 'grupos_eliminacion', 409, 'La tabla requiere una fase de grupos.');
         $miembros = $grupo->equipos()->with('inscripcion.equipo')->get();
+        // La sanción posterior al cuadro no reescribe la elegibilidad de su fase de origen.
+        $generacion = AuditoriaCambio::where('entidad_tipo', 'fase')->where('entidad_id', $fase->id)->where('accion', 'generar_eliminacion_grupos')->latest('id')->first();
+        $estadosHistoricos = $generacion ? AuditoriaCambio::where('campeonato_id', $fase->campeonato_id)->where('accion', 'inactivar_equipo')->where('id', '>', $generacion->id)->get()->mapWithKeys(fn ($a) => [$a->entidad_id => $a->anterior_json['estado']])->all() : [];
         $tabla = [];
         $elegibles = true;
         foreach ($miembros as $miembro) {
             $inscripcion = $miembro->inscripcion;
             abort_unless($miembro->fase_id === $fase->id && $inscripcion && $inscripcion->campeonato_id === $fase->campeonato_id && $inscripcion->equipo, 409, 'Pertenencia de grupo inconsistente.');
-            $elegibles = $elegibles && $miembro->estado === 'activo' && $inscripcion->estado === 'activo';
+            $estadoGrupo = $estadosHistoricos[$inscripcion->id] ?? $inscripcion->estado;
+            $elegibleGrupo = $miembro->estado === 'activo' && $estadoGrupo === 'activo';
+            $elegibles = $elegibles && ($elegibleGrupo || ($inscripcion->inactivado_at && $inscripcion->motivo_inactividad));
             $tabla[$inscripcion->id] = ['fase_equipo_id' => $miembro->id, 'campeonato_equipo_id' => $inscripcion->id,
                 'equipo_id' => $inscripcion->equipo_id, 'nombre' => $inscripcion->equipo->nombre,
+                'elegible_clasificacion' => $elegibleGrupo, 'estado_actual' => $inscripcion->estado,
                 'PJ' => 0, 'PG' => 0, 'PE' => 0, 'PP' => 0, 'GF' => 0, 'GC' => 0, 'DG' => 0, 'PTS' => 0];
         }
         $partidos = $grupo->partidos()->where('tipo_partido', 'regular')->with('participantes')->orderBy('id')->get();
@@ -39,13 +45,13 @@ class TablaGruposService
             $clave = implode(':', $par);
             abort_if(isset($pares[$clave]), 409, 'Hay un enfrentamiento duplicado en el grupo.');
             $pares[$clave] = true;
-            $oficial = $partido->estado === 'finalizado' && $partido->oficializado_at && $partido->tipo_resultado === 'deportivo';
+            $oficial = $partido->esOficial();
             $oficiales += $oficial ? 1 : 0;
             $marcador = app(MarcadorService::class)->calcular($partido);
             $gl = $marcador['local']['goles'];
             $gv = $marcador['visitante']['goles'];
             $resultados[] = [$partido->id, $local, $visitante, $partido->estado, $partido->oficializado_at?->toISOString(), $partido->tipo_resultado, $gl, $gv];
-            if ($partido->estado !== 'finalizado' || $partido->tipo_resultado !== 'deportivo' || ($soloOficiales && ! $oficial)) {
+            if ($partido->estado !== 'finalizado' || ! in_array($partido->tipo_resultado, ['deportivo', 'administrativo'], true) || ($soloOficiales && ! $oficial)) {
                 continue;
             }
             $computados++;
@@ -63,7 +69,7 @@ class TablaGruposService
         $esperados = intdiv($n * ($n - 1), 2);
         $generado = AuditoriaCambio::where('entidad_tipo', 'fase')->where('entidad_id', $fase->id)->where('accion', 'generar_calendario_grupos')->exists();
         $completa = $generado && $n > 0 && count($pares) === $esperados && $oficiales === $esperados && $elegibles;
-        $huella = hash('sha256', json_encode([$grupo->id, $miembros->map(fn ($m) => [$m->id, $m->campeonato_equipo_id, $m->estado, $m->inscripcion->estado])->all(), $resultados], JSON_THROW_ON_ERROR));
+        $huella = hash('sha256', json_encode([$grupo->id, $miembros->map(fn ($m) => [$m->id, $m->campeonato_equipo_id, $m->estado, $estadosHistoricos[$m->campeonato_equipo_id] ?? $m->inscripcion->estado])->all(), $resultados], JSON_THROW_ON_ERROR));
         $orden = app(OrdenGruposService::class);
         $bloques = [];
         foreach ($orden->bloques(array_values($tabla)) as $bloque) {

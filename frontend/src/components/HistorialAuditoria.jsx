@@ -1,6 +1,7 @@
 import { fechaExpediente } from '../utils/correcciones'
 
 const titulos = {
+  resultado_administrativo: 'Resultado administrativo oficial', inactivar_equipo: 'Retiro o descalificación registrados', bloquear_doble_inactividad: 'Llave bloqueada por doble inactividad',
   configurar_requisitos_inicio: 'Requisitos de inicio configurados', iniciar_campeonato: 'Campeonato iniciado',
   finalizar_campeonato: 'Campeonato finalizado', crear_plantilla: 'Jugador inscrito',
   actualizar_plantilla: 'Inscripción de jugador actualizada', eliminar_plantilla: 'Inscripción corregida', estado_inscripcion: 'Estado del equipo actualizado',
@@ -16,6 +17,7 @@ const titulos = {
   registrar_penales: 'Tanda certificada', actualizar_plaza: 'Plaza actualizada', actualizar_clasificado: 'Clasificado actualizado',
 }
 const campos = {
+  administrativo_beneficiado_id: 'Equipo beneficiado', administrativo_sancionado_id: 'Equipo sancionado', administrativo_por_id: 'Administrador responsable', motivo_administrativo: 'Motivo administrativo', motivo_inactividad: 'Motivo de inactividad', inactivado_at: 'Fecha de inactividad', bloqueo: 'Bloqueo administrativo',
   minimo_jugadores: 'Mínimo de jugadores elegibles', jugadores_elegibles: 'Jugadores elegibles al inicio',
   iniciado_at: 'Inicio del campeonato', finalizado_at: 'Finalización del campeonato', campeon_campeonato_equipo_id: 'Inscripción del campeón',
   dorsal: 'Dorsal', jugador_id: 'Jugador', fecha_ingreso: 'Fecha de ingreso', fecha_salida: 'Fecha de salida',

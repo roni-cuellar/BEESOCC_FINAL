@@ -27,10 +27,16 @@ class AvanceEliminacionService
             Gate::authorize('avanzar', $llave);
             abort_unless($llave->estado === 'pendiente', 409, 'La llave ya fue clasificada.');
             $ganador = $this->ganador($llave);
-            $this->resolver($llave, $ganador, $llave->penales_plaza_1 !== null ? $llave->ronda->desempate : 'goles', 'Avance administrativo basado en resultados oficiales.');
+            $this->resolver($llave, $ganador, $this->metodo($llave), 'Avance basado en resultados oficiales y elegibilidad administrativa.');
 
             return $llave->refresh();
         });
+    }
+
+    private function metodo(Llave $llave): string
+    {
+        return $llave->penales_plaza_1 !== null ? $llave->ronda->desempate
+            : ($llave->partidos()->where('tipo_resultado', 'administrativo')->exists() ? 'administrativo' : 'goles');
     }
 
     public function registrarPenales(Llave $llave, array $datos): Llave
@@ -49,7 +55,7 @@ class AvanceEliminacionService
         });
     }
 
-    private function plazas(Llave $llave)
+    private function plazas(Llave $llave, bool $activos = true)
     {
         $plazas = $llave->plazas()->with('participante.inscripcion.equipo')->get();
         abort_unless($plazas->count() === 2 && $plazas->pluck('posicion')->map(fn ($p) => (int) $p)->all() === [1, 2], 409, 'La llave debe tener dos plazas válidas.');
@@ -61,8 +67,8 @@ class AvanceEliminacionService
             }
             $equipo = $plaza->participante;
             $inscripcion = $equipo?->inscripcion;
-            abort_unless($equipo && (int) $equipo->fase_id === (int) $llave->ronda->fase_id && $equipo->estado === 'activo'
-                && $inscripcion && $inscripcion->estado === 'activo' && $inscripcion->equipo
+            abort_unless($equipo && (int) $equipo->fase_id === (int) $llave->ronda->fase_id
+                && $inscripcion && (! $activos || ($equipo->estado === 'activo' && $inscripcion->estado === 'activo')) && $inscripcion->equipo
                 && (int) $inscripcion->campeonato_id === (int) $llave->ronda->fase->campeonato_id
                 && (int) $inscripcion->equipo->administrador_id === (int) $llave->ronda->fase->campeonato->administrador_id,
                 409, 'Participante ajeno, retirado o descalificado: se requiere revisión administrativa.');
@@ -72,10 +78,12 @@ class AvanceEliminacionService
         return $plazas;
     }
 
-    public function ganador(Llave $llave, bool $usarPenales = true): ?int
+    public function ganador(Llave $llave, bool $usarPenales = true, bool $validarElegibilidad = true): ?int
     {
-        $plazas = $this->plazas($llave);
+        $plazas = $this->plazas($llave, false);
         abort_if($plazas->contains('origen_tipo', 'bye'), 409, 'El descanso se resuelve al preparar el cuadro.');
+        $inhabilitadas = $validarElegibilidad ? $plazas->filter(fn ($p) => $p->participante->estado !== 'activo' || $p->participante->inscripcion->estado !== 'activo') : collect();
+        abort_if($inhabilitadas->count() === 2, 409, 'DP-03: ambos participantes están inhabilitados; falta resolución extraordinaria motivada, sin ganador automático.');
         $cantidad = $llave->ronda->modalidad === 'ida_vuelta' ? 2 : 1;
         $partidos = $llave->partidos()->with('participantes')->get();
         abort_unless($partidos->count() === $cantidad, 409, 'Faltan partidos de la serie.');
@@ -84,8 +92,8 @@ class AvanceEliminacionService
             abort_unless((int) $partido->numero_serie === $indice + 1
                 && (int) $partido->fase_id === (int) $llave->ronda->fase_id
                 && (int) $partido->campeonato_id === (int) $llave->ronda->fase->campeonato_id
-                && $partido->estado === 'finalizado' && $partido->oficializado_at && $partido->tipo_resultado === 'deportivo',
-                409, 'Se requieren todos los partidos deportivos oficiales de esta llave.');
+                && $partido->esOficial(),
+                409, 'Se requieren todos los resultados oficiales de esta llave.');
             $marcador = app(MarcadorService::class)->calcular($partido);
             foreach (['local', 'visitante'] as $rol) {
                 $posicion = $rol === 'local' ? $indice % 2 : 1 - ($indice % 2);
@@ -94,6 +102,15 @@ class AvanceEliminacionService
                     409, 'Los participantes del partido no coinciden con las plazas.');
                 $goles[$posicion] += $marcador[$rol]['goles'];
             }
+        }
+        if ($inhabilitadas->count() === 1) {
+            $sancionado = $inhabilitadas->first()->participante->campeonato_equipo_id;
+            $beneficiado = $plazas->first(fn ($p) => $p->participante->campeonato_equipo_id !== $sancionado)->participante;
+            abort_unless($partidos->contains(fn ($p) => $p->tipo_resultado === 'administrativo'
+                && (int) $p->administrativo_sancionado_id === (int) $sancionado && (int) $p->administrativo_beneficiado_id === (int) $beneficiado->campeonato_equipo_id), 409, 'La inactividad no concede una victoria: falta decisión administrativa oficial a favor del rival.');
+            abort_if($llave->penales_plaza_1 !== null || $llave->penales_plaza_2 !== null, 409, 'La serie tiene una tanda anterior; requiere revisión extraordinaria.');
+
+            return (int) $beneficiado->id;
         }
         if ($goles[0] !== $goles[1]) {
             abort_if($llave->penales_plaza_1 !== null || $llave->penales_plaza_2 !== null, 409, 'La corrección afecta una tanda previa; requiere revisión específica.');
@@ -212,7 +229,7 @@ class AvanceEliminacionService
         }
         $ganador = $this->ganador($llave);
         if ($llave->estado === 'resuelta' && (int) $llave->ganador_fase_equipo_id !== $ganador) {
-            $this->resolver($llave, $ganador, 'goles', $motivo);
+            $this->resolver($llave, $ganador, $this->metodo($llave), $motivo);
         }
     }
 

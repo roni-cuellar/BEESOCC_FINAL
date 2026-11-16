@@ -11,7 +11,7 @@ export function nombrePlaza(fase, plaza) {
 // Filtro visual; la autorización y la resolución deportiva siempre son de Laravel.
 export function partidosOficiales(llave, ronda) {
   return llave.partidos?.length === (ronda.modalidad === 'ida_vuelta' ? 2 : 1)
-    && llave.partidos.every(p => p.estado === 'finalizado' && p.oficializado_at && p.tipo_resultado === 'deportivo')
+    && llave.partidos.every(p => p.estado === 'finalizado' && p.oficializado_at && ['deportivo', 'administrativo'].includes(p.tipo_resultado))
 }
 
 export function validarSiembra(siembra, activos) {

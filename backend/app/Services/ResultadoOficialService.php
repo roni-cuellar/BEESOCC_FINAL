@@ -22,7 +22,7 @@ class ResultadoOficialService
     {
         abort_unless($partido->estado === 'en_curso' && ! $partido->oficializado_at,
             409, 'Solo se puede oficializar una vez un partido en curso.');
-        abort_unless($partido->tipo_resultado === 'deportivo', 409, 'La resolución administrativa no está habilitada en este sprint.');
+        abort_unless($partido->tipo_resultado === 'deportivo', 409, 'El árbitro oficializa resultados deportivos; la decisión administrativa corresponde al propietario.');
         $this->comprobarEventos($partido);
         $auditoria = app(AuditoriaPartidoService::class);
         $anterior = $auditoria->capturar($partido);

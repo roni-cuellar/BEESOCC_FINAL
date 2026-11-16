@@ -10,8 +10,13 @@ import Confirmacion from '../components/Confirmacion'
 import EstadoVista from '../components/EstadoVista'
 import Aviso from '../components/Aviso'
 import { mensajeError } from '../services/api'
+import { InactivarEquipo } from '../components/ResolucionAdministrativa'
+import administrativo from '../services/administrativoService'
+import useLigaStore from '../stores/useLigaStore'
 
 function EquiposPage() {
+  const campeonatoEnCurso = useLigaStore(e => e.liga?.estado === 'en_curso')
+  const [decision, setDecision] = useState(null)
   const { ligaId } = useParams()
   const { equipos, inscripciones, cargando, error, cargar } = useEquipoStore()
   const [tab, setTab] = useState('inscritos')
@@ -51,9 +56,10 @@ function EquiposPage() {
     <Aviso exito={mensaje} />
     <div className="pestanas" aria-label="Vistas de equipos"><button className={tab === 'inscritos' ? 'activa' : ''} onClick={() => setTab('inscritos')}>Inscritos en esta liga ({inscripciones.length})</button><button className={tab === 'catalogo' ? 'activa' : ''} onClick={() => setTab('catalogo')}>Catálogo general ({equipos.length})</button></div>
     <EstadoVista cargando={cargando} error={error} vacio={tab === 'inscritos' ? !inscripciones.length : !equipos.length} titulo={tab === 'inscritos' ? 'Aún no hay equipos inscritos' : 'No hay equipos registrados'} reintentar={() => cargar(ligaId)} />
-    {!cargando && !error && (tab === 'inscritos' ? <div className="rejilla-tarjetas">{inscripciones.map(i => <EquipoCard key={i.id} inscripcion={i} onEditar={setFormulario} onEstado={cambiarEstado} onEliminar={eliminarInscripcion} />)}</div>
+    {!cargando && !error && (tab === 'inscritos' ? <div className="rejilla-tarjetas">{inscripciones.map(i => <EquipoCard key={i.id} inscripcion={i} onEditar={setFormulario} onEstado={cambiarEstado} onEliminar={eliminarInscripcion} onDecision={campeonatoEnCurso ? setDecision : undefined} />)}</div>
       : equipos.length > 0 && <div className="panel tabla-contenedor"><table><thead><tr><th>Equipo</th><th>Ciudad</th><th>Acciones</th></tr></thead><tbody>{equipos.map(e => <tr key={e.id}><td><div className="celda-entidad"><ImagenEntidad ruta={e.escudo} nombre={e.nombre} />{e.nombre}</div></td><td>{e.ciudad}</td><td><div className="acciones acciones-compactas"><button className="boton boton-borde" onClick={() => setFormulario(e)}>Editar</button><button className="boton-texto peligro" onClick={() => setConfirmacion({ titulo: 'Eliminar equipo', texto: '¿Eliminar el equipo? Solo es posible si no tiene inscripciones.', accion: async () => { await equipoService.eliminar(e.id); await cargar(ligaId) } })}>Eliminar</button></div></td></tr>)}</tbody></table></div>)}
     {formulario && <Modal titulo={formulario.id ? 'Editar equipo' : 'Registrar equipo'} onCerrar={() => setFormulario(null)}><EquipoForm equipo={formulario} onGuardar={guardarEquipo} onCancelar={() => setFormulario(null)} /></Modal>}
+    {decision && <Modal titulo="Decisión administrativa del equipo" onCerrar={() => setDecision(null)}><InactivarEquipo inscripcion={decision} onGuardar={async datos => { await administrativo.inactivar(decision.id, datos); await cargar(ligaId); setDecision(null); setMensaje('Decisión motivada registrada. Revisa los partidos pendientes.') }} /></Modal>}
     {inscribir && <Modal titulo="Inscribir equipo" onCerrar={() => setInscribir(false)} bloqueado={guardando}><form onSubmit={inscribirEquipo}><Aviso error={errorInscripcion} /><label>Equipo<select required value={equipoId} onChange={e => setEquipoId(e.target.value)}><option value="">Selecciona un equipo</option>{disponibles.map(e => <option key={e.id} value={e.id}>{e.nombre} · {e.ciudad}</option>)}</select></label>{!disponibles.length && <p className="nota">No hay equipos disponibles. Registra uno o reactiva una inscripción.</p>}<button className="boton boton-verde" disabled={guardando || !equipoId}>{guardando ? 'Inscribiendo…' : 'Confirmar inscripción'}</button></form></Modal>}
     {confirmacion && <Confirmacion titulo={confirmacion.titulo} texto={confirmacion.texto} onConfirmar={confirmacion.accion} onCerrar={() => setConfirmacion(null)} />}
   </>

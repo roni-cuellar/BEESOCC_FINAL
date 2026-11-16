@@ -227,7 +227,7 @@ class ResultadoOficialTest extends BackendTestCase
         $this->assertDatabaseCount('eventos_estadisticos', 1);
     }
 
-    public function test_no_acepta_datos_del_servidor_ni_alcance_administrativo_no_implementado(): void
+    public function test_no_acepta_datos_del_servidor_ni_rectificacion_administrativa_por_arbitro(): void
     {
         $e = $this->oficial();
         $ruta = '/api/partidos/'.$e['partido']['id'].'/correcciones';
@@ -235,7 +235,7 @@ class ResultadoOficialTest extends BackendTestCase
             $this->postJson($ruta, ['motivo' => 'Revisión', 'alcance' => 'eventos', $campo => $valor])->assertUnprocessable();
         }
         $this->postJson($ruta, ['motivo' => '', 'alcance' => 'eventos'])->assertUnprocessable();
-        $this->postJson($ruta, ['motivo' => 'Revisión', 'alcance' => 'resultado'])->assertUnprocessable();
+        $this->postJson($ruta, ['motivo' => 'Revisión', 'alcance' => 'resultado'])->assertForbidden();
         $this->assertDatabaseCount('autorizaciones_correccion', 0);
     }
 

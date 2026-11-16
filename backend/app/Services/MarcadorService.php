@@ -9,6 +9,18 @@ class MarcadorService
 {
     public function goles(EquipoPartido $participante): int
     {
+        $p = $participante->partido;
+        if ($p->tipo_resultado === 'administrativo') {
+            abort_unless($p->esOficial() && in_array((int) $participante->campeonato_equipo_id, [(int) $p->administrativo_beneficiado_id, (int) $p->administrativo_sancionado_id], true), 409, 'Resolución administrativa inconsistente.');
+
+            return (int) $participante->campeonato_equipo_id === (int) $p->administrativo_beneficiado_id ? 3 : 0;
+        }
+
+        return $this->golesDeportivos($participante);
+    }
+
+    public function golesDeportivos(EquipoPartido $participante): int
+    {
         // El autogol ya pertenece al participante beneficiado.
         return $participante->eventos->whereIn('tipo', ['gol', 'autogol'])->count();
     }
@@ -30,6 +42,8 @@ class MarcadorService
             409, 'El local y el visitante deben ser equipos diferentes.');
 
         return ['partido_id' => $partido->id, 'jornada' => $partido->jornada, 'estado' => $partido->estado,
+            'tipo_resultado' => $partido->tipo_resultado, 'oficializado_at' => $partido->oficializado_at,
+            'marcador_deportivo' => ['local' => $this->golesDeportivos($local), 'visitante' => $this->golesDeportivos($visitante)],
             'local' => $this->datos($local), 'visitante' => $this->datos($visitante)];
     }
 

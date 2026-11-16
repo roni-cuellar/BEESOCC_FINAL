@@ -42,6 +42,9 @@ class ClasificacionGruposService
             }
             foreach ($tabla['tabla'] as $fila) {
                 if ($fila['posicion'] !== null && $fila['posicion'] <= $cupo) {
+                    if (! $fila['elegible_clasificacion']) {
+                        $bloqueos[] = 'clasificado_inhabilitado_'.$fila['campeonato_equipo_id'];
+                    }
                     $candidatos[] = ['campeonato_equipo_id' => $fila['campeonato_equipo_id'], 'fase_equipo_id' => $fila['fase_equipo_id'],
                         'origen_tipo' => 'grupo_puesto', 'origen_grupo_id' => $grupo->id, 'origen_puesto' => $fila['posicion']];
                 }

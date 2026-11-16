@@ -107,7 +107,7 @@ class EstadisticaService
             ->whereHas('equipoPartido.partido', function ($consulta) use ($campeonato) {
                 $consulta->where('campeonato_id', $campeonato->id)
                     ->whereIn('estado', ['en_curso', 'suspendido', 'finalizado']);
-            })->with(['equipoPartido', 'plantilla'])->get();
+            })->with(['equipoPartido.partido', 'plantilla'])->get();
 
         $columnas = ['gol' => 'goles', 'autogol' => 'goles', 'amarilla' => 'amarillas', 'roja' => 'rojas', 'falta' => 'faltas'];
 
@@ -119,6 +119,10 @@ class EstadisticaService
             }
 
             if (in_array($evento->tipo, ['gol', 'autogol'])) {
+                // El acta conserva esos goles reales, pero el total oficial de equipo usa el 3–0.
+                if ($evento->equipoPartido->partido->tipo_resultado === 'administrativo') {
+                    continue;
+                }
                 // El gol se atribuye al participante beneficiado.
                 $inscripcionId = $evento->equipoPartido->campeonato_equipo_id;
             } else {
@@ -129,6 +133,11 @@ class EstadisticaService
             $resultados[$inscripcionId][$columnas[$evento->tipo]]++;
         }
 
+        foreach ($campeonato->partidos()->where('tipo_resultado', 'administrativo')->whereNotNull('oficializado_at')->with('participantes')->get() as $p) {
+            foreach ($p->participantes as $participante) {
+                $resultados[$participante->campeonato_equipo_id]['goles'] += app(MarcadorService::class)->goles($participante);
+            }
+        }
         $resultados = array_values($resultados);
         usort($resultados, function ($primero, $segundo) {
             $comparacion = $segundo['goles'] <=> $primero['goles'];

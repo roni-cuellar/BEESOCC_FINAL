@@ -15,6 +15,11 @@ class AutorizacionCorreccionPolicy
 
     public function aplicar(User $user, AutorizacionCorreccion $correccion): bool
     {
+        if ($correccion->alcance === 'resultado') {
+            return (int) $correccion->solicitado_por_id === (int) $user->id
+                && Gate::forUser($user)->allows('update', $correccion->partido);
+        }
+
         return (int) $correccion->solicitado_por_id === (int) $user->id
             && Gate::forUser($user)->allows('arbitrar', $correccion->partido);
     }

@@ -30,9 +30,9 @@ class CorreccionPartidoController extends Controller
 
     public function store(Request $request, Partido $partido, CorreccionPartidoService $servicio): JsonResponse
     {
-        Gate::authorize('arbitrar', $partido);
+        Gate::authorize($request->input('alcance') === 'resultado' ? 'update' : 'arbitrar', $partido);
         $datos = $request->validate([
-            'motivo' => 'required|string|max:1000', 'alcance' => 'required|in:eventos',
+            'motivo' => 'required|string|max:1000', 'alcance' => 'required|in:eventos,resultado',
             'partido_id' => 'prohibited', 'solicitado_por_id' => 'prohibited', 'autorizado_por_id' => 'prohibited',
             'estado' => 'prohibited', 'fecha_resolucion' => 'prohibited', 'fecha_consumo' => 'prohibited',
         ]);

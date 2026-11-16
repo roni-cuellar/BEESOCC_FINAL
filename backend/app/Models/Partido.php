@@ -8,6 +8,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Partido extends Model
 {
+    public function esOficial(): bool
+    {
+        return $this->estado === 'finalizado' && $this->oficializado_at
+            && ($this->tipo_resultado === 'deportivo' || ($this->tipo_resultado === 'administrativo'
+                && $this->administrativo_beneficiado_id && $this->administrativo_sancionado_id
+                && $this->administrativo_beneficiado_id !== $this->administrativo_sancionado_id
+                && $this->administrativo_por_id && trim($this->motivo_administrativo ?? '') !== ''));
+    }
+
     protected $table = 'partidos';
 
     // Campos permitidos para asignación masiva.

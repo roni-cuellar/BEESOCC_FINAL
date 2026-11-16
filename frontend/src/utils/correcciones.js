@@ -7,7 +7,7 @@ export function permisosCorreccion(partido, correccion, arbitral, usuarioId) {
   const deportivo = esResultadoOficial(partido) && partido.tipo_resultado === 'deportivo'
   return {
     solicitar: deportivo && arbitral,
-    resolver: deportivo && !arbitral && correccion?.estado === 'solicitada',
+    resolver: esResultadoOficial(partido) && !arbitral && (deportivo || correccion?.alcance === 'resultado') && correccion?.estado === 'solicitada',
     aplicar: deportivo && arbitral && usuarioId != null && correccion?.estado === 'aprobada'
       && correccion.alcance === 'eventos' && String(correccion.solicitado_por_id) === String(usuarioId),
   }

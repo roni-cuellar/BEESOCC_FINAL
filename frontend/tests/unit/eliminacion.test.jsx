@@ -110,10 +110,10 @@ it('separa las acciones de administrador y árbitro y bloquea la edición de tan
   expect(tanda).toContain('5 – 4'); expect(tanda).not.toContain('Certificar penales')
 })
 
-it('ida/vuelta requiere los dos partidos oficiales y deportivos para ofrecer acciones', () => {
+it('ida/vuelta requiere dos partidos oficiales y admite resolución administrativa', () => {
   expect(partidosOficiales(llave, { ...ronda, modalidad: 'ida_vuelta' })).toBe(false)
   expect(partidosOficiales({ ...llave, partidos: [partido, { ...partido, id: 31 }] }, { ...ronda, modalidad: 'ida_vuelta' })).toBe(true)
-  expect(partidosOficiales({ ...llave, partidos: [{ ...partido, tipo_resultado: 'administrativo' }] }, ronda)).toBe(false)
+  expect(partidosOficiales({ ...llave, partidos: [{ ...partido, tipo_resultado: 'administrativo' }] }, ronda)).toBe(true)
 })
 
 it('penales exige motivo, totales enteros limitados y explica el método sin generar goles', () => {

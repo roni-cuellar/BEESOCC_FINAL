@@ -14,7 +14,15 @@ class CorreccionPartidoService
     public function solicitar(Partido $partido, array $datos): AutorizacionCorreccion
     {
         return DB::transaction(function () use ($partido, $datos) {
-            $partido = app(ControlPartidoService::class)->bloquearActa($partido);
+            if ($datos['alcance'] === 'resultado') {
+                $c = app(IntegridadCampeonatoService::class)->bloquear($partido->campeonato_id);
+                abort_unless($c->estado === 'en_curso', 409, 'La rectificación requiere campeonato en curso.');
+                $partido = Partido::whereKey($partido->id)->lockForUpdate()->firstOrFail();
+                Gate::authorize('update', $partido);
+            } else {
+                $partido = app(ControlPartidoService::class)->bloquearActa($partido);
+                abort_unless($partido->tipo_resultado === 'deportivo', 409, 'El expediente de eventos requiere un resultado deportivo.');
+            }
             $this->comprobarOficial($partido);
             $correccion = new AutorizacionCorreccion($datos);
             $correccion->partido_id = $partido->id;
@@ -35,6 +43,7 @@ class CorreccionPartidoService
             Gate::authorize('resolver', $correccion);
             $this->comprobarOficial($partido);
             abort_unless($correccion->estado === 'solicitada', 409, 'La solicitud ya fue resuelta.');
+            abort_if($estado === 'aprobada' && $correccion->alcance === 'eventos' && $partido->tipo_resultado !== 'deportivo', 409, 'No se aprueban cambios de eventos sobre una resolución administrativa.');
             $anterior = $correccion->attributesToArray();
             $correccion->estado = $estado;
             $correccion->autorizado_por_id = auth()->id();
@@ -53,6 +62,7 @@ class CorreccionPartidoService
             [$partido, $correccion] = $this->bloquear($correccion);
             Gate::authorize('aplicar', $correccion);
             $this->comprobarOficial($partido);
+            abort_unless($partido->tipo_resultado === 'deportivo', 409, 'La corrección de eventos requiere resultado deportivo.');
             abort_unless($correccion->estado === 'aprobada' && $correccion->alcance === 'eventos',
                 409, 'La corrección no está aprobada para modificar eventos o ya fue consumida.');
             $auditoria = app(AuditoriaPartidoService::class);
@@ -107,6 +117,5 @@ class CorreccionPartidoService
     {
         abort_unless($partido->estado === 'finalizado' && $partido->oficializado_at,
             409, 'Se requiere un resultado oficial finalizado; no se oficializan históricos automáticamente.');
-        abort_unless($partido->tipo_resultado === 'deportivo', 409, 'Solo se habilitan correcciones de eventos deportivos.');
     }
 }

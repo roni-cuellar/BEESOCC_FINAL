@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Fase;
 use App\Models\Grupo;
 use App\Models\GrupoDesempate;
 use App\Models\Partido;
@@ -47,14 +48,16 @@ class DesempateGrupoService
                 $gl = $marcador['local']['goles'];
                 $gv = $marcador['visitante']['goles'];
                 $datos[] = ['local' => $local, 'visitante' => $visitante, 'goles_local' => $gl, 'goles_visitante' => $gv];
-                $oficiales = $oficiales && $partido->estado === 'finalizado' && $partido->oficializado_at && $partido->tipo_resultado === 'deportivo';
+                $oficiales = $oficiales && $partido->esOficial();
                 app(OrdenGruposService::class)->acumular($mini, $local, $visitante, $gl, $gv);
             }
             $huella = hash('sha256', json_encode([$caso->id, $datos, $oficiales, $caso->llave?->attributesToArray()], JSON_THROW_ON_ERROR));
             if ($oficiales && count($pares) === intdiv(count($ids) * (count($ids) - 1), 2)) {
                 if ($caso->llave_id) {
                     if ($caso->llave->estado === 'resuelta') {
-                        $ganador = app(AvanceEliminacionService::class)->ganador($caso->llave);
+                        // Consulta de una fase pasada; avanzar una llave siempre valida elegibilidad actual.
+                        $fasePasada = Fase::where('fase_origen_id', $grupo->fase_id)->exists();
+                        $ganador = app(AvanceEliminacionService::class)->ganador($caso->llave, true, ! $fasePasada);
                         abort_unless($ganador === $caso->llave->ganador_fase_equipo_id, 409, 'La resolución del desempate cambió.');
                         $inscripcion = $caso->llave->ganador->campeonato_equipo_id;
                         usort($filas, fn ($a, $b) => ($b['campeonato_equipo_id'] === $inscripcion) <=> ($a['campeonato_equipo_id'] === $inscripcion));

@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Equipo;
-use Cloudinary\Cloudinary;
+use App\Services\ImagenCatalogoService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -18,7 +18,7 @@ class EquipoController extends Controller
         return response()->json($equipos);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(Request $request, ImagenCatalogoService $imagenes): JsonResponse
     {
         Gate::authorize('create', Equipo::class);
 
@@ -28,49 +28,20 @@ class EquipoController extends Controller
             'user_id' => 'prohibited',
             'nombre' => 'required|string|max:150',
             'ciudad' => 'required|string|max:100',
-            'escudo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'escudo' => ImagenCatalogoService::REGLA,
+            'eliminar_imagen' => 'sometimes|boolean',
         ], [
             'prohibited' => 'El propietario lo asigna el servidor y no se puede modificar.',
             'required' => 'El campo :attribute es obligatorio.',
             'string' => 'El campo :attribute debe ser un texto.',
             'image' => 'El campo :attribute debe ser una imagen.',
             'mimes' => 'El escudo debe ser JPG, JPEG, PNG o WEBP.',
+            'escudo.max' => 'El escudo no debe superar 5 MB.',
+            'boolean' => 'Indica si deseas quitar la imagen.',
             'max' => 'El campo :attribute supera el tamaño permitido.',
         ]);
 
-        // Si el usuario envía un escudo
-        if ($request->hasFile('escudo')) {
-
-            // Obtener archivo
-            $file = $request->file('escudo');
-
-            // Configurar Cloudinary
-            $cloudinary = new Cloudinary([
-                'cloud' => [
-                    'cloud_name' => config('services.cloudinary.cloud_name'),
-                    'api_key' => config('services.cloudinary.api_key'),
-                    'api_secret' => config('services.cloudinary.api_secret'),
-                ],
-                'url' => ['secure' => true],
-            ]);
-
-            // Subir imagen a Cloudinary
-            $resultado = $cloudinary->uploadApi()->upload(
-                $file->getRealPath(),
-                [
-                    'folder' => 'beesocc/equipos',
-                    'resource_type' => 'image',
-                ]
-            );
-
-            // Guardar la URL recibida
-            $datos['escudo'] = $resultado['secure_url'];
-
-        } else {
-
-            // Si no hay imagen, guardar null
-            $datos['escudo'] = null;
-        }
+        $datos = $imagenes->aplicar($request, $datos, 'escudo', 'beesocc/equipos');
 
         // Registrar el equipo en MySQL
         $equipo = $request->user()->equipos()->create($datos);
@@ -88,7 +59,7 @@ class EquipoController extends Controller
         return response()->json($equipo);
     }
 
-    public function update(Request $request, Equipo $equipo): JsonResponse
+    public function update(Request $request, Equipo $equipo, ImagenCatalogoService $imagenes): JsonResponse
     {
         Gate::authorize('update', $equipo);
         // Solo se actualizan los campos enviados y validados.
@@ -97,13 +68,20 @@ class EquipoController extends Controller
             'user_id' => 'prohibited',
             'nombre' => 'sometimes|required|string|max:150',
             'ciudad' => 'sometimes|required|string|max:100',
-            'escudo' => 'sometimes|nullable|string|max:255',
+            'escudo' => ImagenCatalogoService::REGLA,
+            'eliminar_imagen' => 'sometimes|boolean',
         ], [
             'prohibited' => 'El propietario lo asigna el servidor y no se puede modificar.',
             'required' => 'El campo :attribute es obligatorio.',
             'string' => 'El campo :attribute debe ser un texto.',
             'max' => 'El campo :attribute no debe superar :max caracteres.',
+            'image' => 'El escudo debe ser una imagen.',
+            'mimes' => 'El escudo debe ser JPG, JPEG, PNG o WEBP.',
+            'escudo.max' => 'El escudo no debe superar 5 MB.',
+            'boolean' => 'Indica si deseas quitar la imagen.',
         ]);
+
+        $datos = $imagenes->aplicar($request, $datos, 'escudo', 'beesocc/equipos');
 
         $equipo->update($datos);
 

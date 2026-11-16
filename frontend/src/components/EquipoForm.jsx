@@ -1,6 +1,7 @@
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import Aviso from './Aviso'
+import ImagenCatalogoForm from './ImagenCatalogoForm'
 import { mensajeError } from '../services/api'
 
 function EquipoForm({ equipo, onGuardar, onCancelar }) {
@@ -10,6 +11,8 @@ function EquipoForm({ equipo, onGuardar, onCancelar }) {
     escudo: null,
   })
 
+  const enviando = useRef(false)
+  const [eliminar, setEliminar] = useState(false)
   const [guardando, setGuardando] = useState(false)
   const [error, setError] = useState('')
 
@@ -21,19 +24,11 @@ function EquipoForm({ equipo, onGuardar, onCancelar }) {
     })
   }
 
-  // Seleccionar una imagen
-  function cambiarEscudo(e) {
-    const archivo = e.target.files[0] || null
-
-    setDatos({
-      ...datos,
-      escudo: archivo,
-    })
-  }
-
   // Guardar equipo
   async function guardar(e) {
     e.preventDefault()
+    if (enviando.current) return
+    enviando.current = true
     setError('')
     setGuardando(true)
 
@@ -41,17 +36,18 @@ function EquipoForm({ equipo, onGuardar, onCancelar }) {
       await onGuardar({
         nombre: datos.nombre.trim(),
         ciudad: datos.ciudad.trim(),
-        escudo: datos.escudo,
+        escudo: datos.escudo, eliminar_imagen: eliminar,
       })
     } catch (e) {
       setError(mensajeError(e))
       setGuardando(false)
+      enviando.current = false
     }
   }
 
   return (
     <form onSubmit={guardar}>
-      <Aviso error={error} />
+      <Aviso error={error} /><fieldset className="contents" disabled={guardando}>
 
       <label>
         Nombre del equipo
@@ -75,28 +71,7 @@ function EquipoForm({ equipo, onGuardar, onCancelar }) {
         />
       </label>
 
-      <label>
-        Escudo del equipo (opcional)
-        <input
-          type="file"
-          name="escudo"
-          accept="image/jpeg,image/png,image/webp"
-          onChange={cambiarEscudo}
-        />
-      </label>
-
-      {/* Mostrar imagen actual cuando se edita */}
-      {equipo?.escudo && (
-        <div>
-          <p>Escudo actual:</p>
-          <img
-            src={equipo.escudo}
-            alt={`Escudo de ${equipo.nombre}`}
-            width="100"
-            style={{ objectFit: 'contain' }}
-          />
-        </div>
-      )}
+      <ImagenCatalogoForm campo="escudo" etiqueta="Escudo" actual={equipo?.escudo} nombre={equipo?.nombre || datos.nombre} archivo={datos.escudo} eliminar={eliminar} onArchivo={escudo => { setDatos({ ...datos, escudo }); if (escudo) setEliminar(false) }} onEliminar={setEliminar} />
 
       <div className="acciones">
         <button
@@ -115,7 +90,7 @@ function EquipoForm({ equipo, onGuardar, onCancelar }) {
           {guardando ? 'Guardando…' : 'Guardar equipo'}
         </button>
       </div>
-    </form>
+      </fieldset></form>
   )
 }
 

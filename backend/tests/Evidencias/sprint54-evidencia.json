@@ -1,0 +1,102 @@
+{
+  "build": true,
+  "pint": true,
+  "sprint": "5.4",
+  "react_modificado": false,
+  "lint": true,
+  "motor": "10.4.32-MariaDB",
+  "runner_node": 5,
+  "commits": false,
+  "http_red": {
+    "compatibilidad": 57,
+    "funcional": 220,
+    "carreras": 103
+  },
+  "codigo_productivo_modificado_en_54": false,
+  "sqlite": {
+    "aserciones": 4489,
+    "pruebas": 188,
+    "kernel_laravel": true
+  },
+  "frontend": {
+    "node": 47,
+    "vitest": 149
+  },
+  "total_comprobaciones_http": 380.0,
+  "principal": {
+    "ok": true,
+    "modo": "despues",
+    "tablas": 27,
+    "registros": 50,
+    "solo_lectura": true
+  },
+  "carreras": [
+    {
+      "conexiones_distintas": 2,
+      "caso": "desempate",
+      "esperas_innodb": 2,
+      "respuestas": [
+        201,
+        409
+      ]
+    },
+    {
+      "conexiones_distintas": 2,
+      "caso": "eliminacion",
+      "esperas_innodb": 2,
+      "respuestas": [
+        201,
+        409
+      ]
+    },
+    {
+      "conexiones_distintas": 2,
+      "caso": "clasificacion_correccion",
+      "esperas_innodb": 2,
+      "respuestas": [
+        200,
+        200
+      ]
+    },
+    {
+      "conexiones_distintas": 2,
+      "caso": "generacion_correccion",
+      "esperas_innodb": 2,
+      "respuestas": [
+        201,
+        200
+      ]
+    }
+  ],
+  "ok": true,
+  "estructura": {
+    "ok": true,
+    "columnas_000200": 9,
+    "foraneas_restrict": 4,
+    "indices_unicos_verificados": 3,
+    "json_valid": true,
+    "tokens_omitidos": true,
+    "cuadros_verificados": 5,
+    "carreras_acreditadas": 4,
+    "rollback_eventos_verificado": true,
+    "autorizacion_no_consumida": true,
+    "auditorias_integras": true
+  },
+  "push": false,
+  "fecha": "2026-11-15",
+  "aislamiento": {
+    "ok": true,
+    "motor": "10.4.32-MariaDB",
+    "puerto": 3317,
+    "cuenta_limitada": true,
+    "historico_preservado": true,
+    "tokens_no_ejecutada": true,
+    "rutas_fisicas_verificadas": true,
+    "principal_inaccesible": true,
+    "autenticacion_principal_rechazada": true,
+    "permisos": [
+      "USAGE sin acceso global",
+      "Privilegios solo en la base nueva"
+    ]
+  }
+}

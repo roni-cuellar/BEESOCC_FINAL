@@ -37,7 +37,7 @@ export default function CicloCampeonatoPanel({ liga }) {
     try {
       await ligaService[accion](liga.id)
     } catch (e) {
-      if (e.response?.status === 409) await useLigaStore.getState().cargarLiga(liga.id)
+      if (e.response?.status === 409) await useLigaStore.getState().cargarLiga(liga.id, { conservar: true })
       throw e
     }
     await useLigaStore.getState().cargarLiga(liga.id)

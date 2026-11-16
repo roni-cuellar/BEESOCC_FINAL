@@ -28,14 +28,15 @@ const useLigaStore = create((set, get) => ({
     catch (error) { if (actual === solicitud) set({ error: mensajeError(error) }) }
     finally { if (actual === solicitud) set({ cargando: false }) }
   },
-  cargarLiga: async id => {
+  cargarLiga: async (id, { conservar = false } = {}) => {
     const actual = ++solicitud
-    set({ liga: null, solicitada: String(id), cargando: true, error: '' })
+    // Una validación 409 conserva el panel y su mensaje mientras refresca el estado.
+    set({ ...(conservar ? {} : { liga: null }), solicitada: String(id), cargando: !conservar, error: '' })
     try {
       const liga = await ligaService.obtener(id)
       if (actual === solicitud && get().solicitada === String(id)) set({ liga })
     } catch (error) {
-      if (actual === solicitud && get().solicitada === String(id)) set({ error: mensajeError(error) })
+      if (!conservar && actual === solicitud && get().solicitada === String(id)) set({ error: mensajeError(error) })
     } finally {
       if (actual === solicitud && get().solicitada === String(id)) set({ cargando: false })
     }

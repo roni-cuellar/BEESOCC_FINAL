@@ -297,7 +297,7 @@ class GruposTest extends BackendTestCase
         $this->assertDatabaseCount('partidos', 2);
     }
 
-    public function test_empate_multiple_no_aplica_minitablas_no_aprobadas(): void
+    public function test_empate_multiple_absoluto_requiere_liguilla_adicional(): void
     {
         $e = $this->preparar(3, 1, 2);
         $this->calendario($e);
@@ -305,7 +305,7 @@ class GruposTest extends BackendTestCase
             $this->oficializar($e, $p, 0, 0);
         }
         $this->getJson('/api/grupos/'.Grupo::firstOrFail()->id.'/tabla?vista=oficial')->assertOk()
-            ->assertJsonPath('pendientes_resolucion.0.motivo', 'empate_multiple_pendiente_DP01_DP05')->assertJsonPath('tabla.0.posicion', null);
+            ->assertJsonPath('pendientes_resolucion.0.motivo', 'liguilla_adicional_pendiente')->assertJsonPath('tabla.0.posicion', null);
     }
 
     public function test_enfrentamiento_directo_resuelve_solo_dos_empatados(): void
@@ -341,7 +341,7 @@ class GruposTest extends BackendTestCase
             $this->assertSame(1, $c['origen_puesto']);
             $this->assertDatabaseHas('fase_equipos', ['id' => $c['fase_equipo_id'], 'grupo_id' => $c['origen_grupo_id'], 'campeonato_equipo_id' => $c['campeonato_equipo_id']]);
         }
-        $this->assertFalse($r['transicion_eliminacion']['habilitada']);
+        $this->assertTrue($r['transicion_eliminacion']['habilitada']);
         $this->assertDatabaseCount('rondas', 0);
         $this->assertDatabaseCount('llaves', 0);
         $this->postJson('/api/fases/'.$e['fase']['id'].'/clasificar-grupos', ['confirmacion' => $r['confirmacion']])->assertConflict();

@@ -58,4 +58,9 @@ class Partido extends Model
     {
         return $this->belongsTo(Grupo::class);
     }
+
+    public function desempateGrupo(): BelongsTo
+    {
+        return $this->belongsTo(GrupoDesempate::class, 'grupo_desempate_id');
+    }
 }

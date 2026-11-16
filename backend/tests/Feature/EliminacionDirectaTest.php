@@ -322,7 +322,7 @@ class EliminacionDirectaTest extends BackendTestCase
         try {
             $nueva = database_path('migrations/2026_11_15_000100_create_estructura_eliminacion.php');
             foreach (glob(database_path('migrations/*.php')) as $archivo) {
-                if ($archivo !== $nueva) {
+                if (basename($archivo) < basename($nueva)) {
                     (require $archivo)->up();
                 }
             }

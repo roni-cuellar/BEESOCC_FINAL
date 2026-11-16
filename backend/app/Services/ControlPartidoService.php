@@ -15,6 +15,7 @@ class ControlPartidoService
         $partido = Partido::whereKey($partido->id)->lockForUpdate()->firstOrFail();
         $partido->setRelation('campeonato', $campeonato);
         Gate::authorize('arbitrar', $partido);
+        app(DesempateGrupoService::class)->comprobarVigente($partido);
 
         return $partido;
     }

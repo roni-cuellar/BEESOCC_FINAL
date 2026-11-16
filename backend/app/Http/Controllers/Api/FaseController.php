@@ -8,6 +8,7 @@ use App\Models\Campeonato;
 use App\Models\Fase;
 use App\Models\Llave;
 use App\Services\AvanceEliminacionService;
+use App\Services\CrucesGruposService;
 use App\Services\DistribucionGruposService;
 use App\Services\GeneracionEliminacionService;
 use App\Services\SiembraEliminacionService;
@@ -17,6 +18,35 @@ use Illuminate\Support\Facades\Gate;
 
 class FaseController extends Controller
 {
+    private function validarCruces(Request $request, bool $confirmar): array
+    {
+        return $request->validate([
+            'metodo' => 'required|in:manual,automatico', 'rondas' => 'required|array|list|min:1|max:15',
+            'rondas.*' => 'required|array:modalidad,desempate', 'rondas.*.modalidad' => 'required|in:unico,ida_vuelta',
+            'rondas.*.desempate' => 'required|in:penales,prorroga_penales',
+            'sorteo' => ($confirmar ? 'required' : 'sometimes').'|array|list|min:2|max:32768', 'sorteo.*' => 'required|string',
+            'confirmacion_sorteo' => 'required_with:sorteo|string|size:64',
+            'cruces' => ($confirmar ? 'required' : 'sometimes').'|array|list|min:1|max:16384',
+            'cruces.*' => 'required|array|list|size:2', 'cruces.*.*' => 'nullable|string',
+            'confirmacion' => $confirmar ? 'required|string|size:64' : 'prohibited',
+            'fase_id' => 'prohibited', 'campeonato_id' => 'prohibited', 'estado' => 'prohibited',
+        ]);
+    }
+
+    public function previsualizarDesdeGrupos(Request $request, Fase $fase, CrucesGruposService $servicio): JsonResponse
+    {
+        Gate::authorize('update', $fase);
+
+        return response()->json($servicio->previsualizar($fase, $this->validarCruces($request, false)));
+    }
+
+    public function generarDesdeGrupos(Request $request, Fase $fase, CrucesGruposService $servicio): JsonResponse
+    {
+        Gate::authorize('update', $fase);
+
+        return response()->json(['fase' => $servicio->generar($fase, $this->validarCruces($request, true))], 201);
+    }
+
     public function index(Campeonato $campeonato): JsonResponse
     {
         Gate::authorize('verFases', $campeonato);

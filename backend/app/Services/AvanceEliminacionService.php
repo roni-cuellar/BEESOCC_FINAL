@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Campeonato;
 use App\Models\Fase;
+use App\Models\FaseEquipo;
 use App\Models\Llave;
 use App\Models\LlavePlaza;
 use App\Models\Partido;
@@ -161,24 +162,43 @@ class AvanceEliminacionService
             if ((int) $plaza->fase_equipo_id === (int) $origen->ganador_fase_equipo_id) {
                 continue;
             }
-            $auditoria = app(AuditoriaEliminacionService::class);
-            $antes = $auditoria->capturar($destino);
-            $partidos = $destino->partidos()->lockForUpdate()->get();
-            foreach ($partidos as $partido) {
-                abort_unless($partido->estado === 'programado' && ! $partido->oficializado_at
-                    && ! $partido->participantes()->whereHas('eventos')->exists(), 409, 'La corrección afecta una ronda iniciada o cerrada; se requiere revisión administrativa.');
-            }
-            $plaza->update(['fase_equipo_id' => $origen->ganador_fase_equipo_id]);
-            foreach ($partidos as $partido) {
-                $captura = app(AuditoriaPartidoService::class)->capturar($partido);
-                $rol = ((int) $plaza->posicion === 1) === ((int) $partido->numero_serie === 1) ? 'local' : 'visitante';
-                $participante = $partido->participantes()->where('rol', $rol)->firstOrFail();
-                $participante->update(['campeonato_equipo_id' => $origen->ganador->campeonato_equipo_id]);
-                app(AuditoriaPartidoService::class)->registrar($partido, 'actualizar_clasificado', $motivo, $captura, app(AuditoriaPartidoService::class)->capturar($partido));
-            }
-            $this->preparar($destino);
-            $auditoria->registrar($destino->ronda->fase, 'llave', $destino->id, 'actualizar_plaza', $motivo, $antes, $auditoria->capturar($destino));
+            $this->cambiarPlaza($plaza, $origen->ganador_fase_equipo_id, $motivo);
         }
+    }
+
+    public function cambiarPlaza(LlavePlaza $plaza, int $participanteId, string $motivo, bool $preparar = true): void
+    {
+        $destino = $plaza->llave;
+        $participanteNuevo = FaseEquipo::findOrFail($participanteId);
+        abort_unless($participanteNuevo->fase_id === $destino->ronda->fase_id, 409, 'Participante de otra fase.');
+        $auditoria = app(AuditoriaEliminacionService::class);
+        $antes = $auditoria->capturar($destino);
+        $partidos = $destino->partidos()->lockForUpdate()->get();
+        foreach ($partidos as $partido) {
+            abort_unless($partido->estado === 'programado' && ! $partido->oficializado_at
+                && ! $partido->participantes()->whereHas('eventos')->exists(), 409, 'La corrección afecta una ronda iniciada o cerrada; se requiere revisión administrativa.');
+        }
+        $plaza->update(['fase_equipo_id' => $participanteId]);
+        foreach ($partidos as $partido) {
+            $captura = app(AuditoriaPartidoService::class)->capturar($partido);
+            $rol = ((int) $plaza->posicion === 1) === ((int) $partido->numero_serie === 1) ? 'local' : 'visitante';
+            $participante = $partido->participantes()->where('rol', $rol)->firstOrFail();
+            $existente = $partido->participantes()->where('campeonato_equipo_id', $participanteNuevo->campeonato_equipo_id)->first();
+            if ($existente && $existente->id !== $participante->id) {
+                // Intercambia roles sin borrar participantes ni violar la unicidad.
+                $otroRol = $existente->rol;
+                $participante->update(['rol' => 'temporal']);
+                $existente->update(['rol' => $rol]);
+                $participante->update(['rol' => $otroRol]);
+            } else {
+                $participante->update(['campeonato_equipo_id' => $participanteNuevo->campeonato_equipo_id]);
+            }
+            app(AuditoriaPartidoService::class)->registrar($partido, 'actualizar_clasificado', $motivo, $captura, app(AuditoriaPartidoService::class)->capturar($partido));
+        }
+        if ($preparar) {
+            $this->preparar($destino->fresh());
+        }
+        $auditoria->registrar($destino->ronda->fase, 'llave', $destino->id, 'actualizar_plaza', $motivo, $antes, $auditoria->capturar($destino));
     }
 
     public function revisarCorreccion(Partido $partido, string $motivo): void
@@ -199,6 +219,11 @@ class AvanceEliminacionService
 
     public function actualizarEstados(Fase $fase): void
     {
+        if ($fase->tipo === 'grupos') {
+            app(ClasificacionGruposService::class)->actualizarEstado($fase);
+
+            return;
+        }
         foreach ($fase->rondas as $ronda) {
             $resuelta = ! $ronda->llaves()->where('estado', '!=', 'resuelta')->exists();
             $iniciada = Partido::whereIn('llave_id', $ronda->llaves()->select('id'))->where('estado', '!=', 'programado')->exists();

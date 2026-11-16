@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\EventoEstadistico;
 use App\Models\Partido;
 use App\Models\User;
+use Illuminate\Database\Connection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Testing\TestResponse;
 use RuntimeException;
@@ -16,6 +17,18 @@ abstract class BackendTestCase extends TestCase
     {
         parent::setUp();
 
+        $base = $this->prepararBasePruebas();
+        $base->beginTransaction();
+        $this->beforeApplicationDestroyed(function () use ($base) {
+            while ($base->transactionLevel() > 0) {
+                $base->rollBack();
+            }
+        });
+        $this->actingAs(User::factory()->create(), 'web');
+    }
+
+    protected function prepararBasePruebas(): Connection
+    {
         // Se comprueba el destino antes de migrar o escribir cualquier dato.
         if (! $this->app->environment('testing') || $this->app->configurationIsCached()) {
             throw new RuntimeException('Las pruebas requieren APP_ENV=testing y configuración sin caché.');
@@ -43,13 +56,8 @@ abstract class BackendTestCase extends TestCase
         foreach (glob(database_path('migrations/*.php')) as $archivo) {
             (require $archivo)->up();
         }
-        $base->beginTransaction();
-        $this->beforeApplicationDestroyed(function () use ($base) {
-            while ($base->transactionLevel() > 0) {
-                $base->rollBack();
-            }
-        });
-        $this->actingAs(User::factory()->create(), 'web');
+
+        return $base;
     }
 
     protected function campeonato(string $nombre = 'Copa de prueba'): array

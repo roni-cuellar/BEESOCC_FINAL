@@ -31,6 +31,11 @@ Route::middleware('web')->withoutMiddleware(EnsureFrontendRequestsAreStateful::c
 });
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/grupos/{grupo}/desempates', [GrupoController::class, 'desempates']);
+    Route::post('/fases/{fase}/previsualizar-eliminacion', [FaseController::class, 'previsualizarDesdeGrupos']);
+    Route::post('/fases/{fase}/generar-eliminacion', [FaseController::class, 'generarDesdeGrupos']);
+    Route::post('/grupos/{grupo}/previsualizar-desempate', [GrupoController::class, 'previsualizarDesempate']);
+    Route::post('/grupos/{grupo}/generar-desempate', [GrupoController::class, 'generarDesempate']);
     Route::post('/fases/{fase}/previsualizar-grupos', [GrupoController::class, 'previsualizar']);
     Route::post('/fases/{fase}/confirmar-grupos', [GrupoController::class, 'confirmar']);
     Route::post('/fases/{fase}/generar-calendario-grupos', [GrupoController::class, 'calendario']);

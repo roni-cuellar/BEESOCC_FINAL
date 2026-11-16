@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Fase;
 use App\Models\Grupo;
+use App\Models\GrupoDesempate;
 use App\Services\ClasificacionGruposService;
+use App\Services\DesempateGrupoService;
 use App\Services\DistribucionGruposService;
 use App\Services\TablaGruposService;
 use Illuminate\Http\JsonResponse;
@@ -14,6 +16,29 @@ use Illuminate\Support\Facades\Gate;
 
 class GrupoController extends Controller
 {
+    public function desempates(Grupo $grupo): JsonResponse
+    {
+        Gate::authorize('view', $grupo);
+
+        return response()->json(GrupoDesempate::where('grupo_id', $grupo->id)->with('partidos.participantes', 'llave')->get());
+    }
+
+    public function previsualizarDesempate(Request $request, Grupo $grupo, DesempateGrupoService $servicio): JsonResponse
+    {
+        Gate::authorize('update', $grupo->fase);
+        $datos = $request->validate(['clave' => 'required|string|size:64']);
+
+        return response()->json($servicio->previsualizar($grupo, $datos['clave']));
+    }
+
+    public function generarDesempate(Request $request, Grupo $grupo, DesempateGrupoService $servicio): JsonResponse
+    {
+        Gate::authorize('update', $grupo->fase);
+        $datos = $request->validate(['clave' => 'required|string|size:64', 'confirmacion' => 'required|string|size:64']);
+
+        return response()->json(['desempate' => $servicio->generar($grupo, $datos['clave'], $datos['confirmacion'])], 201);
+    }
+
     private function validarDistribucion(Request $request, bool $confirmar = false): array
     {
         return $request->validate([

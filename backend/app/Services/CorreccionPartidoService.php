@@ -57,13 +57,13 @@ class CorreccionPartidoService
                 409, 'La corrección no está aprobada para modificar eventos o ya fue consumida.');
             $auditoria = app(AuditoriaPartidoService::class);
             $anterior = $auditoria->capturar($partido) + ['correccion' => $correccion->attributesToArray()];
-            $huellaGrupos = $partido->grupo_id ? app(ClasificacionGruposService::class)->preparar($partido->fase)['huella'] : null;
+            $clasificacionAnterior = $partido->grupo_id ? app(ClasificacionGruposService::class)->preparar($partido->fase) : null;
             foreach ($operaciones as $operacion) {
                 $this->aplicarOperacion($partido, $operacion);
             }
             app(ResultadoOficialService::class)->comprobarEventos($partido);
             app(AvanceEliminacionService::class)->revisarCorreccion($partido, $correccion->motivo);
-            app(ClasificacionGruposService::class)->revisarCorreccion($partido, $correccion->motivo, $huellaGrupos);
+            app(ClasificacionGruposService::class)->revisarCorreccion($partido, $correccion->motivo, $clasificacionAnterior);
             // Eventos, consumo y bitácora se confirman juntos; un fallo revierte todo.
             $correccion->estado = 'consumida';
             $correccion->fecha_consumo = now();

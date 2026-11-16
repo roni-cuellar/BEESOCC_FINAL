@@ -13,7 +13,7 @@ class ClasificacionGruposService
     private function ultimoRegistro(Fase $fase): ?AuditoriaCambio
     {
         return AuditoriaCambio::where('entidad_tipo', 'fase')->where('entidad_id', $fase->id)
-            ->whereIn('accion', ['clasificar_grupos', 'invalidar_clasificacion_grupos'])->orderByDesc('id')->first();
+            ->whereIn('accion', ['clasificar_grupos', 'actualizar_clasificacion_grupos', 'invalidar_clasificacion_grupos'])->orderByDesc('id')->first();
     }
 
     public function preparar(Fase $fase): array
@@ -49,13 +49,14 @@ class ClasificacionGruposService
         }
         $huella = hash('sha256', json_encode([$fase->id, $cupo, array_column($tablas, 'huella')], JSON_THROW_ON_ERROR));
         $ultimo = $this->ultimoRegistro($fase);
-        $vigente = ! $bloqueos && $ultimo?->accion === 'clasificar_grupos' && ($ultimo->posterior_json['huella'] ?? null) === $huella;
+        $vigente = ! $bloqueos && in_array($ultimo?->accion, ['clasificar_grupos', 'actualizar_clasificacion_grupos'], true) && ($ultimo->posterior_json['huella'] ?? null) === $huella;
+        $eliminacion = Fase::where('fase_origen_id', $fase->id)->first();
 
         return ['fase_id' => $fase->id, 'clasificados_por_grupo' => $cupo, 'lista_para_clasificar' => ! $bloqueos,
             'clasificacion_vigente' => $vigente, 'huella' => $huella, 'bloqueos' => $bloqueos, 'tablas' => $tablas,
             'candidatos' => $bloqueos ? [] : $candidatos,
             'confirmacion' => $bloqueos ? null : hash_hmac('sha256', $huella, config('app.key')),
-            'transicion_eliminacion' => ['habilitada' => false, 'motivo' => 'Cruces entre grupos y tratamiento de correcciones posteriores pendientes de aprobación.']];
+            'transicion_eliminacion' => ['habilitada' => $vigente && ! $eliminacion, 'fase_eliminacion_id' => $eliminacion?->id]];
     }
 
     public function clasificar(Fase $fase, string $confirmacion): array
@@ -74,21 +75,33 @@ class ClasificacionGruposService
         });
     }
 
-    public function revisarCorreccion(Partido $partido, string $motivo, ?string $huellaAnterior): void
+    public function revisarCorreccion(Partido $partido, string $motivo, ?array $anterior): void
     {
-        if (! $partido->grupo_id || $huellaAnterior === null) {
+        if (! $partido->grupo_id || $anterior === null) {
             return;
         }
         $fase = $partido->fase()->firstOrFail();
         $vista = $this->preparar($fase);
-        if ($vista['huella'] === $huellaAnterior) {
+        if ($vista['huella'] === $anterior['huella']) {
             return;
         }
-        // No hay reglas aprobadas para recalcular cruces posteriores de grupos.
-        abort_if($fase->campeonato->fases()->where('orden', '>', $fase->orden)->where('tipo', 'eliminacion')->whereHas('rondas')->exists(),
-            409, 'La corrección afecta una eliminatoria posterior; requiere revisión administrativa antes de propagar cambios.');
+        $usadosAntes = array_merge(...array_column($anterior['tablas'], 'desempates_usados'));
+        $usadosAhora = array_merge(...array_column($vista['tablas'], 'desempates_usados'));
+        $obsoletos = array_diff($usadosAntes, $usadosAhora);
+        abort_if(Partido::whereIn('grupo_desempate_id', $obsoletos)->where(fn ($q) => $q->where('estado', '!=', 'programado')->orWhereNotNull('oficializado_at')->orWhereHas('participantes.eventos'))->exists(),
+            409, 'La corrección invalida un desempate ya iniciado.');
+        $eliminacion = Fase::where('fase_origen_id', $fase->id)->first();
+        if ($eliminacion) {
+            app(CrucesGruposService::class)->propagarCorreccion($eliminacion, $vista, $motivo);
+            app(DistribucionGruposService::class)->auditar($fase, 'actualizar_clasificacion_grupos', $motivo, $anterior,
+                ['huella' => $vista['huella'], 'clasificados_por_grupo' => $vista['clasificados_por_grupo'], 'clasificados' => $vista['candidatos']]);
+            $fase->update(['estado' => 'finalizada']);
+
+            return;
+        }
+        abort_if($fase->campeonato->fases()->where('orden', '>', $fase->orden)->where('tipo', 'eliminacion')->whereHas('rondas')->exists(), 409, 'La fase posterior no tiene procedencia de grupos verificable.');
         $ultimo = $this->ultimoRegistro($fase);
-        if ($ultimo?->accion === 'clasificar_grupos') {
+        if (in_array($ultimo?->accion, ['clasificar_grupos', 'actualizar_clasificacion_grupos'], true)) {
             app(DistribucionGruposService::class)->auditar($fase, 'invalidar_clasificacion_grupos', $motivo, $ultimo->posterior_json,
                 ['huella' => $vista['huella'], 'clasificacion_vigente' => false]);
             $fase->update(['estado' => 'en_curso']);

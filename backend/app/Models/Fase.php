@@ -10,7 +10,7 @@ class Fase extends Model
 
     public $timestamps = false;
 
-    protected $fillable = ['campeonato_id', 'orden', 'nombre', 'tipo', 'estado', 'clasificados_por_grupo'];
+    protected $fillable = ['campeonato_id', 'orden', 'nombre', 'tipo', 'estado', 'clasificados_por_grupo', 'fase_origen_id', 'clasificacion_huella'];
 
     public function grupos()
     {

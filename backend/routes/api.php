@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\AsignacionArbitroController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CampeonatoController;
 use App\Http\Controllers\Api\CampeonatoEquipoController;
+use App\Http\Controllers\Api\CicloCampeonatoController;
 use App\Http\Controllers\Api\ConfiguracionCampeonatoController;
 use App\Http\Controllers\Api\CorreccionPartidoController;
 use App\Http\Controllers\Api\EquipoController;
@@ -31,6 +32,10 @@ Route::middleware('web')->withoutMiddleware(EnsureFrontendRequestsAreStateful::c
 });
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::patch('/campeonatos/{campeonato}/requisitos-inicio', [CicloCampeonatoController::class, 'requisitos']);
+    Route::post('/campeonatos/{campeonato}/iniciar', [CicloCampeonatoController::class, 'iniciar']);
+    Route::post('/campeonatos/{campeonato}/finalizar', [CicloCampeonatoController::class, 'finalizar']);
+    Route::get('/campeonatos/{campeonato}/auditoria-ciclo', [CicloCampeonatoController::class, 'auditoria']);
     Route::get('/grupos/{grupo}/desempates', [GrupoController::class, 'desempates']);
     Route::post('/fases/{fase}/previsualizar-eliminacion', [FaseController::class, 'previsualizarDesdeGrupos']);
     Route::post('/fases/{fase}/generar-eliminacion', [FaseController::class, 'generarDesdeGrupos']);

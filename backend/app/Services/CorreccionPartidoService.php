@@ -94,7 +94,7 @@ class CorreccionPartidoService
     private function bloquear(AutorizacionCorreccion $correccion): array
     {
         // Mismo orden que la revocación arbitral: campeonato, partido y autorización.
-        $campeonato = Campeonato::whereKey($correccion->partido->campeonato_id)->lockForUpdate()->firstOrFail();
+        $campeonato = app(IntegridadCampeonatoService::class)->bloquear($correccion->partido->campeonato_id);
         $partido = Partido::whereKey($correccion->partido_id)->lockForUpdate()->firstOrFail();
         $partido->setRelation('campeonato', $campeonato);
         $correccion = AutorizacionCorreccion::whereKey($correccion->id)->lockForUpdate()->firstOrFail();

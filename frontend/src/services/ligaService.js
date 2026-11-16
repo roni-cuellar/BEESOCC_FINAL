@@ -1,5 +1,9 @@
 import api from './api.js'
 const ligaService = {
+  requisitosInicio: async (id, datos) => (await api.patch('/campeonatos/' + id + '/requisitos-inicio', datos)).data,
+  iniciar: async id => (await api.post('/campeonatos/' + id + '/iniciar')).data,
+  finalizar: async id => (await api.post('/campeonatos/' + id + '/finalizar')).data,
+  auditoriaCiclo: async id => (await api.get('/campeonatos/' + id + '/auditoria-ciclo')).data,
   listar: async () => (await api.get('/campeonatos')).data,
   obtener: async id => (await api.get('/campeonatos/' + id)).data,
   crear: async datos => (await api.post('/campeonatos', datos)).data.campeonato,

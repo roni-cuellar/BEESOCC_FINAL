@@ -11,6 +11,7 @@ use App\Services\AuditoriaPartidoService;
 use App\Services\AvanceEliminacionService;
 use App\Services\ClasificacionGruposService;
 use App\Services\ControlPartidoService;
+use App\Services\IntegridadCampeonatoService;
 use App\Services\MarcadorService;
 use App\Services\ResultadoOficialService;
 use Illuminate\Http\JsonResponse;
@@ -43,7 +44,7 @@ class PartidoController extends Controller
 
         return DB::transaction(function () use ($campeonato) {
             // Dos generaciones del mismo campeonato deben esperar este bloqueo.
-            $campeonato = Campeonato::whereKey($campeonato->id)->lockForUpdate()->firstOrFail();
+            $campeonato = app(IntegridadCampeonatoService::class)->bloquear($campeonato->id, true);
 
             if ($campeonato->partidos()->exists()) {
                 return response()->json(['message' => 'El campeonato ya tiene partidos registrados. No se puede generar otro calendario.'], 409);
@@ -172,7 +173,8 @@ class PartidoController extends Controller
         }
 
         return DB::transaction(function () use ($datos, $campeonato) {
-            $campeonato = Campeonato::whereKey($campeonato->id)->lockForUpdate()->firstOrFail();
+            $campeonato = app(IntegridadCampeonatoService::class)->bloquear($campeonato->id);
+            abort_unless($campeonato->estado === 'planificacion', 409, 'El calendario ordinario se cierra al iniciar.');
             abort_unless($campeonato->formato === 'todos_contra_todos', 409, 'Los partidos eliminatorios se generan desde las llaves.');
             $partido = $campeonato->partidos()->create([
                 'jornada' => $datos['jornada'],
@@ -237,8 +239,10 @@ class PartidoController extends Controller
 
         return DB::transaction(function () use ($request, $datos, $partido) {
             // Serializa las modificaciones del mismo partido.
-            Campeonato::whereKey($partido->campeonato_id)->lockForUpdate()->firstOrFail();
+            app(IntegridadCampeonatoService::class)->bloquear($partido->campeonato_id);
             $partido = Partido::whereKey($partido->id)->lockForUpdate()->firstOrFail();
+            abort_if($partido->campeonato->estado !== 'planificacion' && (isset($datos['local_id']) || isset($datos['visitante_id']) || isset($datos['jornada'])), 409, 'La estructura deportiva ya está cerrada.');
+            abort_if(array_key_exists('fecha_hora', $datos) && $partido->participantes()->whereHas('eventos')->exists() && $request->input('fecha_hora') !== $partido->getRawOriginal('fecha_hora'), 409, 'La fecha con eventos registrados requiere revisión extraordinaria; no se cambia mediante programación ordinaria.');
             abort_if(($partido->llave_id || $partido->grupo_id) && (isset($datos['local_id']) || isset($datos['visitante_id']) || (isset($datos['jornada']) && (int) $datos['jornada'] !== (int) $partido->jornada)), 409, 'Los participantes y la jornada se gestionan desde la estructura deportiva.');
 
             if (in_array($partido->estado, ['finalizado', 'cancelado'])) {
@@ -297,7 +301,7 @@ class PartidoController extends Controller
 
         return DB::transaction(function () use ($partido, $datos, $cancelar) {
             if ($cancelar) {
-                Campeonato::whereKey($partido->campeonato_id)->lockForUpdate()->firstOrFail();
+                app(IntegridadCampeonatoService::class)->bloquear($partido->campeonato_id);
                 $partido = Partido::whereKey($partido->id)->lockForUpdate()->firstOrFail();
                 Gate::authorize('update', $partido);
             } else {
@@ -344,7 +348,7 @@ class PartidoController extends Controller
         Gate::authorize('delete', $partido);
 
         return DB::transaction(function () use ($partido) {
-            Campeonato::whereKey($partido->campeonato_id)->lockForUpdate()->firstOrFail();
+            app(IntegridadCampeonatoService::class)->bloquear($partido->campeonato_id, true);
             $partido = Partido::whereKey($partido->id)->lockForUpdate()->firstOrFail();
             abort_if($partido->llave_id || $partido->grupo_id, 409, 'No se eliminan partidos de la estructura deportiva.');
 

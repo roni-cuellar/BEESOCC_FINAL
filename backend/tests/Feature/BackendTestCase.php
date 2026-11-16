@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\Campeonato;
+use App\Models\CampeonatoEquipo;
 use App\Models\EventoEstadistico;
 use App\Models\Partido;
 use App\Models\User;
@@ -77,6 +79,11 @@ abstract class BackendTestCase extends TestCase
     {
         $equipo = $this->equipo($nombre);
 
+        $campeonato = Campeonato::findOrFail($campeonatoId);
+        if ($campeonato->estado === 'en_curso') {
+            return $campeonato->inscripcionesEquipos()->create(['equipo_id' => $equipo['id'], 'estado' => 'activo'])->toArray();
+        }
+
         return $this->postJson('/api/campeonatos/'.$campeonatoId.'/inscripciones-equipos', ['equipo_id' => $equipo['id']])
             ->assertCreated()->json('inscripcion');
     }
@@ -92,6 +99,12 @@ abstract class BackendTestCase extends TestCase
     {
         $jugadorId = $jugadorId ?? $this->jugador()['id'];
 
+        // Casos heredados de estadísticas: preparar historia, no habilitar una API cerrada.
+        $inscripcion = CampeonatoEquipo::findOrFail($inscripcionId);
+        if ($inscripcion->campeonato->estado === 'en_curso') {
+            return $inscripcion->plantillas()->create(['jugador_id' => $jugadorId, 'dorsal' => $dorsal, 'posicion' => 'Delantero', 'fecha_ingreso' => '2026-01-01'])->toArray();
+        }
+
         return $this->postJson('/api/inscripciones-equipos/'.$inscripcionId.'/plantillas', [
             'jugador_id' => $jugadorId, 'dorsal' => $dorsal, 'posicion' => 'Delantero', 'fecha_ingreso' => '2026-01-01',
         ])->assertCreated()->json('plantilla');
@@ -99,6 +112,14 @@ abstract class BackendTestCase extends TestCase
 
     protected function partido(int $campeonatoId, int $localId, int $visitanteId, int $jornada = 1): array
     {
+        $campeonato = Campeonato::findOrFail($campeonatoId);
+        if ($campeonato->estado === 'en_curso') {
+            $partido = $campeonato->partidos()->create(['jornada' => $jornada, 'estado' => 'programado']);
+            $partido->participantes()->createMany([['rol' => 'local', 'campeonato_equipo_id' => $localId], ['rol' => 'visitante', 'campeonato_equipo_id' => $visitanteId]]);
+
+            return $partido->load('participantes.campeonatoEquipo.equipo')->toArray();
+        }
+
         return $this->postJson('/api/campeonatos/'.$campeonatoId.'/partidos', [
             'jornada' => $jornada, 'local_id' => $localId, 'visitante_id' => $visitanteId,
         ])->assertCreated()->json('partido');
@@ -143,6 +164,10 @@ abstract class BackendTestCase extends TestCase
         $partido = $coincidencia[1] === 'partidos'
             ? Partido::findOrFail($coincidencia[2])
             : EventoEstadistico::findOrFail($coincidencia[2])->equipoPartido->partido;
+        // Fixture de acta legado: el ciclo HTTP se comprueba aparte en CicloCampeonatoTest.
+        if ($partido->campeonato->estado === 'planificacion') {
+            $partido->campeonato->update(['estado' => 'en_curso']);
+        }
         $administrador = auth('web')->user();
         $asignacion = $partido->campeonato->asignacionesArbitro()->whereNull('fecha_fin')->first();
         if (! $asignacion) {

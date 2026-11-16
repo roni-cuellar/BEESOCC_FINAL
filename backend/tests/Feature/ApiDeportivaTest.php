@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\CampeonatoEquipo;
+
 class ApiDeportivaTest extends BackendTestCase
 {
     public function test_inscripciones_no_se_duplican_y_retirar_conserva_historial(): void
@@ -95,7 +97,9 @@ class ApiDeportivaTest extends BackendTestCase
         $datos = ['jornada' => 2, 'local_id' => $escenario['local']['id']];
         $this->postJson($ruta, $datos + ['visitante_id' => $escenario['local']['id']])->assertUnprocessable();
         $this->postJson($ruta, $datos + ['visitante_id' => $ajeno['id']])->assertUnprocessable();
-        $this->patchJson('/api/inscripciones-equipos/'.$escenario['visitante']['id'], ['estado' => 'retirado'])->assertOk();
+        $this->patchJson('/api/inscripciones-equipos/'.$escenario['visitante']['id'], ['estado' => 'retirado'])->assertConflict();
+        // Inscripción histórica inconsistente preparada solo para probar la defensa.
+        CampeonatoEquipo::whereKey($escenario['visitante']['id'])->update(['estado' => 'retirado']);
         $this->postJson($ruta, $datos + ['visitante_id' => $escenario['visitante']['id']])->assertUnprocessable();
         $this->assertDatabaseCount('partidos', 1);
     }

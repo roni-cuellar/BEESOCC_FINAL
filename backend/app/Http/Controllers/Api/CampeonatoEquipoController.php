@@ -7,6 +7,7 @@ use App\Models\Campeonato;
 use App\Models\CampeonatoEquipo;
 use App\Models\Equipo;
 use App\Models\FaseEquipo;
+use App\Services\IntegridadCampeonatoService;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -46,7 +47,7 @@ class CampeonatoEquipoController extends Controller
         try {
             // La relación asigna el campeonato indicado en la URL.
             $inscripcion = DB::transaction(function () use ($campeonato, $datos) {
-                $campeonato = Campeonato::whereKey($campeonato->id)->lockForUpdate()->firstOrFail();
+                $campeonato = app(IntegridadCampeonatoService::class)->bloquear($campeonato->id, true);
                 abort_if($campeonato->formato === 'eliminacion_directa' && $campeonato->fases()->whereHas('rondas')->exists(), 409, 'La siembra ya está confirmada; no se agregan inscripciones al cuadro.');
                 abort_if($campeonato->formato === 'grupos_eliminacion' && $campeonato->fases()->whereHas('grupos')->exists(), 409, 'La distribución de grupos ya está confirmada; no se agregan inscripciones.');
 
@@ -73,36 +74,57 @@ class CampeonatoEquipoController extends Controller
     public function update(Request $request, CampeonatoEquipo $campeonatoEquipo): JsonResponse
     {
         Gate::authorize('update', $campeonatoEquipo);
-        $datos = $request->validate([
-            'estado' => 'required|in:activo,retirado',
-            'campeonato_id' => 'prohibited',
-            'equipo_id' => 'prohibited',
-        ], [
-            'required' => 'El campo :attribute es obligatorio.',
-            'in' => 'El estado debe ser activo o retirado.',
-            'prohibited' => 'No se permite cambiar el campo :attribute de la inscripción.',
-        ]);
 
-        // Retirar al equipo conserva su inscripción y su historial.
-        $campeonatoEquipo->update(['estado' => $datos['estado']]);
+        return DB::transaction(function () use ($request, $campeonatoEquipo) {
+            $integridad = app(IntegridadCampeonatoService::class);
+            $campeonato = $integridad->bloquear($campeonatoEquipo->campeonato_id, true);
+            $campeonatoEquipo = CampeonatoEquipo::whereKey($campeonatoEquipo->id)->lockForUpdate()->firstOrFail();
 
-        return response()->json([
-            'message' => 'Estado de la inscripción actualizado correctamente.',
-            'inscripcion' => $campeonatoEquipo,
-        ]);
+            Gate::authorize('update', $campeonatoEquipo);
+            $datos = $request->validate([
+                'estado' => 'required|in:activo,retirado',
+                'campeonato_id' => 'prohibited',
+                'equipo_id' => 'prohibited',
+            ], [
+                'required' => 'El campo :attribute es obligatorio.',
+                'in' => 'El estado debe ser activo o retirado.',
+                'prohibited' => 'No se permite cambiar el campo :attribute de la inscripción.',
+            ]);
+
+            $antes = $campeonatoEquipo->attributesToArray();
+            abort_if($datos['estado'] !== $campeonatoEquipo->estado && (FaseEquipo::where('campeonato_equipo_id', $campeonatoEquipo->id)->exists() || $campeonatoEquipo->participacionesPartidos()->exists()), 409, 'La inscripción ya tiene estructura deportiva; no se altera mediante un retiro ordinario.');
+            // Retirar al equipo conserva su inscripción y su historial.
+            $campeonatoEquipo->update(['estado' => $datos['estado']]);
+            $integridad->auditar($campeonato, 'inscripcion', $campeonatoEquipo->id, 'estado_inscripcion', $antes, $campeonatoEquipo->attributesToArray());
+
+            return response()->json([
+                'message' => 'Estado de la inscripción actualizado correctamente.',
+                'inscripcion' => $campeonatoEquipo,
+            ]);
+
+        });
     }
 
     public function destroy(CampeonatoEquipo $campeonatoEquipo): JsonResponse
     {
         Gate::authorize('delete', $campeonatoEquipo);
-        if (FaseEquipo::where('campeonato_equipo_id', $campeonatoEquipo->id)->exists() || $campeonatoEquipo->plantillas()->exists() || $campeonatoEquipo->participacionesPartidos()->exists()) {
-            return response()->json([
-                'message' => 'No se puede eliminar la inscripción porque tiene jugadores inscritos o participaciones en partidos. Cambia su estado a retirado para conservar el historial.',
-            ], 409);
-        }
 
-        $campeonatoEquipo->delete();
+        return DB::transaction(function () use ($campeonatoEquipo) {
+            $integridad = app(IntegridadCampeonatoService::class);
+            $campeonato = $integridad->bloquear($campeonatoEquipo->campeonato_id, true);
+            $campeonatoEquipo = CampeonatoEquipo::whereKey($campeonatoEquipo->id)->lockForUpdate()->firstOrFail();
 
-        return response()->json(['message' => 'Inscripción eliminada correctamente.']);
+            Gate::authorize('delete', $campeonatoEquipo);
+            if (FaseEquipo::where('campeonato_equipo_id', $campeonatoEquipo->id)->exists() || $campeonatoEquipo->plantillas()->exists() || $campeonatoEquipo->participacionesPartidos()->exists()) {
+                return response()->json([
+                    'message' => 'No se puede eliminar la inscripción porque tiene jugadores inscritos o participaciones en partidos. Cambia su estado a retirado para conservar el historial.',
+                ], 409);
+            }
+
+            $campeonatoEquipo->delete();
+
+            return response()->json(['message' => 'Inscripción eliminada correctamente.']);
+
+        });
     }
 }

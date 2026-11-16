@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\Campeonato;
 use App\Models\Fase;
 use App\Models\FaseEquipo;
 use App\Models\Llave;
@@ -15,7 +14,7 @@ class AvanceEliminacionService
 {
     private function bloquear(Llave $llave): Llave
     {
-        $campeonato = Campeonato::whereKey($llave->ronda->fase->campeonato_id)->lockForUpdate()->firstOrFail();
+        $campeonato = app(IntegridadCampeonatoService::class)->bloquear($llave->ronda->fase->campeonato_id);
         $campeonato->inscripcionesEquipos()->lockForUpdate()->get();
 
         return Llave::whereKey($llave->id)->lockForUpdate()->firstOrFail();

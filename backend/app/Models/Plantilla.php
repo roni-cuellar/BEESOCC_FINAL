@@ -10,6 +10,8 @@ class Plantilla extends Model
 {
     protected $table = 'plantillas';
 
+    protected $hidden = ['dorsal_vigente'];
+
     // Campos permitidos para asignación masiva.
     protected $fillable = [
         'campeonato_equipo_id',

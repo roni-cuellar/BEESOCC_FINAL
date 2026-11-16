@@ -213,6 +213,7 @@ class AsignacionArbitroTest extends BackendTestCase
         $escenario = $this->escenario(false);
         $arbitro = User::factory()->create();
         $this->postJson($this->ruta($escenario['campeonato']['id']), ['usuario_id' => $arbitro->id])->assertCreated();
+        Campeonato::findOrFail($escenario['campeonato']['id'])->update(['estado' => 'en_curso']);
         app('auth')->forgetGuards();
         $this->actingAs($arbitro, 'web');
         $this->patchJson('/api/partidos/'.$escenario['partido']['id'], ['estado' => 'en_curso'])->assertOk();

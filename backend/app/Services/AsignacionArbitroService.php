@@ -15,7 +15,7 @@ class AsignacionArbitroService
     private function bloquear(Campeonato $campeonato, User $actor): Campeonato
     {
         // Bloquear el padre también serializa la primera asignación, cuando aún no hay filas hijas.
-        $campeonato = Campeonato::whereKey($campeonato->id)->lockForUpdate()->firstOrFail();
+        $campeonato = app(IntegridadCampeonatoService::class)->bloquear($campeonato->id);
         Gate::forUser($actor)->authorize('gestionarArbitros', $campeonato);
 
         return $campeonato;

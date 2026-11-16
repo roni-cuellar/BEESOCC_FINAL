@@ -12,7 +12,7 @@ class GeneracionEliminacionService
     public function crearFase(Campeonato $campeonato, string $nombre): Fase
     {
         return DB::transaction(function () use ($campeonato, $nombre) {
-            $campeonato = Campeonato::whereKey($campeonato->id)->lockForUpdate()->firstOrFail();
+            $campeonato = app(IntegridadCampeonatoService::class)->bloquear($campeonato->id);
             Gate::authorize('update', $campeonato);
             abort_unless($campeonato->formato === 'eliminacion_directa' && $campeonato->estado === 'planificacion', 409, 'Se requiere un campeonato de eliminación directa en planificación.');
             abort_if($campeonato->fases()->exists() || $campeonato->partidos()->exists(), 409, 'El campeonato ya tiene una estructura deportiva.');
@@ -26,7 +26,7 @@ class GeneracionEliminacionService
     public function generar(Fase $fase, array $datos): Fase
     {
         return DB::transaction(function () use ($fase, $datos) {
-            $campeonato = Campeonato::whereKey($fase->campeonato_id)->lockForUpdate()->firstOrFail();
+            $campeonato = app(IntegridadCampeonatoService::class)->bloquear($fase->campeonato_id);
             Gate::authorize('update', $campeonato);
             $fase = Fase::whereKey($fase->id)->lockForUpdate()->firstOrFail();
             $vista = app(SiembraEliminacionService::class)->previsualizar($fase, $datos);

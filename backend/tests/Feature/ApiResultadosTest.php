@@ -2,8 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Models\CampeonatoEquipo;
+use App\Models\ConfiguracionCampeonato;
 use App\Models\EventoEstadistico;
 use App\Models\Partido;
+use App\Models\Plantilla;
 
 class ApiResultadosTest extends BackendTestCase
 {
@@ -86,7 +89,9 @@ class ApiResultadosTest extends BackendTestCase
         }
         $ruta = '/api/campeonatos/'.$campeonato['id'].'/tabla-posiciones';
         $this->getJson($ruta)->assertOk()->assertJsonPath('tabla.0.equipo_id', $inscripciones[0]['equipo_id']);
-        $this->patchJson($configuracion, ['orden_desempate' => 'puntos,goles_favor,diferencia_goles'])->assertOk();
+        $this->patchJson($configuracion, ['orden_desempate' => 'puntos,goles_favor,diferencia_goles'])->assertConflict();
+        // Régimen histórico ficticio; la API impide modificarlo en curso.
+        ConfiguracionCampeonato::where('campeonato_id', $campeonato['id'])->update(['orden_desempate' => 'puntos,goles_favor,diferencia_goles']);
         $this->getJson($ruta)->assertOk()->assertJsonPath('tabla.0.equipo_id', $inscripciones[2]['equipo_id']);
     }
 
@@ -103,13 +108,16 @@ class ApiResultadosTest extends BackendTestCase
             $this->evento($partido, $local, $escenario['plantillaLocal']['id'], $tipo);
         }
         $this->solicitudArbitral('patch', '/api/partidos/'.$partido['id'], ['estado' => 'finalizado'])->assertOk();
-        $this->patchJson('/api/plantillas/'.$escenario['plantillaLocal']['id'], ['fecha_salida' => '2026-02-01'])->assertOk();
+        $this->patchJson('/api/plantillas/'.$escenario['plantillaLocal']['id'], ['fecha_salida' => '2026-02-01'])->assertConflict();
+        // Transferencia histórica ficticia para comprobar las estadísticas.
+        Plantilla::whereKey($escenario['plantillaLocal']['id'])->update(['fecha_salida' => '2026-02-01']);
         $traslado = $this->plantilla($escenario['visitante']['id'], $escenario['plantillaLocal']['jugador_id'], 11);
         $segundo = $this->partido($escenario['campeonato']['id'], $escenario['local']['id'], $escenario['visitante']['id'], 2);
         $this->solicitudArbitral('patch', '/api/partidos/'.$segundo['id'], ['estado' => 'en_curso'])->assertOk();
         $this->evento($segundo, $this->participante($segundo, 'visitante'), $traslado['id']);
         $this->solicitudArbitral('patch', '/api/partidos/'.$segundo['id'], ['estado' => 'suspendido'])->assertOk();
-        $this->patchJson('/api/inscripciones-equipos/'.$escenario['local']['id'], ['estado' => 'retirado'])->assertOk();
+        $this->patchJson('/api/inscripciones-equipos/'.$escenario['local']['id'], ['estado' => 'retirado'])->assertConflict();
+        CampeonatoEquipo::whereKey($escenario['local']['id'])->update(['estado' => 'retirado']);
         $sinEventos = $this->inscripcion($escenario['campeonato']['id'], 'Sin eventos');
         $base = '/api/campeonatos/'.$escenario['campeonato']['id'].'/estadisticas/';
         $this->getJson($base.'goleadores')->assertOk()->assertJsonCount(1, 'resultados')

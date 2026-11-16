@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Campeonato;
 use App\Models\ConfiguracionCampeonato;
+use App\Services\IntegridadCampeonatoService;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -43,6 +44,8 @@ class ConfiguracionCampeonatoController extends Controller
         Gate::authorize('update', $campeonato);
         $datos = $request->validate([
             'numero_vueltas' => 'required|integer|in:1,2',
+            'modalidad' => 'nullable|string|max:50',
+            'minimo_jugadores' => 'nullable|integer|min:1|max:99',
             'orden_desempate' => ['required', 'string', Rule::in([
                 'puntos,diferencia_goles,goles_favor',
                 'puntos,goles_favor,diferencia_goles',
@@ -67,7 +70,7 @@ class ConfiguracionCampeonatoController extends Controller
         try {
             return DB::transaction(function () use ($datos, $campeonato) {
                 // Comparte el bloqueo utilizado durante la generación del calendario.
-                $campeonato = Campeonato::whereKey($campeonato->id)->lockForUpdate()->firstOrFail();
+                $campeonato = app(IntegridadCampeonatoService::class)->bloquear($campeonato->id, true);
 
                 if ($campeonato->configuracion()->exists()) {
                     return response()->json(['message' => 'El campeonato ya tiene una configuración guardada.'], 409);
@@ -96,7 +99,7 @@ class ConfiguracionCampeonatoController extends Controller
         Gate::authorize('update', $campeonato);
 
         return DB::transaction(function () use ($request, $campeonato) {
-            $campeonato = Campeonato::whereKey($campeonato->id)->lockForUpdate()->firstOrFail();
+            $campeonato = app(IntegridadCampeonatoService::class)->bloquear($campeonato->id, true);
             $configuracion = $campeonato->configuracion()->lockForUpdate()->first();
 
             if (! $configuracion) {
@@ -105,6 +108,8 @@ class ConfiguracionCampeonatoController extends Controller
 
             $datos = $request->validate([
                 'numero_vueltas' => 'sometimes|required|integer|in:1,2',
+                'modalidad' => 'sometimes|nullable|string|max:50',
+                'minimo_jugadores' => 'sometimes|nullable|integer|min:1|max:99',
                 'orden_desempate' => ['sometimes', 'required', 'string', Rule::in([
                     'puntos,diferencia_goles,goles_favor',
                     'puntos,goles_favor,diferencia_goles',

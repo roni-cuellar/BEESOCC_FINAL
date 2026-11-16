@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\AuditoriaCambio;
+use App\Models\CampeonatoEquipo;
 use App\Models\Fase;
 use App\Models\Llave;
 use App\Models\Partido;
@@ -254,7 +255,9 @@ class EliminacionDirectaTest extends BackendTestCase
         $partido = $llave->partidos()->first();
         $this->oficializar($partido);
         $inscripcion = $partido->participantes()->where('rol', 'visitante')->first()->campeonato_equipo_id;
-        $this->patchJson('/api/inscripciones-equipos/'.$inscripcion, ['estado' => 'retirado'])->assertOk();
+        $this->patchJson('/api/inscripciones-equipos/'.$inscripcion, ['estado' => 'retirado'])->assertConflict();
+        // Simula un retiro legado para conservar la prueba del bloqueo del motor.
+        CampeonatoEquipo::findOrFail($inscripcion)->update(['estado' => 'retirado']);
         $this->postJson('/api/llaves/'.$llave->id.'/avanzar')->assertConflict();
         $this->assertSame('pendiente', $llave->refresh()->estado);
         $this->assertSame(1, Partido::count());

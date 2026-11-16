@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\AsignacionArbitro;
+use App\Models\Campeonato;
 use App\Models\Partido;
 use App\Models\Plantilla;
 use App\Models\User;
@@ -18,6 +19,8 @@ class ControlArbitralTest extends BackendTestCase
         $this->postJson('/api/campeonatos/'.$escenario['campeonato']['id'].'/arbitro', [
             'usuario_id' => $escenario['arbitro']->id,
         ])->assertCreated();
+
+        Campeonato::findOrFail($escenario['campeonato']['id'])->update(['estado' => 'en_curso']);
 
         return $escenario;
     }

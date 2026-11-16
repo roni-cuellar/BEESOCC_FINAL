@@ -1,3 +1,4 @@
+import CicloCampeonatoPanel from '../components/CicloCampeonatoPanel'
 import { useEffect, useState } from 'react'
 import { useOutletContext, useParams } from 'react-router-dom'
 import equipoService from '../services/equipoService'
@@ -47,6 +48,7 @@ function DashboardPage() {
     <div className="mb-4"><Boton variante="secundario" to={'/ligas/' + ligaId + '/arbitros'}>Árbitros</Boton></div>
     <EncabezadoPagina titulo="Resumen" descripcion={liga.descripcion || 'Tu campeonato, de un vistazo. Organiza lo que viene y sigue lo que ya se jugó.'} acciones={<Boton variante="secundario" disabled={cargando || resumen.cargando} onClick={()=>setIntento(v=>v+1)}>Actualizar</Boton>} />
     <div className="mb-6 flex items-center gap-2 text-xs text-gris"><span className="size-2 rounded-full bg-marca" />{liga.estado === 'planificacion' ? 'Planificación' : liga.estado.replaceAll('_',' ')}</div>
+    <CicloCampeonatoPanel key={`${liga.id}:${liga.estado}`} liga={liga} />
     <div className="mb-7 grid gap-4 sm:grid-cols-3">{[['Equipos inscritos',resumen.equipos,'equipos'],['Jugadores',resumen.jugadores,'jugadores'],['Partidos',cargando || error ? null : partidos.length,'partidos']].map(([titulo,cantidad,icono])=><Tarjeta key={titulo}><div className="flex items-center justify-between gap-3"><p className="text-sm font-medium text-gris">{titulo}</p><span className="grid size-10 place-items-center rounded-xl bg-green-50 text-marca-oscuro"><Icono nombre={icono}/></span></div><p className="mt-4 font-titulo text-4xl font-bold tracking-tight text-oscuro">{cantidad ?? '—'}</p><p className="mt-2 text-xs text-gris">{cantidad === null ? (cargando || resumen.cargando ? 'Consultando información…' : 'No disponible') : 'En este campeonato'}</p></Tarjeta>)}</div>
     <Aviso error={resumen.error}/><EstadoVista cargando={cargando} error={error} reintentar={()=>setIntento(v=>v+1)}/>
     <div className="mb-10 flex flex-wrap gap-3">{[['equipos','Inscribir equipos','equipos'],['jugadores','Gestionar plantillas','jugadores'],['calendario','Organizar calendario','calendario']].map(([ruta,texto,icono])=><Boton variante="secundario" key={ruta} to={'/ligas/'+ligaId+'/'+ruta}><Icono nombre={icono}/>{texto}</Boton>)}</div>

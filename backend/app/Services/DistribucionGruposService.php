@@ -13,7 +13,7 @@ class DistribucionGruposService
 {
     public function bloquear(Fase $fase): Fase
     {
-        Campeonato::whereKey($fase->campeonato_id)->lockForUpdate()->firstOrFail();
+        app(IntegridadCampeonatoService::class)->bloquear($fase->campeonato_id);
         $fase = Fase::whereKey($fase->id)->lockForUpdate()->firstOrFail();
         Gate::authorize('update', $fase);
         abort_unless($fase->tipo === 'grupos' && $fase->campeonato->formato === 'grupos_eliminacion', 409, 'Se requiere una fase de grupos del formato grupos_eliminacion.');
@@ -24,7 +24,7 @@ class DistribucionGruposService
     public function crearFase(Campeonato $campeonato, string $nombre): Fase
     {
         return DB::transaction(function () use ($campeonato, $nombre) {
-            $campeonato = Campeonato::whereKey($campeonato->id)->lockForUpdate()->firstOrFail();
+            $campeonato = app(IntegridadCampeonatoService::class)->bloquear($campeonato->id);
             Gate::authorize('update', $campeonato);
             abort_unless($campeonato->formato === 'grupos_eliminacion' && $campeonato->estado === 'planificacion', 409, 'Se requiere un campeonato de grupos en planificación.');
             abort_if($campeonato->fases()->exists() || $campeonato->partidos()->exists(), 409, 'El campeonato ya tiene una estructura deportiva.');

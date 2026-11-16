@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\AuditoriaCambio;
 use App\Models\AutorizacionCorreccion;
+use App\Models\CampeonatoEquipo;
 use App\Models\Fase;
 use App\Models\Grupo;
 use App\Models\Partido;
@@ -351,7 +352,9 @@ class GruposTest extends BackendTestCase
     public function test_calendario_y_clasificacion_bloquean_elegibilidad_invalida(): void
     {
         $e = $this->preparar(4);
-        $this->patchJson('/api/inscripciones-equipos/'.$e['ids'][0], ['estado' => 'retirado'])->assertOk();
+        $this->patchJson('/api/inscripciones-equipos/'.$e['ids'][0], ['estado' => 'retirado'])->assertConflict();
+        // Retiro histórico inconsistente; la API ya impide producirlo.
+        CampeonatoEquipo::whereKey($e['ids'][0])->update(['estado' => 'retirado']);
         $this->postJson('/api/fases/'.$e['fase']['id'].'/generar-calendario-grupos')->assertConflict();
         $this->getJson('/api/fases/'.$e['fase']['id'].'/clasificacion-grupos')->assertOk()->assertJsonPath('lista_para_clasificar', false);
         $this->assertDatabaseCount('partidos', 0);

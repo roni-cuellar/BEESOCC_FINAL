@@ -13,6 +13,8 @@ class ConfiguracionCampeonato extends Model
     protected $fillable = [
         'campeonato_id',
         'numero_vueltas',
+        'modalidad',
+        'minimo_jugadores',
         'orden_desempate',
         'inicio_inscripciones',
         'fin_inscripciones',
@@ -24,6 +26,7 @@ class ConfiguracionCampeonato extends Model
     {
         return [
             'numero_vueltas' => 'integer',
+            'minimo_jugadores' => 'integer',
             'inicio_inscripciones' => 'date',
             'fin_inscripciones' => 'date',
             'inicio_transferencias' => 'date',

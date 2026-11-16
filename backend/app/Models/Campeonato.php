@@ -23,7 +23,7 @@ class Campeonato extends Model
 
     protected function casts(): array
     {
-        return ['publicado' => 'boolean'];
+        return ['iniciado_at' => 'datetime', 'finalizado_at' => 'datetime', 'publicado' => 'boolean'];
     }
 
     public function administrador(): BelongsTo

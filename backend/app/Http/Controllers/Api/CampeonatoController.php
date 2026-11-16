@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Campeonato;
+use App\Services\IntegridadCampeonatoService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -78,7 +79,7 @@ class CampeonatoController extends Controller
         ]);
 
         $campeonato = DB::transaction(function () use ($campeonato, $datos) {
-            $campeonato = Campeonato::whereKey($campeonato->id)->lockForUpdate()->firstOrFail();
+            $campeonato = app(IntegridadCampeonatoService::class)->bloquear($campeonato->id);
             if (isset($datos['formato']) && $datos['formato'] !== $campeonato->formato) {
                 abort_if($campeonato->fases()->exists() || $campeonato->partidos()->exists() || $campeonato->estado !== 'planificacion', 409, 'No se puede cambiar el formato con estructura deportiva o competición iniciada.');
             }

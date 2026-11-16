@@ -110,9 +110,9 @@ it('la auditoría muestra actor, motivo y antes/después sin controles de edici�
   expect(html).toContain('&lt;script&gt;'); expect(html).not.toContain('<script>'); expect(html).not.toContain('<button')
 })
 
-it('las tarjetas públicas no exponen el expediente ni añaden el nuevo régimen de publicación', () => {
+it('las tarjetas públicas muestran oficialización sin exponer expedientes privados', () => {
   const html = renderToStaticMarkup(<MemoryRouter><PartidoCard partido={partido} ligaId={4} publica /></MemoryRouter>)
-  expect(html).not.toContain('Resultado oficial'); expect(html).not.toContain('Expediente'); expect(html).not.toContain('auditoría')
+  expect(html).toContain('Resultado oficial'); expect(html).not.toContain('Expediente'); expect(html).not.toContain('auditoría')
 })
 
 it('reutiliza el formulario de eventos para preparar el lote sin enviarlo ordinariamente', () => {

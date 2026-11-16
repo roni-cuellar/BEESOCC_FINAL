@@ -46,6 +46,7 @@ export default function DetallePublicoPage() {
   const { ligaId } = useParams()
   const { pathname } = useLocation()
   const [liga, setLiga] = useState(null)
+  const [deporte, setDeporte] = useState(null)
   const [error, setError] = useState('')
   const [revision, setRevision] = useState(0)
   useEffect(() => {
@@ -57,7 +58,7 @@ export default function DetallePublicoPage() {
     let vigente = true
     async function consultar() {
       setLiga(null); setError('')
-      try { const datos = await publicoService.obtener(ligaId); if (vigente) setLiga(datos) }
+      try { const [datos, deportivo] = await Promise.all([publicoService.obtener(ligaId), publicoService.deporte(ligaId)]); if (vigente) { setLiga(datos); setDeporte(deportivo) } }
       catch (e) { if (vigente) setError(e.response?.status === 404 ? 'Este campeonato no está publicado o ya no está disponible.' : mensajeError(e)) }
     }
     consultar()
@@ -67,9 +68,11 @@ export default function DetallePublicoPage() {
     <Boton to="/campeonatos" variante="secundario" className="mb-6">Volver a campeonatos</Boton>
     {!liga ? <EstadoVista cargando={!error} error={error} reintentar={() => setRevision(r => r + 1)} /> : <>
       <EncabezadoPagina titulo={liga.nombre} descripcion={liga.descripcion || 'Información deportiva del campeonato.'} acciones={<Boton variante="secundario" onClick={() => setRevision(r => r + 1)}>Actualizar</Boton>} />
-      <p className="mb-5 text-sm text-gris">Temporada {liga.temporada} · {liga.formato === 'todos_contra_todos' ? 'Todos contra todos' : liga.formato} · {liga.estado.replaceAll('_', ' ')}</p>
-      <nav className="mb-6 flex flex-wrap gap-2" aria-label="Consulta del campeonato">{[['', 'Resumen'], ['/tabla', 'Tabla'], ['/estadisticas', 'Estadísticas']].map(([ruta, texto]) => <NavLink key={ruta} end className={({ isActive }) => 'inline-flex min-h-11 items-center rounded-xl border px-4 text-sm font-semibold ' + (isActive ? 'border-marca-oscuro bg-marca-oscuro text-white' : 'border-borde bg-white text-marca-oscuro')} to={'/campeonatos/' + ligaId + ruta}>{texto}</NavLink>)}</nav>
-      <Outlet />
+      <p className="mb-5 text-sm text-gris">Temporada {liga.temporada} · {{ todos_contra_todos: 'Todos contra todos', eliminacion_directa: 'Eliminación directa', grupos_eliminacion: 'Grupos + eliminación' }[liga.formato]} · {{ planificacion: 'Planificación', en_curso: 'En curso', finalizado: 'Finalizado' }[liga.estado]}</p>
+      {deporte?.campeon && <section className="panel" aria-label="Campeón"><p className="etiqueta">Campeón confirmado</p><h2>{deporte.campeon.nombre}</h2></section>}
+      {liga.estado === 'finalizado' && !deporte?.campeon && <p className="nota">No hay un campeón confirmado disponible.</p>}
+      <nav className="mb-6 flex flex-wrap gap-2" aria-label="Consulta del campeonato">{[['', 'Calendario y equipos'], ...(liga.formato === 'todos_contra_todos' ? [['/tabla', 'Tabla']] : liga.formato === 'grupos_eliminacion' ? [['/grupos', 'Grupos'], ['/cuadro', 'Cuadro']] : [['/cuadro', 'Cuadro']]), ['/estadisticas', 'Estadísticas']].map(([ruta, texto]) => <NavLink key={ruta} end className={({ isActive }) => 'inline-flex min-h-11 items-center rounded-xl border px-4 text-sm font-semibold ' + (isActive ? 'border-marca-oscuro bg-marca-oscuro text-white' : 'border-borde bg-white text-marca-oscuro')} to={'/campeonatos/' + ligaId + ruta}>{texto}</NavLink>)}</nav>
+      <Outlet context={{ liga, deporte }} />
     </>}
   </section>
 }

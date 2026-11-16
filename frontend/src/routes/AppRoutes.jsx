@@ -26,6 +26,7 @@ import CampeonatosPublicosPage from '../pages/CampeonatosPublicosPage'
 import DetallePublicoPage, { ResumenPublicoPage } from '../pages/DetallePublicoPage'
 import EliminacionPage from '../pages/EliminacionPage'
 import GruposPage from '../pages/GruposPage'
+import DeportePublicoPage from '../pages/DeportePublicoPage'
 
 function PublicLayout() {
   return <><a className="saltar-contenido" href="#contenido">Saltar al contenido</a><Navbar /><main id="contenido" tabIndex={-1}><Outlet /></main><Footer /></>
@@ -43,6 +44,11 @@ function CuadroPrivado() {
   const { liga } = useOutletContext()
   return liga.formato === 'grupos_eliminacion' ? <Navigate to={'/ligas/' + liga.id + '/grupos'} replace /> : <EliminacionPage />
 }
+function TablaPublica() {
+  const { liga } = useOutletContext()
+  if (liga.formato !== 'todos_contra_todos') return <Navigate to={`/campeonatos/${liga.id}/${liga.formato === 'grupos_eliminacion' ? 'grupos' : 'cuadro'}`} replace />
+  return <TablaPage publica />
+}
 function AppRoutes() {
   const { pathname, hash } = useLocation()
   useEffect(() => {
@@ -55,8 +61,10 @@ function AppRoutes() {
       <Route path="/campeonatos" element={<CampeonatosPublicosPage />} />
       <Route path="/campeonatos/:ligaId" element={<DetallePublicoPage />}>
         <Route index element={<ResumenPublicoPage />} />
-        <Route path="tabla" element={<TablaPage publica />} />
+        <Route path="tabla" element={<TablaPublica />} />
         <Route path="estadisticas" element={<EstadisticasPage publica />} />
+        <Route path="grupos" element={<DeportePublicoPage grupos />} />
+        <Route path="cuadro" element={<DeportePublicoPage />} />
       </Route>
       <Route path="*" element={<section className="pagina-provisional contenedor"><p className="etiqueta">404</p><h1>Página no encontrada</h1><Link className="boton boton-verde" to="/mis-ligas">Volver a Mis ligas</Link></section>} />
     </Route>

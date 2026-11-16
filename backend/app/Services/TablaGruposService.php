@@ -11,6 +11,19 @@ class TablaGruposService
     public function calcular(Grupo $grupo, bool $soloOficiales = false): array
     {
         Gate::authorize('view', $grupo);
+
+        return $this->calcularTabla($grupo, $soloOficiales);
+    }
+
+    public function consultarPublica(Grupo $grupo, bool $soloOficiales = false): array
+    {
+        abort_unless($grupo->fase->campeonato->publicado && $grupo->fase->campeonato->administrador_id, 404);
+
+        return $this->calcularTabla($grupo, $soloOficiales);
+    }
+
+    private function calcularTabla(Grupo $grupo, bool $soloOficiales): array
+    {
         $fase = $grupo->fase;
         abort_unless($fase->tipo === 'grupos' && $fase->campeonato->formato === 'grupos_eliminacion', 409, 'La tabla requiere una fase de grupos.');
         $miembros = $grupo->equipos()->with('inscripcion.equipo')->get();

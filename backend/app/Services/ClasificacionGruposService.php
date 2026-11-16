@@ -19,6 +19,19 @@ class ClasificacionGruposService
     public function preparar(Fase $fase): array
     {
         Gate::authorize('view', $fase);
+
+        return $this->prepararDatos($fase, false);
+    }
+
+    public function consultarPublica(Fase $fase): array
+    {
+        abort_unless($fase->campeonato->publicado && $fase->campeonato->administrador_id, 404);
+
+        return $this->prepararDatos($fase, true);
+    }
+
+    private function prepararDatos(Fase $fase, bool $publica): array
+    {
         abort_unless($fase->tipo === 'grupos' && $fase->campeonato->formato === 'grupos_eliminacion', 409, 'Se requiere una fase de grupos.');
         $tablas = $candidatos = $bloqueos = [];
         $grupos = $fase->grupos()->get();
@@ -29,7 +42,8 @@ class ClasificacionGruposService
         $miembros = $fase->equipos()->get();
         abort_if($miembros->contains(fn ($m) => ! $grupos->contains('id', $m->grupo_id)), 409, 'Hay participantes sin grupo válido en la fase.');
         foreach ($grupos as $grupo) {
-            $tabla = app(TablaGruposService::class)->calcular($grupo, true);
+            $servicio = app(TablaGruposService::class);
+            $tabla = $publica ? $servicio->consultarPublica($grupo, true) : $servicio->calcular($grupo, true);
             $tablas[] = $tabla;
             if (! $tabla['resultados_completos']) {
                 $bloqueos[] = 'resultados_o_elegibilidad_pendientes_grupo_'.$grupo->id;

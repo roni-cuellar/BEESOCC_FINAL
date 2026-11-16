@@ -7,6 +7,7 @@ use App\Models\Campeonato;
 use App\Models\CampeonatoEquipo;
 use App\Models\Partido;
 use App\Models\Plantilla;
+use App\Services\DeportePublicoService;
 use App\Services\EstadisticaService;
 use App\Services\MarcadorService;
 use App\Services\TablaPosicionesService;
@@ -52,7 +53,16 @@ class PublicoCampeonatoController extends Controller
             'goles' => app(MarcadorService::class)->goles($participante),
         ]);
 
-        return $partido->only(['id', 'jornada', 'fecha_hora', 'lugar', 'estado']) + ['participantes' => $participantes];
+        return $partido->only(['id', 'jornada', 'fecha_hora', 'lugar', 'estado', 'grupo_id', 'tipo_partido', 'tipo_resultado', 'oficializado_at'])
+            + ['participantes' => $participantes, 'marcador_deportivo' => app(MarcadorService::class)->calcular($partido)['marcador_deportivo']];
+    }
+
+    public function deporte(int $campeonato, DeportePublicoService $servicio): JsonResponse
+    {
+        $liga = $this->campeonato($campeonato);
+        $this->comprobarInscripciones($liga);
+
+        return $this->respuesta($servicio->consultar($liga));
     }
 
     private function respuesta(mixed $datos): JsonResponse

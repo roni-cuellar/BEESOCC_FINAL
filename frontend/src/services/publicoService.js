@@ -9,6 +9,7 @@ const publicoService = {
   equipos: async id => (await api.get(base + '/' + id + '/equipos', opciones)).data,
   partidos: async id => (await api.get(base + '/' + id + '/partidos', opciones)).data,
   tabla: async id => (await api.get(base + '/' + id + '/tabla', opciones)).data,
+  deporte: async id => (await api.get(base + '/' + id + '/deporte', opciones)).data,
   estadisticas: async (id, tipo) => (await api.get(base + '/' + id + '/estadisticas/' + tipo, opciones)).data,
 }
 export default publicoService

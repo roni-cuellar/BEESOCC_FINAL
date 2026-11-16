@@ -145,5 +145,6 @@ Route::prefix('publico/campeonatos')->where(['campeonato' => '[0-9]+', 'partido'
     Route::get('/{campeonato}/partidos/{partido}', [PublicoCampeonatoController::class, 'partido']);
     Route::get('/{campeonato}/partidos/{partido}/eventos', [PublicoCampeonatoController::class, 'eventos']);
     Route::get('/{campeonato}/tabla', [PublicoCampeonatoController::class, 'tabla']);
+    Route::get('/{campeonato}/deporte', [PublicoCampeonatoController::class, 'deporte']);
     Route::get('/{campeonato}/estadisticas/{tipo}', [PublicoCampeonatoController::class, 'estadisticas']);
 });

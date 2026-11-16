@@ -1,0 +1,265 @@
+{
+  "pint": true,
+  "sprint": "5.5",
+  "migracion_principal_ejecutada": false,
+  "ok": true,
+  "sha256_origen": {
+    "hash_no_registrado_en_evidencia_publica_54": true,
+    "captura": "78c1c0ad12d7fab42c619588971ad1267e39d4b3",
+    "blob": "5e02621d6dff0e0affd3f9a5b446cafab6089695",
+    "mismo_archivo_validado_54": true
+  },
+  "autorizacion_principal_pendiente": true,
+  "fecha": "2026-11-15",
+  "laboratorio_detenido": true,
+  "revision_git": {
+    "commits_realizados": false,
+    "commits_propuestos": [
+      {
+        "titulo": "feat: completar grupos y eliminacion con desempates oficiales",
+        "archivos": [
+          "backend/app/Http/Controllers/Api/FaseController.php",
+          "backend/app/Http/Controllers/Api/GrupoController.php",
+          "backend/app/Models/Fase.php",
+          "backend/app/Models/LlavePlaza.php",
+          "backend/app/Models/Partido.php",
+          "backend/app/Services/AvanceEliminacionService.php",
+          "backend/app/Services/ClasificacionGruposService.php",
+          "backend/app/Services/ControlPartidoService.php",
+          "backend/app/Services/CorreccionPartidoService.php",
+          "backend/app/Services/GeneracionEliminacionService.php",
+          "backend/app/Services/TablaGruposService.php",
+          "backend/routes/api.php",
+          "backend/tests/Feature/BackendTestCase.php",
+          "backend/tests/Feature/EliminacionDirectaTest.php",
+          "backend/tests/Feature/GruposTest.php",
+          "backend/app/Models/GrupoDesempate.php",
+          "backend/app/Services/CrucesGruposService.php",
+          "backend/app/Services/DesempateGrupoService.php",
+          "backend/app/Services/OrdenGruposService.php",
+          "backend/database/migrations/2026_11_15_000200_create_desempates_grupos.php",
+          "backend/tests/Feature/GruposEliminacionTest.php",
+          "backend/tests/GRUPOS_5_3.md",
+          "backend/tests/Integral/GruposEliminacionMariaDb.php"
+        ]
+      },
+      {
+        "titulo": "test: validar grupos y eliminacion por HTTP y concurrencia real",
+        "archivos": [
+          "backend/tests/Integral/sprint54-barrera.php",
+          "backend/tests/Integral/sprint54-http.mjs",
+          "backend/tests/Integral/sprint54-sembrar.php",
+          "backend/tests/Integral/sprint54-verificar.php",
+          "backend/tests/GRUPOS_5_4.md",
+          "backend/tests/Evidencias/sprint54-evidencia.json"
+        ]
+      },
+      {
+        "titulo": "docs: preparar migracion de desempates con respaldo y ensayo",
+        "archivos": [
+          "backend/tests/Integral/sprint55-principal.php",
+          "backend/tests/Integral/sprint55-copia.php",
+          "backend/tests/GRUPOS_5_5.md",
+          "backend/tests/Evidencias/sprint55-evidencia.json"
+        ]
+      }
+    ],
+    "push": false,
+    "archivos_recibidos": 29,
+    "rama": "develop",
+    "sin_cambios_en_archivos_recibidos": true,
+    "inventario": [
+      {
+        "archivo": "backend/app/Http/Controllers/Api/FaseController.php",
+        "sin_cambios_en_55": true,
+        "sha256": "892da80dc27d1f49c3de0cea60f13b58b35ccc2830e371dc4ed387d8396052f4"
+      },
+      {
+        "archivo": "backend/app/Http/Controllers/Api/GrupoController.php",
+        "sin_cambios_en_55": true,
+        "sha256": "560bfc5869c22ccf92aaa48808d37d9549711de60e7d818d9fe55f3581facf94"
+      },
+      {
+        "archivo": "backend/app/Models/Fase.php",
+        "sin_cambios_en_55": true,
+        "sha256": "410fc254159f46f05c2b782d90aafed7c89537308767a8a89f6eb87fbfaa1727"
+      },
+      {
+        "archivo": "backend/app/Models/LlavePlaza.php",
+        "sin_cambios_en_55": true,
+        "sha256": "4c2ebe475bd23b55c0617648cc6aa2b3758be0671ece680a118c80f222558fb7"
+      },
+      {
+        "archivo": "backend/app/Models/Partido.php",
+        "sin_cambios_en_55": true,
+        "sha256": "7ef2f4802ee1f04ee7d52b7386b98d60a0d6129639282c104348f87e64c03104"
+      },
+      {
+        "archivo": "backend/app/Services/AvanceEliminacionService.php",
+        "sin_cambios_en_55": true,
+        "sha256": "7e343d01b80ef38373ae4bf3dfe9112be2b158ee0a8f4aa288f9d21781b1a223"
+      },
+      {
+        "archivo": "backend/app/Services/ClasificacionGruposService.php",
+        "sin_cambios_en_55": true,
+        "sha256": "7cbf7c3e300f0364ccfe8fdd7b53bcd5d2c124f45b43aa7ba5d087b303a7047b"
+      },
+      {
+        "archivo": "backend/app/Services/ControlPartidoService.php",
+        "sin_cambios_en_55": true,
+        "sha256": "40e58e61a32a1749fad32f64a6a3d659dceb0884eb4aae2882d899e502485918"
+      },
+      {
+        "archivo": "backend/app/Services/CorreccionPartidoService.php",
+        "sin_cambios_en_55": true,
+        "sha256": "426b8f0b1d78f205f1e3031225ff71743c025be8b423c1f8e5c28775ad20d73b"
+      },
+      {
+        "archivo": "backend/app/Services/GeneracionEliminacionService.php",
+        "sin_cambios_en_55": true,
+        "sha256": "08fdc9da627b20311ffb570999c7667d3486dd2f9aa65fba6bd1d2809942f136"
+      },
+      {
+        "archivo": "backend/app/Services/TablaGruposService.php",
+        "sin_cambios_en_55": true,
+        "sha256": "11675796bb8284fff62fb6f45a44e59f6e9fe21d08de9f1e978a931afe1ce553"
+      },
+      {
+        "archivo": "backend/routes/api.php",
+        "sin_cambios_en_55": true,
+        "sha256": "c14e5f7fc0df2d6029d4e8a5f3c0980bc795ed24e40e48cde10f351f51e72f16"
+      },
+      {
+        "archivo": "backend/tests/Feature/BackendTestCase.php",
+        "sin_cambios_en_55": true,
+        "sha256": "0c43dbd55b91bfc149c3e2b63d6d6e1615f2ee86b5eb431750ed2809a408d4d0"
+      },
+      {
+        "archivo": "backend/tests/Feature/EliminacionDirectaTest.php",
+        "sin_cambios_en_55": true,
+        "sha256": "4b2ad0d55b947d26cc6ab4777ddb6628df2271af8ea0e9b7d5deccbfc280f821"
+      },
+      {
+        "archivo": "backend/tests/Feature/GruposTest.php",
+        "sin_cambios_en_55": true,
+        "sha256": "c121a7150cd8d4f9bb847d0c48b6d715c14610d3eb0e37730b4244123dd342fc"
+      },
+      {
+        "archivo": "backend/app/Models/GrupoDesempate.php",
+        "sin_cambios_en_55": true,
+        "sha256": "73780771b32e1b921efe7710a0cf1b74647d0f438abeb90901daefa15ba232b8"
+      },
+      {
+        "archivo": "backend/app/Services/CrucesGruposService.php",
+        "sin_cambios_en_55": true,
+        "sha256": "15088cba06f03271b50e547d6c1e1ca24141257e56e4b23ce9711445f50e4e4f"
+      },
+      {
+        "archivo": "backend/app/Services/DesempateGrupoService.php",
+        "sin_cambios_en_55": true,
+        "sha256": "beca8f1cc6a1d0edfe357cea3b626a5a864ee3fef28681c9bf73e61804eb3bb4"
+      },
+      {
+        "archivo": "backend/app/Services/OrdenGruposService.php",
+        "sin_cambios_en_55": true,
+        "sha256": "9f462b7f5b739dc30a40b41abadbdf1178afb6162041ec73dc6a62dbf051dd97"
+      },
+      {
+        "archivo": "backend/database/migrations/2026_11_15_000200_create_desempates_grupos.php",
+        "sin_cambios_en_55": true,
+        "sha256": "c48ee2d69c8a6b1c3322401b4f7573e2120833c57b84d5836c90619ba70baebb"
+      },
+      {
+        "archivo": "backend/tests/Evidencias/sprint54-evidencia.json",
+        "sin_cambios_en_55": true,
+        "sha256": "d872ea2a67bc56a962ecc6a8d033e02d712df355cded3c82c7906695494a4323"
+      },
+      {
+        "archivo": "backend/tests/Feature/GruposEliminacionTest.php",
+        "sin_cambios_en_55": true,
+        "sha256": "8d5b48017bd3c44fc6bf86bcc9c3a6e0e417151bf6926120a6bbb1f559d715d8"
+      },
+      {
+        "archivo": "backend/tests/GRUPOS_5_3.md",
+        "sin_cambios_en_55": true,
+        "sha256": "b8845b1cbfbb2a432b8c377c254db996273e081d657cdb04381953a5dbf8a6af"
+      },
+      {
+        "archivo": "backend/tests/GRUPOS_5_4.md",
+        "sin_cambios_en_55": true,
+        "sha256": "708c803ceea1bcca67596deea6b583f4384e2f892dea057b7ef85bc1c2a51a80"
+      },
+      {
+        "archivo": "backend/tests/Integral/GruposEliminacionMariaDb.php",
+        "sin_cambios_en_55": true,
+        "sha256": "c9bf5d52522535f023d1346e204b17602ba38ac95464fcaed7f019f8f1c5ce62"
+      },
+      {
+        "archivo": "backend/tests/Integral/sprint54-barrera.php",
+        "sin_cambios_en_55": true,
+        "sha256": "44adad166c6f96472f0fbfd891b51158aef55a9265224e7557691962cb4fd64e"
+      },
+      {
+        "archivo": "backend/tests/Integral/sprint54-http.mjs",
+        "sin_cambios_en_55": true,
+        "sha256": "0edd99f59365daeddfbd4ecccb9b8b771d26d83ba35e2e700ea898ae320cf77f"
+      },
+      {
+        "archivo": "backend/tests/Integral/sprint54-sembrar.php",
+        "sin_cambios_en_55": true,
+        "sha256": "64795606ca252fe7f84c69ebee5dceb4f1ea73ab0a30e40fcdbfecf29da7a12e"
+      },
+      {
+        "archivo": "backend/tests/Integral/sprint54-verificar.php",
+        "sin_cambios_en_55": true,
+        "sha256": "ecca72e5c400077a71befb2ea7cd7ee4ef2d6953fde406d4005366ae2cdbba26"
+      }
+    ]
+  },
+  "copia": {
+    "ok": true,
+    "copia_restaurada_identica": true,
+    "cuenta_limitada": true,
+    "principal_inaccesible": true,
+    "rutas_fisicas_verificadas": true,
+    "motor": "10.4.32-MariaDB",
+    "tablas_restauradas": 27,
+    "registros_historicos": 50,
+    "tablas_finales": 28,
+    "migraciones_adicionales": [
+      "2026_11_15_000200_create_desempates_grupos"
+    ],
+    "tokens_omitidos": true,
+    "columnas_nuevas": 9,
+    "foraneas_restrict": 4,
+    "indices_unicos": 3,
+    "json_valid": true,
+    "datos_historicos_intactos": true,
+    "estructuras_ajenas_intactas": true,
+    "sha256_migracion": "c48ee2d69c8a6b1c3322401b4f7573e2120833c57b84d5836c90619ba70baebb",
+    "sha256_respaldo": "e836083b8050e3e81be0ed0661755f5e582c1f837f7bd2c1ca5744f6fd34e792"
+  },
+  "principal": {
+    "ok": true,
+    "modo": "comparar",
+    "principal": "beesocc_v2",
+    "servidor": "127.0.0.1:3306",
+    "solo_lectura": true,
+    "tablas": 27,
+    "registros": 50,
+    "aplicadas": 18,
+    "pendientes": [
+      "2026_11_12_224943_create_personal_access_tokens_table",
+      "2026_11_15_000200_create_desempates_grupos"
+    ],
+    "sha256_migracion": "c48ee2d69c8a6b1c3322401b4f7573e2120833c57b84d5836c90619ba70baebb",
+    "sha256_respaldo": "e836083b8050e3e81be0ed0661755f5e582c1f837f7bd2c1ca5744f6fd34e792",
+    "bytes_respaldo": 36151
+  },
+  "respaldo_externo": true,
+  "restauracion_verificada": true,
+  "sintaxis_php": true,
+  "pruebas_costosas_repetidas": false,
+  "carpetas_privadas_restringidas": true,
+  "tokens_ejecutada": false
+}

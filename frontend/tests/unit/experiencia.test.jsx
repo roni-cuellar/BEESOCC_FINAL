@@ -6,7 +6,7 @@ import LigaCard from '../../src/components/LigaCard.jsx'
 import AccesoLayout from '../../src/components/AccesoLayout.jsx'
 import RegistroPage from '../../src/pages/RegistroPage.jsx'
 
-const render = elemento => renderToStaticMarkup(<MemoryRouter>{elemento}</MemoryRouter>)
+const render = (elemento) => renderToStaticMarkup(<MemoryRouter>{elemento}</MemoryRouter>)
 
 describe('experiencia de las pantallas principales', () => {
   it('una acción de navegación sigue siendo un enlace accesible', () => {
@@ -16,13 +16,28 @@ describe('experiencia de las pantallas principales', () => {
   })
 
   it('un enlace bloqueado sale del recorrido del teclado', () => {
-    const html = render(<Boton to="/mis-ligas" disabled>Cancelar</Boton>)
+    const html = render(
+      <Boton to="/mis-ligas" disabled>
+        Cancelar
+      </Boton>,
+    )
     expect(html).toContain('aria-disabled="true"')
     expect(html).toContain('tabindex="-1"')
   })
 
   it('la tarjeta usa la liga recibida y enlaza a su edición y dashboard', () => {
-    const html = render(<LigaCard liga={{ id: 28, nombre: 'Liga de prueba', temporada: '2026', estado: 'planificacion', formato: 'todos_contra_todos' }} onEliminar={() => {}} />)
+    const html = render(
+      <LigaCard
+        liga={{
+          id: 28,
+          nombre: 'Liga de prueba',
+          temporada: '2026',
+          estado: 'planificacion',
+          formato: 'todos_contra_todos',
+        }}
+        onEliminar={() => {}}
+      />,
+    )
     expect(html).toContain('/ligas/28/dashboard')
     expect(html).toContain('/ligas/28/editar')
     expect(html).toContain('aria-label="Eliminar Liga de prueba"')
@@ -38,7 +53,14 @@ describe('experiencia de las pantallas principales', () => {
   })
 
   it('confirmar y cancelar son botones que no envían formularios', () => {
-    const html = render(<Confirmacion titulo="Eliminar liga" texto="¿Continuar?" onConfirmar={async () => {}} onCerrar={() => {}} />)
+    const html = render(
+      <Confirmacion
+        titulo="Eliminar liga"
+        texto="¿Continuar?"
+        onConfirmar={async () => {}}
+        onCerrar={() => {}}
+      />,
+    )
     expect(html).toContain('<dialog')
     expect(html).toContain('aria-label="Eliminar liga"')
     expect(html.match(/type="button"/g)).toHaveLength(3)

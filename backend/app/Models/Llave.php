@@ -10,7 +10,15 @@ class Llave extends Model
 
     public $timestamps = false;
 
-    protected $fillable = ['ronda_id', 'numero', 'estado', 'ganador_fase_equipo_id', 'metodo_resolucion', 'penales_plaza_1', 'penales_plaza_2'];
+    protected $fillable = [
+        'ronda_id',
+        'numero',
+        'estado',
+        'ganador_fase_equipo_id',
+        'metodo_resolucion',
+        'penales_plaza_1',
+        'penales_plaza_2',
+    ];
 
     public function ronda()
     {

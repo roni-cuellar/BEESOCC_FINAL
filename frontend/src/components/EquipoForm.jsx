@@ -1,4 +1,3 @@
-
 import { useRef, useState } from 'react'
 import Aviso from './Aviso'
 import ImagenCatalogoForm from './ImagenCatalogoForm'
@@ -36,7 +35,8 @@ function EquipoForm({ equipo, onGuardar, onCancelar }) {
       await onGuardar({
         nombre: datos.nombre.trim(),
         ciudad: datos.ciudad.trim(),
-        escudo: datos.escudo, eliminar_imagen: eliminar,
+        escudo: datos.escudo,
+        eliminar_imagen: eliminar,
       })
     } catch (e) {
       setError(mensajeError(e))
@@ -47,50 +47,48 @@ function EquipoForm({ equipo, onGuardar, onCancelar }) {
 
   return (
     <form onSubmit={guardar}>
-      <Aviso error={error} /><fieldset className="contents" disabled={guardando}>
+      <Aviso error={error} />
+      <fieldset className="contents" disabled={guardando}>
+        <label>
+          Nombre del equipo
+          <input required name="nombre" maxLength={150} value={datos.nombre} onChange={cambiar} />
+        </label>
 
-      <label>
-        Nombre del equipo
-        <input
-          required
-          name="nombre"
-          maxLength={150}
-          value={datos.nombre}
-          onChange={cambiar}
+        <label>
+          Ciudad
+          <input required name="ciudad" maxLength={100} value={datos.ciudad} onChange={cambiar} />
+        </label>
+
+        <ImagenCatalogoForm
+          campo="escudo"
+          etiqueta="Escudo"
+          actual={equipo?.escudo}
+          nombre={equipo?.nombre || datos.nombre}
+          archivo={datos.escudo}
+          eliminar={eliminar}
+          onArchivo={(escudo) => {
+            setDatos({ ...datos, escudo })
+            if (escudo) setEliminar(false)
+          }}
+          onEliminar={setEliminar}
         />
-      </label>
 
-      <label>
-        Ciudad
-        <input
-          required
-          name="ciudad"
-          maxLength={100}
-          value={datos.ciudad}
-          onChange={cambiar}
-        />
-      </label>
+        <div className="acciones">
+          <button
+            type="button"
+            className="boton boton-borde"
+            disabled={guardando}
+            onClick={onCancelar}
+          >
+            Cancelar
+          </button>
 
-      <ImagenCatalogoForm campo="escudo" etiqueta="Escudo" actual={equipo?.escudo} nombre={equipo?.nombre || datos.nombre} archivo={datos.escudo} eliminar={eliminar} onArchivo={escudo => { setDatos({ ...datos, escudo }); if (escudo) setEliminar(false) }} onEliminar={setEliminar} />
-
-      <div className="acciones">
-        <button
-          type="button"
-          className="boton boton-borde"
-          disabled={guardando}
-          onClick={onCancelar}
-        >
-          Cancelar
-        </button>
-
-        <button
-          className="boton boton-verde"
-          disabled={guardando}
-        >
-          {guardando ? 'Guardando…' : 'Guardar equipo'}
-        </button>
-      </div>
-      </fieldset></form>
+          <button className="boton boton-verde" disabled={guardando}>
+            {guardando ? 'Guardando…' : 'Guardar equipo'}
+          </button>
+        </div>
+      </fieldset>
+    </form>
   )
 }
 

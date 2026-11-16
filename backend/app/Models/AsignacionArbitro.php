@@ -9,7 +9,13 @@ class AsignacionArbitro extends Model
 {
     protected $table = 'asignaciones_arbitro';
 
-    protected $fillable = ['usuario_id', 'autorizado_por', 'fecha_inicio', 'fecha_fin', 'motivo_revocacion'];
+    protected $fillable = [
+        'usuario_id',
+        'autorizado_por',
+        'fecha_inicio',
+        'fecha_fin',
+        'motivo_revocacion',
+    ];
 
     protected $hidden = ['campeonato_activo_id'];
 

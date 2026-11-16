@@ -6,13 +6,18 @@ import Ciclo from '../../src/components/CicloCampeonatoPanel.jsx'
 import useLigaStore from '../../src/stores/useLigaStore.js'
 
 const adaptador = api.defaults.adapter
-afterEach(() => { api.defaults.adapter = adaptador })
+afterEach(() => {
+  api.defaults.adapter = adaptador
+})
 
 it('refresca un conflicto sin desmontar el panel ni aceptar una respuesta tardía', async () => {
   const anterior = { id: 12, estado: 'planificacion' }
   useLigaStore.setState({ liga: anterior, cargando: false, error: '', solicitada: '12' })
   let resolver
-  api.defaults.adapter = config => new Promise(resolve => { resolver = datos => resolve({ data: datos, status: 200, headers: {}, config }) })
+  api.defaults.adapter = (config) =>
+    new Promise((resolve) => {
+      resolver = (datos) => resolve({ data: datos, status: 200, headers: {}, config })
+    })
   const pendiente = useLigaStore.getState().cargarLiga(12, { conservar: true })
   expect(useLigaStore.getState().liga).toBe(anterior)
   expect(useLigaStore.getState().cargando).toBe(false)
@@ -31,7 +36,7 @@ it('refresca un conflicto sin desmontar el panel ni aceptar una respuesta tardí
 
 it('envía configuración explícita y usa las transiciones privadas existentes', async () => {
   const envios = []
-  api.defaults.adapter = async config => {
+  api.defaults.adapter = async (config) => {
     envios.push([config.method, config.url, config.data ? JSON.parse(config.data) : null])
     return { data: {}, status: 200, headers: {}, config }
   }
@@ -53,7 +58,9 @@ for (const estado of ['planificacion', 'en_curso', 'finalizado']) {
     expect(html.includes('Iniciar campeonato')).toBe(estado === 'planificacion')
     expect(html.includes('Finalizar campeonato')).toBe(estado === 'en_curso')
     expect(html).toContain('Consultar auditoría del ciclo')
-    if (estado === 'finalizado') expect(html).toContain('no se permiten modificaciones deportivas ordinarias')
-    if (estado === 'planificacion') expect(html).toContain('No se asigna un número por modalidad automáticamente')
+    if (estado === 'finalizado')
+      expect(html).toContain('no se permiten modificaciones deportivas ordinarias')
+    if (estado === 'planificacion')
+      expect(html).toContain('No se asigna un número por modalidad automáticamente')
   })
 }

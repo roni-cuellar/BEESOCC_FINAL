@@ -10,7 +10,15 @@ class LlavePlaza extends Model
 
     public $timestamps = false;
 
-    protected $fillable = ['llave_id', 'posicion', 'fase_equipo_id', 'origen_tipo', 'origen_llave_id', 'origen_grupo_id', 'origen_puesto'];
+    protected $fillable = [
+        'llave_id',
+        'posicion',
+        'fase_equipo_id',
+        'origen_tipo',
+        'origen_llave_id',
+        'origen_grupo_id',
+        'origen_puesto',
+    ];
 
     public function llave()
     {

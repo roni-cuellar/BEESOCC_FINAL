@@ -6,6 +6,10 @@ import './styles/aplicacion.css'
 import './styles/tailwind.css'
 
 function App() {
-  return <BrowserRouter><AppRoutes /></BrowserRouter>
+  return (
+    <BrowserRouter>
+      <AppRoutes />
+    </BrowserRouter>
+  )
 }
 export default App

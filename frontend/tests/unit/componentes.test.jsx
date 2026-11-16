@@ -13,7 +13,9 @@ describe('contratos accesibles de los componentes base', () => {
   })
 
   it('asocia el mensaje de validación con el campo y su etiqueta', () => {
-    const html = renderToStaticMarkup(<Campo id="nombre" etiqueta="Nombre" error="Es obligatorio" required />)
+    const html = renderToStaticMarkup(
+      <Campo id="nombre" etiqueta="Nombre" error="Es obligatorio" required />,
+    )
     expect(html).toContain('for="nombre"')
     expect(html).toContain('aria-invalid="true"')
     expect(html).toContain('aria-describedby="nombre-descripcion"')
@@ -22,7 +24,11 @@ describe('contratos accesibles de los componentes base', () => {
   })
 
   it('conserva opciones y validación nativa del select', () => {
-    const html = renderToStaticMarkup(<Campo as="select" id="formato" etiqueta="Formato" required><option value="liga">Liga</option></Campo>)
+    const html = renderToStaticMarkup(
+      <Campo as="select" id="formato" etiqueta="Formato" required>
+        <option value="liga">Liga</option>
+      </Campo>,
+    )
     expect(html).toContain('<select')
     expect(html).toContain('required=""')
     expect(html).toContain('<option value="liga">Liga</option>')

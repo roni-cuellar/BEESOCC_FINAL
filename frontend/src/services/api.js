@@ -1,4 +1,3 @@
-
 import axios from 'axios'
 
 // Configuración de la API
@@ -14,7 +13,6 @@ const api = axios.create({
   withXSRFToken: true,
 })
 
-
 function textoError(mensaje) {
   if (
     typeof mensaje !== 'string' ||
@@ -24,9 +22,13 @@ function textoError(mensaje) {
   }
 
   const campos = {
-    modalidad: 'modalidad', minimo_jugadores: 'mínimo de jugadores',
-    cantidad_grupos: 'cantidad de grupos', clasificados_por_grupo: 'clasificados por grupo',
-    confirmacion_sorteo: 'confirmación del sorteo', origen_grupo_id: 'grupo de procedencia', origen_puesto: 'puesto de procedencia',
+    modalidad: 'modalidad',
+    minimo_jugadores: 'mínimo de jugadores',
+    cantidad_grupos: 'cantidad de grupos',
+    clasificados_por_grupo: 'clasificados por grupo',
+    confirmacion_sorteo: 'confirmación del sorteo',
+    origen_grupo_id: 'grupo de procedencia',
+    origen_puesto: 'puesto de procedencia',
     name: 'nombre',
     email: 'correo electrónico',
     password: 'contraseña',
@@ -48,9 +50,8 @@ function textoError(mensaje) {
     orden_desempate: 'orden de desempate',
   }
 
-  return mensaje.replace(
-    /\b[a-z_]+\b/g,
-    campo => Object.hasOwn(campos, campo) ? campos[campo] : campo
+  return mensaje.replace(/\b[a-z_]+\b/g, (campo) =>
+    Object.hasOwn(campos, campo) ? campos[campo] : campo,
   )
 }
 
@@ -76,10 +77,7 @@ export function mensajeError(error) {
   }
 
   if (status === 422 && data?.errors) {
-    return Object.values(data.errors)
-      .flat()
-      .map(textoError)
-      .join(' ')
+    return Object.values(data.errors).flat().map(textoError).join(' ')
   }
 
   if (data?.message) {
@@ -112,9 +110,7 @@ export function urlImagen(ruta) {
   }
 
   // Imágenes almacenadas en Laravel
-  const base = api.defaults.baseURL.startsWith('http')
-    ? new URL(api.defaults.baseURL).origin
-    : ''
+  const base = api.defaults.baseURL.startsWith('http') ? new URL(api.defaults.baseURL).origin : ''
 
   return base + (texto.startsWith('/') ? texto : '/storage/' + texto)
 }

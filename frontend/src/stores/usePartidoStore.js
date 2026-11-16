@@ -3,8 +3,11 @@ import partidoService from '../services/partidoService.js'
 import { mensajeError } from '../services/api.js'
 let solicitud = 0
 const usePartidoStore = create((set, get) => ({
-  partidos: [], ligaId: '', cargando: false, error: '',
-  cargar: async ligaId => {
+  partidos: [],
+  ligaId: '',
+  cargando: false,
+  error: '',
+  cargar: async (ligaId) => {
     const actual = ++solicitud
     const id = String(ligaId)
     set({ ligaId: id, partidos: [], cargando: true, error: '' })

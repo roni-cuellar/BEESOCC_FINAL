@@ -71,8 +71,24 @@ class DeportePublicoService
         return $fase->rondas()->with('llaves.plazas', 'llaves.partidos.participantes.campeonatoEquipo.equipo')->get()->map(function ($ronda) use ($liga) {
             return $ronda->only(['id', 'numero', 'nombre', 'modalidad', 'desempate', 'estado']) + [
                 'llaves' => $ronda->llaves->map(function ($llave) use ($liga) {
-                    return $llave->only(['id', 'numero', 'estado', 'ganador_fase_equipo_id', 'metodo_resolucion', 'penales_plaza_1', 'penales_plaza_2']) + [
-                        'plazas' => $llave->plazas->map(fn ($p) => $p->only(['id', 'posicion', 'fase_equipo_id', 'origen_tipo', 'origen_llave_id', 'origen_grupo_id', 'origen_puesto'])),
+                    return $llave->only([
+                        'id',
+                        'numero',
+                        'estado',
+                        'ganador_fase_equipo_id',
+                        'metodo_resolucion',
+                        'penales_plaza_1',
+                        'penales_plaza_2',
+                    ]) + [
+                        'plazas' => $llave->plazas->map(fn ($p) => $p->only([
+                            'id',
+                            'posicion',
+                            'fase_equipo_id',
+                            'origen_tipo',
+                            'origen_llave_id',
+                            'origen_grupo_id',
+                            'origen_puesto',
+                        ])),
                         'partidos' => $llave->partidos->map(function ($p) use ($liga) {
                             foreach ($p->participantes as $participante) {
                                 $this->equipo($participante->campeonatoEquipo, $liga);

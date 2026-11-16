@@ -6,7 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "lint": "oxlint",
+    "lint": "npm run lint:eslint && npm run lint:oxlint",
+    "lint:eslint": "eslint src tests *.js --max-warnings 0",
+    "lint:oxlint": "oxlint",
+    "format": "prettier --write \"src/**/*.{js,jsx,css}\" \"tests/**/*.{js,jsx,mjs}\" \"*.{js,json,html}\" \".prettierrc.json\" \".oxlintrc.json\"",
+    "format:check": "prettier --check \"src/**/*.{js,jsx,css}\" \"tests/**/*.{js,jsx,mjs}\" \"*.{js,json,html}\" \".prettierrc.json\" \".oxlintrc.json\"",
     "test": "node --test tests/servicios.test.js",
     "test:unit": "vitest run",
     "test:watch": "vitest",
@@ -20,11 +24,15 @@
     "zustand": "^5.0.16"
   },
   "devDependencies": {
+    "@eslint/js": "10.0.1",
     "@tailwindcss/vite": "^4.3.3",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.2",
+    "eslint": "10.15.0",
+    "globals": "17.14.0",
     "oxlint": "^1.88.0",
+    "prettier": "3.10.1",
     "tailwindcss": "^4.3.3",
     "vite": "^8.3.4",
     "vitest": "5.0.5"

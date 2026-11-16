@@ -53,7 +53,17 @@ class PublicoCampeonatoController extends Controller
             'goles' => app(MarcadorService::class)->goles($participante),
         ]);
 
-        return $partido->only(['id', 'jornada', 'fecha_hora', 'lugar', 'estado', 'grupo_id', 'tipo_partido', 'tipo_resultado', 'oficializado_at'])
+        return $partido->only([
+            'id',
+            'jornada',
+            'fecha_hora',
+            'lugar',
+            'estado',
+            'grupo_id',
+            'tipo_partido',
+            'tipo_resultado',
+            'oficializado_at',
+        ])
             + ['participantes' => $participantes, 'marcador_deportivo' => app(MarcadorService::class)->calcular($partido)['marcador_deportivo']];
     }
 

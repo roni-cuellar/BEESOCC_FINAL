@@ -51,6 +51,17 @@ class CicloCampeonatoController extends Controller
     {
         Gate::authorize('view', $campeonato);
 
-        return response()->json(AuditoriaCambio::where('campeonato_id', $campeonato->id)->whereIn('accion', ['configurar_requisitos_inicio', 'iniciar_campeonato', 'finalizar_campeonato', 'crear_plantilla', 'actualizar_plantilla', 'eliminar_plantilla', 'estado_inscripcion', 'inactivar_equipo', 'bloquear_doble_inactividad', 'resultado_administrativo'])->orderBy('id')->get());
+        return response()->json(AuditoriaCambio::where('campeonato_id', $campeonato->id)->whereIn('accion', [
+            'configurar_requisitos_inicio',
+            'iniciar_campeonato',
+            'finalizar_campeonato',
+            'crear_plantilla',
+            'actualizar_plantilla',
+            'eliminar_plantilla',
+            'estado_inscripcion',
+            'inactivar_equipo',
+            'bloquear_doble_inactividad',
+            'resultado_administrativo',
+        ])->orderBy('id')->get());
     }
 }

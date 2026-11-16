@@ -12,7 +12,17 @@ class AuditoriaCambio extends Model
 
     public $timestamps = false;
 
-    protected $fillable = ['campeonato_id', 'usuario_id', 'entidad_tipo', 'entidad_id', 'accion', 'motivo', 'anterior_json', 'posterior_json', 'fecha'];
+    protected $fillable = [
+        'campeonato_id',
+        'usuario_id',
+        'entidad_tipo',
+        'entidad_id',
+        'accion',
+        'motivo',
+        'anterior_json',
+        'posterior_json',
+        'fecha',
+    ];
 
     protected function casts(): array
     {

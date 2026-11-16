@@ -1,0 +1,12 @@
+node_modules/
+vendor/
+dist/
+coverage/
+test-results/
+tests/browser/
+package-lock.json
+*.lock
+.env*
+**/privadas-locales/
+**/*evidencia*.json
+**/*respaldo*/

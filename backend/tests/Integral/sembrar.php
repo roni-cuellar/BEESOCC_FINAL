@@ -2,6 +2,11 @@
 
 require dirname(__DIR__, 2).'/vendor/autoload.php';
 require __DIR__.'/entorno.php';
+$contrasena = getenv('BEESOCC_INTEGRAL_PASSWORD');
+if ($contrasena === false || $contrasena === '') {
+    throw new RuntimeException('Define BEESOCC_INTEGRAL_PASSWORD para el laboratorio de pruebas.');
+}
+
 $app = iniciarEntornoIntegral();
 
 use App\Models\User;
@@ -27,7 +32,7 @@ if (Artisan::call('migrate', ['--force' => true]) !== 0) {
 $usuarios = [];
 foreach (['admin' => 'Organizador Integral', 'arbitro-a' => 'Árbitra Ana Integral',
     'arbitro-b' => 'Árbitro Bruno Integral', 'ajeno' => 'Usuario Sin Autorización'] as $correo => $nombre) {
-    $usuarios[$correo] = User::create(['name' => $nombre, 'email' => $correo.'@beesocc23c.test', 'password' => 'PruebaArbitral23C!2026']);
+    $usuarios[$correo] = User::create(['name' => $nombre, 'email' => $correo.'@beesocc23c.test', 'password' => $contrasena]);
 }
 $admin = $usuarios['admin'];
 $campeonato = $admin->campeonatos()->create(['nombre' => 'Copa Integral 2.3C', 'temporada' => '2026', 'formato' => 'todos_contra_todos']);

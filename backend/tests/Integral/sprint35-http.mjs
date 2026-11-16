@@ -1,6 +1,9 @@
 // HTTP real: cookies y CSRF de Sanctum; el servidor verifica el aislamiento en cada petición.
 import assert from 'node:assert/strict'
 import { readFile, writeFile } from 'node:fs/promises'
+const contrasena = process.env.BEESOCC_INTEGRAL_PASSWORD
+assert.ok(contrasena, 'Define BEESOCC_INTEGRAL_PASSWORD para el laboratorio de pruebas.')
+
 const carpeta = process.env.BEESOCC_INTEGRAL_DIR
 assert.match(carpeta || '', /beesocc_23c_test_\d{8}_\d{6}_[a-f0-9]{8}$/)
 const entorno = JSON.parse(await readFile(carpeta + '/entorno.json', 'utf8'))
@@ -31,7 +34,7 @@ async function sesion(rol, correo) {
   }
   if (!Object.keys(cookies).some(k => k.startsWith('beesocc23c_'))) {
     comprobar('CSRF real ' + rol, await pedir('GET','/sanctum/csrf-cookie'),204)
-    comprobar('Login real ' + rol, await pedir('POST','/api/login',{email:correo+'@beesocc23c.test',password:'PruebaArbitral23C!2026'}),200)
+    comprobar('Login real ' + rol, await pedir('POST','/api/login',{email:correo+'@beesocc23c.test',password:contrasena}),200)
   }
   return pedir
 }

@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="es">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Laboratorio responsive real · Sprint 5.7</title>
+<style>
+  body { margin: 0; padding: 20px; background: #e8eeeb; font-family: sans-serif; }
+  h1 { font-size: 18px; }
+  iframe { display: block; width: 390px; height: 844px; border: 1px solid #abc1b5; background: white; }
+</style>
+<h1>Viewport 390 × 844 · React y backend reales del laboratorio</h1>
+<iframe title="BEESOCC móvil con Laravel real"></iframe>
+<script type="module">
+  // Solo cambia el viewport: la aplicación conserva su sesión y su API normal.
+  const liga = new URLSearchParams(location.search).get('liga')
+  if (!/^\d+$/.test(liga || '')) throw new Error('Indica una liga ficticia del laboratorio')
+  document.querySelector('iframe').src = `/ligas/${liga}/grupos`
+</script>
+</html>

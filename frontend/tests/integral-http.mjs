@@ -2,6 +2,9 @@
 import assert from 'node:assert/strict'
 import { readFile, writeFile } from 'node:fs/promises'
 
+const contrasena = process.env.BEESOCC_INTEGRAL_PASSWORD
+assert.ok(contrasena, 'Define BEESOCC_INTEGRAL_PASSWORD para el laboratorio de pruebas.')
+
 const carpeta = process.env.BEESOCC_INTEGRAL_DIR
 assert.match(carpeta || '', /beesocc_23c_test_\d{8}_\d{6}_[a-f0-9]{8}$/)
 const origen = 'http://beesocc23c-arbitro.localhost:5175'
@@ -27,7 +30,7 @@ async function sesion(correo, conservar = false) {
   }
   if (!Object.keys(cookies).some(nombre => nombre.startsWith('beesocc23c_'))) {
     assert.equal((await pedir('GET', '/sanctum/csrf-cookie')).estado, 204)
-    assert.equal((await pedir('POST', '/api/login', { email: correo + '@beesocc23c.test', password: 'PruebaArbitral23C!2026' })).estado, 200)
+    assert.equal((await pedir('POST', '/api/login', { email: correo + '@beesocc23c.test', password: contrasena })).estado, 200)
   }
   return pedir
 }

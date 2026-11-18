@@ -14,7 +14,7 @@ export default function TablasGrupos({
   const vigente = clasificacion?.clasificacion_vigente
   return (
     <>
-      <div className="fila-entre">
+      <div className="fila-entre grupos-vista-posiciones">
         <div>
           <h2>La competencia, grupo a grupo</h2>
           <p className="nota">

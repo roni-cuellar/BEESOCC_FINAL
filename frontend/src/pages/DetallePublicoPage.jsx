@@ -124,6 +124,7 @@ export default function DetallePublicoPage() {
       ) : (
         <>
           <EncabezadoPagina
+            ilustracion="publico"
             titulo={liga.nombre}
             descripcion={liga.descripcion || 'Información deportiva del campeonato.'}
             acciones={

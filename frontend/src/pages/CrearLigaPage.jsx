@@ -123,7 +123,7 @@ function CrearLigaPage() {
             disabled={guardando}
             error={errores.descripcion?.[0]}
           />
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid items-start gap-4 sm:grid-cols-2">
             <Campo
               etiqueta="Temporada"
               name="temporada"
@@ -143,6 +143,7 @@ function CrearLigaPage() {
               onChange={cambiar}
               disabled={guardando}
               error={errores.formato?.[0]}
+              ayuda="Define cómo se organiza la competición. La modalidad (Fútbol 5, 7, 11 o personalizada) se configura en el dashboard."
             >
               <option value="todos_contra_todos">Todos contra todos</option>
               <option value="eliminacion_directa">Eliminación directa</option>

@@ -20,8 +20,8 @@ export function CuadrosPublicos({ fases }) {
       />
     )
   return cuadros.map((fase) => (
-    <section key={fase.id}>
-      <h2>{fase.nombre}</h2>
+    <section key={fase.id} className="mb-8">
+      <h2 className="mb-5 font-titulo text-2xl font-bold text-oscuro">{fase.nombre}</h2>
       {!fase.rondas.length ? (
         <p className="nota">Enfrentamientos por confirmar.</p>
       ) : (
@@ -51,8 +51,8 @@ export function GruposPublicos({ fases, partidos, vista, onVista }) {
       />
     )
   return grupos.map((fase) => (
-    <section key={fase.id}>
-      <h2>{fase.nombre}</h2>
+    <section key={fase.id} className="mb-8">
+      <h2 className="mb-5 font-titulo text-2xl font-bold text-oscuro">{fase.nombre}</h2>
       <TablasGrupos
         fase={fase}
         tablas={vista === 'oficial' ? fase.tablas_oficiales : fase.tablas_provisionales}
@@ -62,8 +62,8 @@ export function GruposPublicos({ fases, partidos, vista, onVista }) {
         publica
       />
       {fase.grupos.map((g) => (
-        <section key={g.id} aria-label={`Calendario ${g.codigo}`}>
-          <h3>Calendario · {g.nombre || g.codigo}</h3>
+        <section key={g.id} className="mt-8" aria-label={`Calendario ${g.codigo}`}>
+          <h3 className="mb-4">Calendario · {g.nombre || g.codigo}</h3>
           <div className="grid gap-4 lg:grid-cols-2">
             {partidos
               .filter((p) => p.grupo_id === g.id)

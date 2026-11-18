@@ -39,6 +39,7 @@ export default function CampeonatosPublicosPage() {
   return (
     <section className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8 lg:px-10 lg:py-12">
       <EncabezadoPagina
+        ilustracion="publico"
         titulo="Campeonatos publicados"
         descripcion="Sigue la competición sin crear una cuenta."
         acciones={

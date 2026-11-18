@@ -85,6 +85,7 @@ export default function MisArbitrajesPage() {
   return (
     <section className="mx-auto max-w-7xl px-5 py-8 sm:px-8 lg:py-12">
       <EncabezadoPagina
+        ilustracion="arbitraje"
         titulo="Mis arbitrajes"
         descripcion="Campeonatos donde tienes una autorización arbitral vigente."
         acciones={

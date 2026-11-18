@@ -1,3 +1,4 @@
+import IlustracionModulo from '../components/IlustracionModulo'
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import jugadorService from '../services/jugadorService'
@@ -98,9 +99,12 @@ function JugadoresPage() {
   return (
     <>
       <div className="titulo-pagina">
-        <div>
-          <h1>Jugadores</h1>
-          <p className="texto-suave">Gestiona jugadores y plantillas.</p>
+        <div className="flex min-w-0 items-center gap-4">
+          <IlustracionModulo tipo={tab === 'plantilla' ? 'plantillas' : 'equipos'} />
+          <div className="min-w-0">
+            <h1>Jugadores</h1>
+            <p className="texto-suave">Gestiona jugadores y plantillas.</p>
+          </div>
         </div>
         <button className="boton boton-verde" onClick={() => setFormulario({})}>
           + Registrar jugador

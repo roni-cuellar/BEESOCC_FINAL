@@ -1,3 +1,4 @@
+import IlustracionModulo from '../components/IlustracionModulo'
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { crearGruposStore } from '../stores/useGruposStore'
@@ -96,14 +97,17 @@ function ContenidoGrupos({ ligaId, arbitral }) {
         </Link>
       )}
       <header className="grupos-cabecera">
-        <div>
-          <p className="etiqueta">BEESOCC · GRUPOS + ELIMINACIÓN</p>
-          <h1>Cada grupo, un camino al título.</h1>
-          <p>
-            {arbitral
-              ? 'Consulta posiciones y actas; certifica las tandas de los partidos que arbitras.'
-              : 'Organiza los grupos, resuelve las posiciones y acompaña a los clasificados.'}
-          </p>
+        <div className="flex min-w-0 items-center gap-4">
+          <IlustracionModulo tipo="grupos" />
+          <div className="min-w-0">
+            <p className="etiqueta">BEESOCC · GRUPOS + ELIMINACIÓN</p>
+            <h1>Cada grupo, un camino al título.</h1>
+            <p>
+              {arbitral
+                ? 'Consulta posiciones y actas; certifica las tandas de los partidos que arbitras.'
+                : 'Organiza los grupos, resuelve las posiciones y acompaña a los clasificados.'}
+            </p>
+          </div>
         </div>
         <Boton variante="claro" disabled={bloqueado} onClick={() => recargar()}>
           Actualizar competición

@@ -1,12 +1,13 @@
 import { Link, Outlet } from 'react-router-dom'
 import logo from '../assets/branding/logo.png'
-import ayuda from '../assets/branding/ayuda_3.png'
+import logoClaro from '../assets/branding/nuevos/logo-fondo-blanco.png'
+import ayuda from '../assets/branding/optimizadas/equipos.png'
 
 function AccesoLayout() {
   return (
-    <div className="grid min-h-dvh bg-[#f4f7f5] lg:grid-cols-[1fr_1.1fr]">
+    <div className="acceso-visual grid min-h-dvh bg-[#f4f7f5] lg:grid-cols-[1fr_1.1fr]">
       <aside
-        className="hidden flex-col justify-between bg-marca-oscuro px-12 py-10 text-white lg:flex xl:px-20"
+        className="acceso-ilustrado hidden flex-col justify-between bg-marca-oscuro px-12 py-10 text-white lg:flex xl:px-20"
         aria-label="BEESOCC, organización deportiva"
       >
         <Link className="marca-logo" to="/" aria-label="BEESOCC, inicio">
@@ -25,8 +26,8 @@ function AccesoLayout() {
             className="mx-auto mt-6 w-full max-w-sm object-contain"
             src={ayuda}
             alt="Ilustración oficial de equipos de BEESOCC"
-            width="1254"
-            height="1254"
+            width="512"
+            height="512"
           />
         </div>
         <p className="text-xs tracking-widest text-green-100">
@@ -38,11 +39,15 @@ function AccesoLayout() {
         id="contenido"
       >
         <section
-          className="w-full max-w-md rounded-3xl border border-borde bg-white px-5 py-8 shadow-sm sm:px-9 sm:py-10"
+          className="acceso-tarjeta w-full max-w-md rounded-3xl border border-borde bg-white px-5 py-8 sm:px-9 sm:py-10"
           aria-label="Acceso a BEESOCC"
         >
-          <Link className="marca-logo mx-auto mb-7" to="/" aria-label="BEESOCC, inicio">
-            <img src={logo} alt="BEESOCC" width="1448" height="1086" />
+          <Link
+            className="marca-logo-claro marca-logo-claro-acceso mx-auto mb-7"
+            to="/"
+            aria-label="BEESOCC, inicio"
+          >
+            <img src={logoClaro} alt="BEESOCC" width="2172" height="724" />
           </Link>
           <Outlet />
           <Link

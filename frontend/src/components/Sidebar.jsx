@@ -76,7 +76,7 @@ function Sidebar({ ligaId, abierta, onCerrar, eliminacion = false, grupos = fals
         aria-modal={abierta || undefined}
         aria-label="Navegación del campeonato"
         className={
-          'fixed inset-y-0 left-0 z-50 flex w-64 max-w-[85vw] flex-col overflow-y-auto bg-marca-oscuro p-5 text-white shadow-xl transition-transform duration-150 motion-reduce:transition-none lg:visible lg:translate-x-0 lg:shadow-none ' +
+          'navegacion-lateral fixed inset-y-0 left-0 z-50 flex w-64 max-w-[85vw] flex-col overflow-y-auto bg-marca-oscuro p-5 text-white shadow-xl transition-transform duration-150 motion-reduce:transition-none lg:visible lg:translate-x-0 lg:shadow-none ' +
           (abierta ? 'visible translate-x-0' : 'invisible -translate-x-full')
         }
       >

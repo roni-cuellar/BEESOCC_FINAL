@@ -19,7 +19,7 @@ function MisLigasPage() {
   }, [cargarLigas])
   return (
     <section className="mx-auto w-full max-w-7xl px-5 py-8 sm:px-8 lg:px-10 lg:py-12">
-      <div className="mb-8 flex flex-col items-start justify-between gap-6 border-b border-borde pb-8 sm:flex-row sm:items-center">
+      <div className="ligas-portada mb-8 flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
         <div>
           <p className="mb-3 text-xs font-semibold tracking-widest text-marca-oscuro">
             TU ESPACIO DE COMPETICIÓN

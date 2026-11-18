@@ -1,3 +1,4 @@
+import EncabezadoPagina from '../components/layout/EncabezadoPagina'
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import ligaService from '../services/ligaService'
@@ -43,19 +44,21 @@ function EstadisticasPage({ publica = false }) {
   const mayor = Math.max(1, ...resultados.map((r) => r.total || 0))
   return (
     <>
-      <div className="cabecera-pagina">
-        <div>
-          <h1>Estadísticas</h1>
-          <p className="texto-suave">Rendimiento del campeonato.</p>
-        </div>
-        <button
-          className="boton boton-borde"
-          onClick={() => setRevision((r) => r + 1)}
-          disabled={cargando}
-        >
-          Actualizar
-        </button>
-      </div>
+      <EncabezadoPagina
+        tituloAs={publica ? 'h2' : 'h1'}
+        ilustracion="estadisticas"
+        titulo="Estadísticas"
+        descripcion="Rendimiento del campeonato."
+        acciones={
+          <button
+            className="boton boton-borde"
+            onClick={() => setRevision((r) => r + 1)}
+            disabled={cargando}
+          >
+            Actualizar
+          </button>
+        }
+      />
       <div className="pestanas" role="group" aria-label="Tipo de estadística">
         {Object.entries(tipos).map(([clave, titulo]) => (
           <button
@@ -83,8 +86,9 @@ function EstadisticasPage({ publica = false }) {
       {!cargando && !error && resultados.length > 0 && (
         <section className="panel">
           <h2>{tipos[tipo]}</h2>
-          <div className="tabla-contenedor">
+          <div className="tabla-contenedor" role="region" aria-label={tipos[tipo]} tabIndex={0}>
             <table>
+              <caption className="sr-only">{tipos[tipo]} del campeonato</caption>
               <thead>
                 <tr>
                   <th>Pos.</th>

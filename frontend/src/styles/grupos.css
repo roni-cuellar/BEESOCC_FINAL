@@ -2,6 +2,18 @@
 .grupos-pagina {
   min-width: 0;
 }
+.grupos-vista-posiciones > label {
+  flex: 0 0 260px;
+}
+@media (max-width: 639px) {
+  .grupos-vista-posiciones {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .grupos-vista-posiciones > label {
+    flex-basis: auto;
+  }
+}
 .grupos-cabecera {
   display: flex;
   align-items: center;

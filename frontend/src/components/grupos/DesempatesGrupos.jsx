@@ -1,3 +1,4 @@
+import IlustracionModulo from '../IlustracionModulo'
 import { Link } from 'react-router-dom'
 import { Boton } from '../ui'
 import { nombreInscripcion } from '../../utils/grupos'
@@ -58,12 +59,15 @@ export default function DesempatesGrupos({
   return (
     <>
       <div className="fila-entre">
-        <div>
-          <h2>Desempates con respaldo oficial</h2>
-          <p className="nota">
-            Partidos extra y liguillas adicionales, separados de la tabla regular. Cada nueva
-            generación requiere confirmación del organizador.
-          </p>
+        <div className="flex min-w-0 items-center gap-4">
+          <IlustracionModulo tipo="desempates" />
+          <div className="min-w-0">
+            <h2>Desempates con respaldo oficial</h2>
+            <p className="nota">
+              Partidos extra y liguillas adicionales, separados de la tabla regular. Cada nueva
+              generación requiere confirmación del organizador.
+            </p>
+          </div>
         </div>
       </div>
       {clasificacion.tablas.map((t) => (

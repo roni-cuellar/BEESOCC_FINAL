@@ -5,9 +5,43 @@ import Aviso from './Aviso'
 import Confirmacion from './Confirmacion'
 import HistorialAuditoria from './HistorialAuditoria'
 import { mensajeError } from '../services/api'
+import { modalidadesCampeonato, seleccionModalidad } from '../utils/modalidadCampeonato'
+
+export function SelectorModalidad({ seleccion, valor, onSeleccionar, onCambiar }) {
+  return (
+    <div className="min-w-0">
+      <label>
+        Modalidad del campeonato
+        <select required value={seleccion} onChange={(e) => onSeleccionar(e.target.value)}>
+          <option value="" disabled>
+            Selecciona una modalidad
+          </option>
+          {modalidadesCampeonato.map((modalidad) => (
+            <option key={modalidad} value={modalidad}>
+              {modalidad}
+            </option>
+          ))}
+          <option value="personalizada">Personalizada</option>
+        </select>
+      </label>
+      {seleccion === 'personalizada' && (
+        <label>
+          Nombre de la modalidad personalizada
+          <input
+            required
+            maxLength={50}
+            value={valor}
+            onChange={(e) => onCambiar(e.target.value)}
+          />
+        </label>
+      )}
+    </div>
+  )
+}
 
 export default function CicloCampeonatoPanel({ liga }) {
   const [datos, setDatos] = useState(null)
+  const [seleccion, setSeleccion] = useState('')
   const [historial, setHistorial] = useState([])
   const [error, setError] = useState('')
   const [mensaje, setMensaje] = useState('')
@@ -19,6 +53,7 @@ export default function CicloCampeonatoPanel({ liga }) {
     Promise.all([ligaService.configuracion(liga.id), ligaService.auditoriaCiclo(liga.id)])
       .then(([r, h]) => {
         if (vigente) {
+          setSeleccion(seleccionModalidad(r.configuracion.modalidad || ''))
           setDatos({
             modalidad: r.configuracion.modalidad || '',
             minimo_jugadores: r.configuracion.minimo_jugadores ?? '',
@@ -66,8 +101,15 @@ export default function CicloCampeonatoPanel({ liga }) {
     await useLigaStore.getState().cargarLiga(liga.id)
   }
   return (
-    <section className="panel mb-7" aria-label="Ciclo del campeonato">
-      <h2>Ciclo del campeonato</h2>
+    <section
+      className="panel ciclo-panel mb-7"
+      aria-label="Ciclo del campeonato"
+      aria-busy={ocupado || (!datos && !error)}
+    >
+      <div className="ciclo-titulo">
+        <span className="etiqueta">GESTIÓN DEPORTIVA</span>
+        <h2>Ciclo del campeonato</h2>
+      </div>
       <Aviso error={error} exito={mensaje} />
       {liga.estado === 'planificacion' && (
         <>
@@ -75,19 +117,20 @@ export default function CicloCampeonatoPanel({ liga }) {
             Define el mínimo de tu reglamento. No se asigna un número por modalidad automáticamente.
             Al iniciar se cierran las plantillas ordinarias.
           </p>
+          {!datos && !error && <p role="status">Cargando requisitos de inicio…</p>}
           {datos && (
-            <form onSubmit={guardar}>
+            <form onSubmit={guardar} className="ciclo-formulario">
               <fieldset className="contents" disabled={ocupado}>
                 <div className="dos-columnas">
-                  <label>
-                    Modalidad del campeonato
-                    <input
-                      required
-                      maxLength={50}
-                      value={datos.modalidad}
-                      onChange={(e) => setDatos({ ...datos, modalidad: e.target.value })}
-                    />
-                  </label>
+                  <SelectorModalidad
+                    seleccion={seleccion}
+                    valor={datos.modalidad}
+                    onSeleccionar={(valor) => {
+                      setSeleccion(valor)
+                      setDatos({ ...datos, modalidad: valor === 'personalizada' ? '' : valor })
+                    }}
+                    onCambiar={(modalidad) => setDatos({ ...datos, modalidad })}
+                  />
                   <label>
                     Mínimo de jugadores elegibles por equipo
                     <input
@@ -101,7 +144,7 @@ export default function CicloCampeonatoPanel({ liga }) {
                   </label>
                 </div>
                 <button className="boton boton-borde" disabled={!datos.modalidad.trim() || ocupado}>
-                  Guardar requisitos de inicio
+                  {ocupado ? 'Guardando requisitos…' : 'Guardar requisitos de inicio'}
                 </button>
               </fieldset>
             </form>
@@ -132,7 +175,7 @@ export default function CicloCampeonatoPanel({ liga }) {
           ordinarias.
         </p>
       )}
-      <details className="mt-4">
+      <details className="ciclo-auditoria mt-5">
         <summary>Consultar auditoría del ciclo</summary>
         <HistorialAuditoria historial={historial} contexto="ciclo del campeonato" />
       </details>

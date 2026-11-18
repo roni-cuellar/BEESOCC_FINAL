@@ -1,10 +1,10 @@
 import { Boton } from '../components/ui'
 import Icono from '../components/Icono'
-import ayuda from '../assets/branding/ayuda.png'
-import ayudaCampeonatos from '../assets/branding/ayuda_2.png'
-import ayudaEquipos from '../assets/branding/ayuda_3.png'
-import ayudaCalendario from '../assets/branding/ayuda_4.png'
-import ayudaEstadisticas from '../assets/branding/ayuda_5.png'
+import ayuda from '../assets/branding/optimizadas/inicio.png'
+import ayudaCampeonatos from '../assets/branding/optimizadas/campeonatos.png'
+import ayudaEquipos from '../assets/branding/optimizadas/equipos.png'
+import ayudaCalendario from '../assets/branding/optimizadas/partidos.png'
+import ayudaEstadisticas from '../assets/branding/optimizadas/estadisticas.png'
 
 const caracteristicas = [
   {

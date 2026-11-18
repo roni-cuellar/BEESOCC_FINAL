@@ -1,4 +1,4 @@
-import ilustracion from '../assets/branding/ayuda_2.png'
+import ilustracion from '../assets/branding/optimizadas/campeonatos.png'
 import Boton from './ui/Boton'
 import Aviso from './Aviso'
 
@@ -53,8 +53,8 @@ function EstadoVista({
           src={ilustracion}
           alt=""
           loading="lazy"
-          width="1254"
-          height="1254"
+          width="384"
+          height="384"
         />
         <h2 className="max-w-lg font-titulo text-2xl font-bold text-oscuro">{titulo}</h2>
         <p className="max-w-lg text-sm leading-7 text-gris">{texto}</p>

@@ -33,7 +33,7 @@ function LoginPage() {
       <p className="mt-3 mb-7 text-sm leading-6 text-gris">
         Continúa con la organización de tus campeonatos.
       </p>
-      <form onSubmit={entrar} autoComplete="off" className="grid gap-5">
+      <form onSubmit={entrar} aria-busy={cargando} className="grid gap-5">
         <Campo
           etiqueta="Correo electrónico"
           id="login-correo"
@@ -60,7 +60,7 @@ function LoginPage() {
             {error}
           </p>
         )}
-        <Boton type="submit" disabled={cargando} className="w-full">
+        <Boton type="submit" disabled={cargando} aria-busy={cargando} className="w-full">
           {cargando ? 'Iniciando sesión…' : 'Iniciar sesión'}
         </Boton>
       </form>

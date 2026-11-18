@@ -1,3 +1,4 @@
+import IlustracionModulo from '../components/IlustracionModulo'
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useOutletContext, useParams } from 'react-router-dom'
 import usePartidoStore from '../stores/usePartidoStore'
@@ -40,9 +41,14 @@ function CalendarioPage() {
   return (
     <>
       <div className="cabecera-pagina">
-        <div>
-          <h1>Calendario</h1>
-          <p className="texto-suave">Configura las vueltas y organiza los encuentros de tu liga.</p>
+        <div className="flex min-w-0 items-center gap-4">
+          <IlustracionModulo tipo="partidos" />
+          <div className="min-w-0">
+            <h1>Calendario</h1>
+            <p className="texto-suave">
+              Configura las vueltas y organiza los encuentros de tu liga.
+            </p>
+          </div>
         </div>
         {eliminacion ? (
           <Link className="boton boton-verde" to={'/ligas/' + ligaId + '/cuadro'}>

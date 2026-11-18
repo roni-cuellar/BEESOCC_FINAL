@@ -4,6 +4,7 @@ import ligaService from '../services/ligaService'
 import { mensajeError } from '../services/api'
 import EstadoVista from '../components/EstadoVista'
 import publicoService from '../services/publicoService'
+import EncabezadoPagina from '../components/layout/EncabezadoPagina'
 
 function TablaPage({ publica = false }) {
   const { ligaId } = useParams()
@@ -44,23 +45,24 @@ function TablaPage({ publica = false }) {
   }
   return (
     <>
-      <div className="cabecera-pagina">
-        <div>
-          <h1>Tabla de posiciones</h1>
-          <p className="texto-suave">
-            {publica
-              ? 'Posiciones de partidos finalizados. Esta tabla no determina por sí sola el campeón.'
-              : 'Solo partidos finalizados.'}
-          </p>
-        </div>
-        <button
-          className="boton boton-borde"
-          onClick={() => setRevision((r) => r + 1)}
-          disabled={cargando}
-        >
-          Actualizar
-        </button>
-      </div>
+      <EncabezadoPagina
+        tituloAs={publica ? 'h2' : 'h1'}
+        titulo="Tabla de posiciones"
+        descripcion={
+          publica
+            ? 'Posiciones de partidos finalizados. Esta tabla no determina por sí sola el campeón.'
+            : 'Solo partidos finalizados.'
+        }
+        acciones={
+          <button
+            className="boton boton-borde"
+            onClick={() => setRevision((r) => r + 1)}
+            disabled={cargando}
+          >
+            Actualizar
+          </button>
+        }
+      />
       <EstadoVista
         cargando={cargando}
         error={error}
@@ -74,37 +76,50 @@ function TablaPage({ publica = false }) {
         }
       />
       {!cargando && !error && tabla.length > 0 && (
-        <div className="panel tabla-contenedor">
-          <table>
-            <caption className="sr-only">Clasificación del campeonato</caption>
-            <thead>
-              <tr>
-                <th>Pos.</th>
-                <th>Equipo</th>
-                {columnas.map((c) => (
-                  <th key={c} title={nombres[c]} aria-label={nombres[c]}>
-                    {c}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {tabla.map((equipo) => (
-                <tr key={equipo.equipo_id}>
-                  <td>{equipo.posicion}</td>
-                  <td>
-                    <strong>{equipo.nombre}</strong>
-                  </td>
+        <section className="panel" aria-label="Clasificación del campeonato">
+          <p className="tabla-ayuda" id="ayuda-posiciones">
+            PJ: jugados · PG: ganados · PE: empatados · PP: perdidos · GF: goles a favor · GC: goles
+            en contra · DG: diferencia · PTS: puntos.
+            <span>En pantallas pequeñas, desliza la tabla para ver todas las columnas.</span>
+          </p>
+          <div
+            className="tabla-contenedor"
+            role="region"
+            aria-label="Posiciones por equipo"
+            aria-describedby="ayuda-posiciones"
+            tabIndex={0}
+          >
+            <table>
+              <caption className="sr-only">Clasificación del campeonato</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Pos.</th>
+                  <th scope="col">Equipo</th>
                   {columnas.map((c) => (
-                    <td className={c === 'PTS' ? 'puntos-tabla' : ''} key={c}>
-                      {equipo[c]}
-                    </td>
+                    <th scope="col" key={c} title={nombres[c]} aria-label={nombres[c]}>
+                      {c}
+                    </th>
                   ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {tabla.map((equipo) => (
+                  <tr key={equipo.equipo_id}>
+                    <td>{equipo.posicion}</td>
+                    <td>
+                      <strong>{equipo.nombre}</strong>
+                    </td>
+                    {columnas.map((c) => (
+                      <td className={c === 'PTS' ? 'puntos-tabla' : ''} key={c}>
+                        {equipo[c]}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
       )}
     </>
   )

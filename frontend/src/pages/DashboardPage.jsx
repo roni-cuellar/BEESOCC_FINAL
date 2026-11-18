@@ -4,13 +4,15 @@ import { useOutletContext, useParams } from 'react-router-dom'
 import equipoService from '../services/equipoService'
 import jugadorService from '../services/jugadorService'
 import ligaService from '../services/ligaService'
+import arbitroService from '../services/arbitroService'
 import usePartidoStore from '../stores/usePartidoStore'
 import PartidoCard from '../components/PartidoCard'
 import EstadoVista from '../components/EstadoVista'
 import Aviso from '../components/Aviso'
 import { mensajeError } from '../services/api'
 import { Boton, Tarjeta } from '../components/ui'
-import EncabezadoPagina from '../components/layout/EncabezadoPagina'
+import IlustracionModulo from '../components/IlustracionModulo'
+import ResumenDeportivo from '../components/ResumenDeportivo'
 import Icono from '../components/Icono'
 
 function DashboardPage() {
@@ -22,6 +24,7 @@ function DashboardPage() {
   const [resumen, setResumen] = useState({
     equipos: null,
     jugadores: null,
+    arbitros: null,
     tabla: [],
     error: '',
     cargando: true,
@@ -31,10 +34,18 @@ function DashboardPage() {
     let vigente = true
     cargar(ligaId)
     async function consultar() {
-      setResumen({ equipos: null, jugadores: null, tabla: [], error: '', cargando: true })
-      const [inscripciones, tabla] = await Promise.allSettled([
+      setResumen({
+        equipos: null,
+        jugadores: null,
+        arbitros: null,
+        tabla: [],
+        error: '',
+        cargando: true,
+      })
+      const [inscripciones, tabla, arbitraje] = await Promise.allSettled([
         equipoService.inscripciones(ligaId),
         eliminacion || grupos ? Promise.resolve({ tabla: [] }) : ligaService.tabla(ligaId),
+        arbitroService.vigente(ligaId),
       ])
       let equipos = null,
         jugadores = null
@@ -49,10 +60,12 @@ function DashboardPage() {
         else errores.push('No fue posible consultar todas las plantillas.')
       } else errores.push(mensajeError(inscripciones.reason))
       if (tabla.status === 'rejected') errores.push(mensajeError(tabla.reason))
+      if (arbitraje.status === 'rejected') errores.push(mensajeError(arbitraje.reason))
       if (vigente)
         setResumen({
           equipos,
           jugadores,
+          arbitros: arbitraje.status === 'fulfilled' ? (arbitraje.value ? 1 : 0) : null,
           tabla: tabla.status === 'fulfilled' ? tabla.value.tabla : [],
           error: errores.join(' '),
           cargando: false,
@@ -77,64 +90,58 @@ function DashboardPage() {
     .slice(0, 3)
   return (
     <>
-      <p className="mb-3 text-xs font-semibold tracking-widest text-marca-oscuro">
-        TEMPORADA {liga.temporada}
-      </p>
-      <div className="mb-4">
-        <Boton variante="secundario" to={'/ligas/' + ligaId + '/arbitros'}>
-          Árbitros
-        </Boton>
-      </div>
-      <EncabezadoPagina
-        titulo="Resumen"
-        descripcion={
-          liga.descripcion ||
-          'Tu campeonato, de un vistazo. Organiza lo que viene y sigue lo que ya se jugó.'
-        }
-        acciones={
+      <header className="dashboard-portada mb-7">
+        <div className="flex min-w-0 items-start gap-4 sm:gap-6">
+          <IlustracionModulo
+            tipo={grupos ? 'grupos' : eliminacion ? 'eliminacion' : 'campeonatos'}
+          />
+          <div className="min-w-0">
+            <p className="mb-3 text-xs font-semibold tracking-widest text-green-200">
+              TEMPORADA {liga.temporada} · RESUMEN
+            </p>
+            <h1 className="font-titulo text-3xl leading-tight font-bold break-words sm:text-4xl">
+              {liga.nombre}
+            </h1>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-green-100">
+              {liga.descripcion ||
+                'Tu campeonato, de un vistazo. Organiza lo que viene y sigue lo que ya se jugó.'}
+            </p>
+            <span className="mt-5 inline-flex items-center gap-2 rounded-full border border-white/20 px-3 py-1.5 text-xs font-semibold">
+              <span className="size-2 rounded-full bg-green-300" aria-hidden="true" />
+              {liga.estado === 'planificacion'
+                ? 'Planificación'
+                : liga.estado === 'en_curso'
+                  ? 'En curso'
+                  : liga.estado === 'finalizado'
+                    ? 'Finalizado'
+                    : liga.estado}
+            </span>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-3">
           <Boton
-            variante="secundario"
+            variante="claro"
             disabled={cargando || resumen.cargando}
             onClick={() => setIntento((v) => v + 1)}
           >
             Actualizar
           </Boton>
-        }
+          <Boton variante="claro" to={'/ligas/' + ligaId + '/arbitros'}>
+            Árbitros
+          </Boton>
+        </div>
+      </header>
+      <ResumenDeportivo
+        equipos={resumen.equipos}
+        jugadores={resumen.jugadores}
+        partidos={cargando || error ? null : partidos.length}
+        arbitros={resumen.arbitros}
+        cargando={cargando || resumen.cargando}
       />
-      <div className="mb-6 flex items-center gap-2 text-xs text-gris">
-        <span className="size-2 rounded-full bg-marca" />
-        {liga.estado === 'planificacion' ? 'Planificación' : liga.estado.replaceAll('_', ' ')}
-      </div>
       <CicloCampeonatoPanel key={`${liga.id}:${liga.estado}`} liga={liga} />
-      <div className="mb-7 grid gap-4 sm:grid-cols-3">
-        {[
-          ['Equipos inscritos', resumen.equipos, 'equipos'],
-          ['Jugadores', resumen.jugadores, 'jugadores'],
-          ['Partidos', cargando || error ? null : partidos.length, 'partidos'],
-        ].map(([titulo, cantidad, icono]) => (
-          <Tarjeta key={titulo}>
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-sm font-medium text-gris">{titulo}</p>
-              <span className="grid size-10 place-items-center rounded-xl bg-green-50 text-marca-oscuro">
-                <Icono nombre={icono} />
-              </span>
-            </div>
-            <p className="mt-4 font-titulo text-4xl font-bold tracking-tight text-oscuro">
-              {cantidad ?? '—'}
-            </p>
-            <p className="mt-2 text-xs text-gris">
-              {cantidad === null
-                ? cargando || resumen.cargando
-                  ? 'Consultando información…'
-                  : 'No disponible'
-                : 'En este campeonato'}
-            </p>
-          </Tarjeta>
-        ))}
-      </div>
       <Aviso error={resumen.error} />
       <EstadoVista cargando={cargando} error={error} reintentar={() => setIntento((v) => v + 1)} />
-      <div className="mb-10 flex flex-wrap gap-3">
+      <nav className="dashboard-accesos mb-10" aria-label="Accesos rápidos">
         {[
           ['equipos', 'Inscribir equipos', 'equipos'],
           ['jugadores', 'Gestionar plantillas', 'jugadores'],
@@ -145,7 +152,7 @@ function DashboardPage() {
             {texto}
           </Boton>
         ))}
-      </div>
+      </nav>
       {!cargando && !error && (
         <>
           <div className="mb-5 flex items-center justify-between gap-4">

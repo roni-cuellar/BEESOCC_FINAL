@@ -1,9 +1,10 @@
 .panel {
   background: white;
   border: 1px solid var(--borde);
-  border-radius: 12px;
+  border-radius: 18px;
   padding: 24px;
   min-width: 0;
+  box-shadow: 0 4px 20px #0f3d2e06;
 }
 .texto-suave {
   color: var(--gris);
@@ -18,11 +19,11 @@
 
 form {
   display: grid;
-  gap: 18px;
+  gap: 20px;
 }
 label {
   display: grid;
-  gap: 7px;
+  gap: 8px;
   font-size: 13px;
   font-weight: 600;
   min-width: 0;
@@ -33,18 +34,40 @@ textarea {
   width: 100%;
   min-width: 0;
   padding: 12px 13px;
-  border: 1px solid #cbd5ce;
-  border-radius: 10px;
-  background: white;
+  border: 1px solid #d4dfd8;
+  border-radius: 12px;
+  background: #fff;
   color: var(--texto);
   font: inherit;
-  font-size: 14px;
+  font-size: 16px;
+  min-height: 48px;
+  transition:
+    border-color 150ms,
+    box-shadow 150ms;
 }
 input:focus,
 select:focus,
 textarea:focus {
-  outline: 2px solid #16a34a50;
+  outline: 2px solid #16a34a30;
   border-color: var(--verde);
+  outline-offset: 2px;
+}
+input[aria-invalid='true'],
+select[aria-invalid='true'],
+textarea[aria-invalid='true'] {
+  border-color: #b91c1c;
+  background-color: #fffafa;
+}
+input:disabled,
+select:disabled,
+textarea:disabled {
+  background-color: #f2f5f3;
+  color: #58665f;
+}
+input[type='checkbox'],
+input[type='radio'] {
+  min-height: auto;
+  accent-color: var(--verde-oscuro);
 }
 textarea {
   min-height: 105px;
@@ -793,6 +816,23 @@ button.boton {
 .tabla-contenedor {
   overflow-x: auto;
   padding: 0;
+  max-width: 100%;
+  overscroll-behavior-inline: contain;
+  scrollbar-color: #b5c9bd #f3f7f4;
+}
+.tabla-ayuda {
+  margin-bottom: 18px;
+  max-width: 85ch;
+  color: #53665b;
+  font-size: 12px;
+  line-height: 1.8;
+}
+.tabla-ayuda span {
+  display: block;
+  margin-top: 6px;
+}
+.tabla-contenedor[tabindex] {
+  border-radius: 10px;
 }
 table {
   border-collapse: collapse;
@@ -801,18 +841,27 @@ table {
   font-size: 13px;
 }
 th {
-  background: #f0f5f2;
-  color: #466451;
+  background: #edf5f0;
+  color: #315540;
   font-size: 11px;
-  letter-spacing: 0.02em;
-  padding: 14px 16px;
+  letter-spacing: 0.045em;
+  padding: 16px 18px;
+  font-weight: 700;
+  border-bottom: 1px solid #dce8e0;
   white-space: nowrap;
 }
 td {
   border-bottom: 1px solid var(--borde);
-  padding: 14px 16px;
+  padding: 17px 18px;
   vertical-align: middle;
   font-variant-numeric: tabular-nums;
+}
+tbody tr:nth-child(even) {
+  background: #fafcfb;
+}
+tbody tr:hover,
+tbody tr:focus-within {
+  background: #f0f8f3;
 }
 .tabla-contenedor td:nth-child(2) {
   min-width: 150px;
@@ -1467,7 +1516,7 @@ tr:last-child td {
   gap: 12px;
 }
 .tabla-contenedor tbody tr:hover {
-  background: #fafcfb;
+  background: #f0f8f3;
 }
 .tabla-contenedor td:last-child {
   white-space: nowrap;
@@ -1564,5 +1613,153 @@ tr:last-child td {
   }
   .rejilla-ligas-una .liga-card-contenido > .boton {
     width: 100%;
+  }
+}
+
+/* Sprint 6.6C: superficies y jerarquía compartidas, sin cambiar los contratos. */
+.encabezado-modulo {
+  padding-bottom: 22px;
+  border-bottom: 1px solid #dfe8e2;
+}
+.ligas-portada {
+  padding: clamp(24px, 4vw, 40px);
+  border: 1px solid #dfe8e2;
+  border-left: 4px solid var(--verde);
+  border-radius: 20px;
+  background: white;
+  box-shadow: 0 4px 20px #0f3d2e05;
+}
+.liga-tarjeta {
+  border-top: 3px solid #16a34a;
+}
+.dashboard-portada {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: clamp(22px, 3vw, 36px);
+  border: 1px solid #1d5641;
+  border-radius: 22px;
+  background: var(--verde-oscuro);
+  color: white;
+  box-shadow: 0 8px 24px #0f3d2e12;
+}
+.dashboard-portada h1 {
+  color: white;
+}
+.dashboard-portada > div:last-child {
+  padding-top: 20px;
+  border-top: 1px solid #ffffff20;
+}
+.resumen-cifra {
+  position: relative;
+  padding: 20px;
+  border-bottom: 3px solid #d6eddf;
+}
+.dashboard-accesos {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.dashboard-accesos a {
+  justify-content: flex-start;
+  background: white;
+  padding: 18px;
+}
+.ciclo-titulo {
+  display: grid;
+  gap: 8px;
+}
+.ciclo-titulo .etiqueta {
+  font-size: 10px;
+  color: #486a57;
+}
+.ciclo-titulo h2 {
+  font-size: clamp(20px, 2.5vw, 24px);
+}
+.ciclo-panel > .nota {
+  font-size: 14px;
+  max-width: 80ch;
+  margin-bottom: 20px;
+}
+.ciclo-formulario {
+  padding: 20px;
+  margin-top: 20px;
+  border: 1px solid #dfe8e2;
+  border-radius: 14px;
+  background: #f8fbf9;
+}
+.ciclo-formulario .dos-columnas {
+  margin-bottom: 20px;
+  align-items: start;
+}
+.ciclo-formulario label + label {
+  margin-top: 16px;
+}
+.ciclo-auditoria {
+  padding-top: 18px;
+  border-top: 1px solid #e4ebe7;
+}
+.ciclo-auditoria > summary {
+  width: fit-content;
+  padding: 8px 0;
+  cursor: pointer;
+  color: var(--verde-oscuro);
+  font-size: 13px;
+  font-weight: 600;
+}
+.acceso-ilustrado {
+  border-right: 1px solid #ffffff15;
+  background-image: radial-gradient(ellipse at top left, #16a34a22, transparent 65%);
+}
+.acceso-tarjeta {
+  box-shadow: 0 12px 48px #0f3d2e0b;
+}
+.acceso-tarjeta h1 {
+  letter-spacing: -0.035em;
+}
+.acceso-tarjeta form > [role='alert'] {
+  padding: 12px 14px;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  background: #fff7f7;
+}
+.navegacion-lateral nav a {
+  border: 1px solid transparent;
+}
+.navegacion-lateral nav a[aria-current='page'] {
+  border-color: #ffffff20;
+  box-shadow: inset 3px 0 0 #16a34a;
+}
+@media (max-width: 639px) {
+  .panel {
+    padding: 20px;
+  }
+  .dashboard-accesos {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .dashboard-portada > div:last-child > a,
+  .dashboard-portada > div:last-child > button {
+    flex: 1;
+  }
+  .ciclo-formulario {
+    padding: 16px;
+  }
+  .ciclo-formulario button,
+  .ciclo-panel > button {
+    width: 100%;
+  }
+  .resumen-cifra {
+    padding: 18px 14px;
+  }
+  th,
+  td {
+    padding: 14px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  input,
+  select,
+  textarea {
+    transition: none;
   }
 }

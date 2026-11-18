@@ -43,7 +43,7 @@ function RegistroPage() {
       <p className="mt-3 mb-7 text-sm leading-6 text-gris">
         El primer paso para organizar tu próximo campeonato.
       </p>
-      <form onSubmit={continuar} autoComplete="off" className="grid gap-4">
+      <form onSubmit={continuar} aria-busy={cargando} className="grid gap-4">
         <Campo
           etiqueta="Nombre"
           id="registro-nombre"
@@ -74,6 +74,7 @@ function RegistroPage() {
           maxLength={72}
           autoComplete="new-password"
           placeholder="Escribe tu contraseña"
+          ayuda="Usa entre 8 y 72 caracteres."
           value={datos.contrasena}
           onChange={(e) => cambiar('contrasena', e.target.value)}
         />
@@ -95,7 +96,7 @@ function RegistroPage() {
             {errorServidor}
           </p>
         )}
-        <Boton type="submit" disabled={cargando} className="w-full">
+        <Boton type="submit" disabled={cargando} aria-busy={cargando} className="w-full">
           {cargando ? 'Creando cuenta…' : 'Continuar'}
         </Boton>
       </form>

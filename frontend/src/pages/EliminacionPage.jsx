@@ -1,3 +1,4 @@
+import IlustracionModulo from '../components/IlustracionModulo'
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { crearEliminacionStore } from '../stores/useEliminacionStore'
@@ -66,14 +67,17 @@ export default function EliminacionPage({ arbitral = false }) {
         </Link>
       )}
       <div className="titulo-pagina">
-        <div>
-          <p className="etiqueta">ELIMINACIÓN DIRECTA · CUADRO PRIVADO</p>
-          <h1>Fases y llaves</h1>
-          <p className="texto-suave">
-            {arbitral
-              ? 'Consulta el cuadro y certifica las tandas de penales.'
-              : 'Organiza la siembra y acompaña el camino al título.'}
-          </p>
+        <div className="flex min-w-0 items-center gap-4">
+          <IlustracionModulo tipo="eliminacion" />
+          <div className="min-w-0">
+            <p className="etiqueta">ELIMINACIÓN DIRECTA · CUADRO PRIVADO</p>
+            <h1>Fases y llaves</h1>
+            <p className="texto-suave">
+              {arbitral
+                ? 'Consulta el cuadro y certifica las tandas de penales.'
+                : 'Organiza la siembra y acompaña el camino al título.'}
+            </p>
+          </div>
         </div>
         <Boton variante="secundario" disabled={bloqueado} onClick={() => recargar()}>
           Actualizar cuadro

@@ -22,7 +22,7 @@ export default function CuadroEliminacion({
           <p className="nota">
             {publica
               ? 'Rondas, resultados y clasificados confirmados por la organización.'
-              : 'Clasificados y procedencias confirmados por Laravel. Abre un acta para consultar eventos o correcciones.'}
+              : 'Clasificados y procedencias de la competición. Abre un acta para consultar eventos o correcciones.'}
           </p>
         </div>
         <label>

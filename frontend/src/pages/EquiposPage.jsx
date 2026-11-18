@@ -1,3 +1,4 @@
+import IlustracionModulo from '../components/IlustracionModulo'
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import useEquipoStore from '../stores/useEquipoStore'
@@ -81,9 +82,12 @@ function EquiposPage() {
   return (
     <>
       <div className="titulo-pagina">
-        <div>
-          <h1>Equipos</h1>
-          <p className="texto-suave">Gestiona los equipos de tu liga.</p>
+        <div className="flex min-w-0 items-center gap-4">
+          <IlustracionModulo tipo="equipos" />
+          <div className="min-w-0">
+            <h1>Equipos</h1>
+            <p className="texto-suave">Gestiona los equipos de tu liga.</p>
+          </div>
         </div>
         <div className="acciones">
           <button className="boton boton-borde" onClick={() => setFormulario({})}>

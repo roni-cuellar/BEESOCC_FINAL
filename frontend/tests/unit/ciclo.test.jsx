@@ -2,10 +2,79 @@ import { afterEach, expect, it } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import api from '../../src/services/api.js'
 import liga from '../../src/services/ligaService.js'
-import Ciclo from '../../src/components/CicloCampeonatoPanel.jsx'
+import Ciclo, { SelectorModalidad } from '../../src/components/CicloCampeonatoPanel.jsx'
+import { seleccionModalidad } from '../../src/utils/modalidadCampeonato.js'
 import useLigaStore from '../../src/stores/useLigaStore.js'
 
 const adaptador = api.defaults.adapter
+
+for (const modalidad of ['Fútbol 5', 'Fútbol 7', 'Fútbol 11', 'Fútbol sala del reglamento']) {
+  it(`persiste y carga ${modalidad} sin deducir el mínimo`, async () => {
+    let guardada
+    api.defaults.adapter = async (config) => {
+      if (config.method === 'patch') guardada = JSON.parse(config.data)
+      return { data: { configuracion: guardada }, status: 200, headers: {}, config }
+    }
+    await liga.requisitosInicio(12, { modalidad, minimo_jugadores: 3 })
+    const { configuracion } = await liga.configuracion(12)
+    expect(configuracion).toEqual({ modalidad, minimo_jugadores: 3 })
+    const html = renderToStaticMarkup(
+      <SelectorModalidad
+        seleccion={seleccionModalidad(configuracion.modalidad)}
+        valor={configuracion.modalidad}
+      />,
+    )
+    expect(html).toContain('selected=""')
+    if (modalidad === 'Fútbol sala del reglamento') {
+      expect(html).toContain('value="personalizada" selected=""')
+      expect(html).toContain(`value="${modalidad}"`)
+    } else {
+      expect(html).toContain(`value="${modalidad}" selected=""`)
+      expect(html).not.toContain('Nombre de la modalidad personalizada')
+    }
+  })
+}
+
+it('muestra opciones explícitas y comunica la selección del desplegable', () => {
+  let seleccionada = ''
+  const selector = SelectorModalidad({
+    seleccion: '',
+    valor: '',
+    onSeleccionar: (valor) => {
+      seleccionada = valor
+    },
+  })
+  const select = selector.props.children[0].props.children[1]
+  select.props.onChange({ target: { value: 'Fútbol 7' } })
+  expect(seleccionada).toBe('Fútbol 7')
+  const html = renderToStaticMarkup(selector)
+  for (const nombre of [
+    'Selecciona una modalidad',
+    'Fútbol 5',
+    'Fútbol 7',
+    'Fútbol 11',
+    'Personalizada',
+  ])
+    expect(html).toContain(nombre)
+  expect(html).toContain('<select required=""')
+  expect(seleccionModalidad('')).toBe('')
+})
+
+it('carga nombres históricos sin normalizarlos ni sustituirlos por un código', () => {
+  for (const valor of ['Ficticia', 'futbol_5', 'Fútbol 7 municipal']) {
+    expect(seleccionModalidad(valor)).toBe('personalizada')
+    const html = renderToStaticMarkup(<SelectorModalidad seleccion="personalizada" valor={valor} />)
+    expect(html).toContain(`value="${valor}"`)
+    expect(html).toContain('maxLength="50"')
+  }
+})
+
+it('comunica la carga de requisitos sin habilitar el inicio', () => {
+  const html = renderToStaticMarkup(<Ciclo liga={{ id: 12, estado: 'planificacion' }} />)
+  expect(html).toContain('Cargando requisitos de inicio…')
+  expect(html).toContain('aria-busy="true"')
+  expect(html).toContain('disabled=""')
+})
 afterEach(() => {
   api.defaults.adapter = adaptador
 })

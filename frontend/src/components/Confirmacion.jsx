@@ -30,7 +30,7 @@ function Confirmacion({ titulo, texto, onConfirmar, onCerrar }) {
     <Modal titulo={titulo} onCerrar={onCerrar} bloqueado={guardando}>
       <div className="texto-suave">{texto}</div>
       <Aviso error={error} />
-      <div className="flex flex-wrap justify-end gap-3">
+      <div className="mt-7 flex flex-wrap justify-end gap-3 border-t border-borde pt-5 max-sm:[&>button]:flex-1">
         <Boton variante="secundario" disabled={guardando} onClick={onCerrar}>
           Cancelar
         </Boton>

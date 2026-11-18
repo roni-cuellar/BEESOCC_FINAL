@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import ilustracion from '../assets/branding/ayuda_2.png'
+import ilustracion from '../assets/branding/optimizadas/campeonatos.png'
 import { Boton, Tarjeta } from './ui'
 import Icono from './Icono'
 
@@ -10,9 +10,9 @@ function LigaCard({ liga, onEliminar, onPublicacion, publicando = false, publica
     <Tarjeta
       as="article"
       sinRelleno
-      className="flex h-full flex-col overflow-hidden transition-shadow hover:shadow-md"
+      className="liga-tarjeta flex h-full flex-col overflow-hidden transition-shadow hover:shadow-md"
     >
-      <div className="relative flex h-44 items-center justify-between overflow-hidden bg-[#edf5ef] px-6 sm:h-48">
+      <div className="relative flex h-40 items-center justify-between overflow-hidden border-b border-green-100 bg-[#edf5ef] px-6 sm:h-44">
         <div className="z-1">
           <p className="text-[10px] font-semibold tracking-[.15em] text-marca-oscuro">BEESOCC</p>
           <p className="mt-2 font-titulo text-2xl font-bold text-marca-oscuro">
@@ -26,8 +26,8 @@ function LigaCard({ liga, onEliminar, onPublicacion, publicando = false, publica
           src={ilustracion}
           alt=""
           loading="lazy"
-          width="1254"
-          height="1254"
+          width="384"
+          height="384"
         />
       </div>
       <div className="flex flex-1 flex-col p-5 sm:p-6">

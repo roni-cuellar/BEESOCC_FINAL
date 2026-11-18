@@ -28,7 +28,7 @@ export default function Campo({
         aria-invalid={error ? true : undefined}
         aria-describedby={descripcion}
         className={
-          'w-full min-w-0 rounded-xl border bg-blanco px-3 py-3 font-sans text-sm text-oscuro outline-none transition-colors focus:border-marca focus:ring-2 focus:ring-marca/25 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:opacity-60 ' +
+          'min-h-12 w-full min-w-0 rounded-xl border bg-blanco px-4 py-3 font-sans text-base text-oscuro outline-none transition-colors placeholder:text-gray-400 focus:border-marca focus:ring-2 focus:ring-marca/25 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:opacity-60 ' +
           (Control === 'textarea' ? 'min-h-28 resize-y ' : '') +
           (error ? 'border-red-600 ' : 'border-borde ') +
           className

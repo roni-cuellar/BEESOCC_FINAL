@@ -24,7 +24,9 @@ body {
   margin: 0;
 }
 button,
-input {
+input,
+select,
+textarea {
   font: inherit;
 }
 a {
@@ -35,7 +37,9 @@ button {
   cursor: pointer;
 }
 button:focus-visible,
-a:focus-visible {
+a:focus-visible,
+summary:focus-visible,
+[tabindex='0']:focus-visible {
   outline: 3px solid var(--verde);
   outline-offset: 5px;
 }
@@ -90,6 +94,22 @@ main {
 }
 img {
   max-width: 100%;
+}
+/* La variante clara ya tiene su propio lienzo: no necesita el recorte del logo original. */
+.marca-logo-claro {
+  display: block;
+  width: clamp(220px, 60vw, 264px);
+  max-width: 100%;
+  flex-shrink: 0;
+}
+.marca-logo-claro-acceso {
+  width: clamp(220px, 70vw, 288px);
+}
+.marca-logo-claro img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
 }
 .boton {
   display: inline-flex;
@@ -370,5 +390,6 @@ img {
   *::before,
   *::after {
     transition: none !important;
+    animation: none !important;
   }
 }

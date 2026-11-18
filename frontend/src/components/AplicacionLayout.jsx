@@ -1,6 +1,6 @@
 import SalirSesion from './SalirSesion'
 import { Link, NavLink, Outlet } from 'react-router-dom'
-import logo from '../assets/branding/logo.png'
+import logoClaro from '../assets/branding/nuevos/logo-fondo-blanco.png'
 function AplicacionLayout() {
   return (
     <div className="min-h-dvh bg-[#f5f7f6]">
@@ -9,8 +9,8 @@ function AplicacionLayout() {
       </a>
       <header className="border-b border-borde bg-white">
         <div className="mx-auto flex min-h-20 max-w-7xl flex-wrap items-center justify-between gap-x-5 px-5 sm:px-8 lg:px-10">
-          <Link className="marca-logo w-40 sm:w-48" to="/mis-ligas" aria-label="BEESOCC, Mis ligas">
-            <img src={logo} alt="BEESOCC" width="1448" height="1086" />
+          <Link className="marca-logo-claro" to="/mis-ligas" aria-label="BEESOCC, Mis ligas">
+            <img src={logoClaro} alt="BEESOCC" width="2172" height="724" />
           </Link>
           <nav
             className="flex flex-wrap items-center gap-2 text-sm"

@@ -117,6 +117,7 @@ function GestionArbitros({ ligaId }) {
   return (
     <>
       <EncabezadoPagina
+        ilustracion="arbitraje"
         titulo="Árbitros"
         descripcion="Administra la autorización arbitral de este campeonato."
       />

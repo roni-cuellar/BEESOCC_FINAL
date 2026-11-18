@@ -1,3 +1,4 @@
+import IlustracionModulo from '../components/IlustracionModulo'
 import { useEffect, useState } from 'react'
 import { Link, useOutletContext, useParams } from 'react-router-dom'
 import usePartidoStore from '../stores/usePartidoStore'
@@ -29,9 +30,12 @@ function PartidosPage() {
   return (
     <>
       <div className="titulo-pagina">
-        <div>
-          <h1>Partidos</h1>
-          <p className="texto-suave">Programa encuentros y consulta resultados.</p>
+        <div className="flex min-w-0 items-center gap-4">
+          <IlustracionModulo tipo="partidos" />
+          <div className="min-w-0">
+            <h1>Partidos</h1>
+            <p className="texto-suave">Programa encuentros y consulta resultados.</p>
+          </div>
         </div>
         {grupos ? (
           <Link className="boton boton-verde" to={'/ligas/' + ligaId + '/grupos'}>

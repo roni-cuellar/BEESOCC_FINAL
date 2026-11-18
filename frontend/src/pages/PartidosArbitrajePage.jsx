@@ -1,3 +1,4 @@
+import IlustracionModulo from '../components/IlustracionModulo'
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import arbitroService from '../services/arbitroService'
@@ -53,11 +54,14 @@ export default function PartidosArbitrajePage() {
         </Link>
       )}
       <div className="titulo-pagina">
-        <div>
-          <h1>Partidos para arbitrar</h1>
-          <p className="texto-suave">
-            Consulta el acta y controla los encuentros del campeonato seleccionado.
-          </p>
+        <div className="flex min-w-0 items-center gap-4">
+          <IlustracionModulo tipo="arbitraje" />
+          <div className="min-w-0">
+            <h1>Partidos para arbitrar</h1>
+            <p className="texto-suave">
+              Consulta el acta y controla los encuentros del campeonato seleccionado.
+            </p>
+          </div>
         </div>
         <button
           className="boton boton-borde"

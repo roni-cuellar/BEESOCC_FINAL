@@ -39,7 +39,7 @@ try {
 } catch (QueryException $e) {
     verificarCopia(in_array($e->errorInfo[1] ?? null, [1044, 1142], true), 'Acceso a la principal denegado');
 }
-$respaldo = 'C:/Users/admin/Documents/BACKUPS_BEESOCC/beesocc_arbitros_20261112_202542_7a7f92.sql';
+$respaldo = storage_path('app/private/respaldos_historicos/beesocc_arbitros_20261112_202542_7a7f92.sql');
 $sql = file_get_contents($respaldo);
 $shaRespaldo = hash('sha256', $sql);
 verificarCopia(hash('sha256', $sql) === '5eaa69cbec6432296e86d0482368766ef5f9c507ec6ecda8dc04e53292b43347', 'Respaldo del 12 de noviembre identificado por SHA-256');

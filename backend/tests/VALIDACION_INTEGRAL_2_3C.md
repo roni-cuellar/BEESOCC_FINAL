@@ -137,3 +137,6 @@ revocación/escritura simultáneas: el ensayo comprobó revocación confirmada s
 de operaciones con una sesión anterior, no una carrera paralela. DP-07 sigue
 abierta y no se cambió su criterio. Resultados oficiales y auditoría avanzada
 permanecen fuera del alcance de este sprint.
+
+Las utilidades de este laboratorio que siembran y autentican las cuentas
+ficticias requieren la misma variable de entorno BEESOCC_INTEGRAL_PASSWORD.

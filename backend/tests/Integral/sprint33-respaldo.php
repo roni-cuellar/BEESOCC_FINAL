@@ -52,7 +52,7 @@ try {
         throw new RuntimeException('Migración ya aplicada.');
     }
     $etapa = 'respaldo';
-    $carpeta = 'C:/Users/admin/Documents/BACKUPS_BEESOCC';
+    $carpeta = storage_path('app/private/respaldos_historicos');
     if (! is_dir($carpeta) && ! mkdir($carpeta, 0700, true)) {
         throw new RuntimeException('No se pudo crear carpeta externa.');
     }

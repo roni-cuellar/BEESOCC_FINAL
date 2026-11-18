@@ -77,3 +77,22 @@ backend/storage/app/public/
 !/backend/tests/Integral/sprint35-http-revocado.json
 !/backend/tests/Integral/sprint42-preservacion.json
 !/backend/tests/Integral/sprint45-principal.json
+
+# Material operativo local: no incorporarlo al codigo.
+/respaldos/
+/laboratorios/
+/evidencias/
+/infraestructura/
+
+# Evidencias generadas de los laboratorios de cierre.
+/backend/tests/Evidencias/sprint57-evidencia.json
+/backend/tests/Evidencias/sprint62*-evidencia.json
+/backend/tests/Evidencias/sprint63*-evidencia.json
+/backend/tests/Evidencias/sprint64-publico-evidencia.json
+
+# Archivo operativo y material histórico local.
+/documentacion/ESTADO_LOCAL.md
+/documentacion/historico_sprints/PROPUESTA_CIERRE_GIT_6_6.md
+/documentacion/docs_historicos/
+/documentacion/documentacion_original/
+/documentacion/branding_original/

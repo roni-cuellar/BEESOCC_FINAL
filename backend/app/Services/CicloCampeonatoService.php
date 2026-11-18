@@ -103,7 +103,7 @@ class CicloCampeonatoService
                     $fase = $c->fases()->where('tipo', 'eliminacion')->sole();
                 }
                 abort_unless($fase->estado === 'finalizada', 409, 'Falta resolver el cuadro eliminatorio.');
-                $final = $fase->rondas()->orderByDesc('numero')->firstOrFail()->llaves()->sole();
+                $final = $fase->rondas()->reorder('numero', 'desc')->firstOrFail()->llaves()->sole();
                 abort_unless($final->estado === 'resuelta' && $final->ganador_fase_equipo_id, 409, 'La final no tiene campeón oficial.');
                 $ganador = FaseEquipo::findOrFail($final->ganador_fase_equipo_id)->campeonato_equipo_id;
             }

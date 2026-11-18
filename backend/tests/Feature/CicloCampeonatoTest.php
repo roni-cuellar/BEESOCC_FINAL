@@ -20,7 +20,7 @@ class CicloCampeonatoTest extends BackendTestCase
         $ruta = '/api/campeonatos/'.$c['id'];
         $this->patchJson($ruta.'/requisitos-inicio', ['modalidad' => 'Modalidad del reglamento ficticio', 'minimo_jugadores' => 1])->assertOk();
         $ids = $plantillas = [];
-        for ($i = 0; $i < ($formato === 'grupos_eliminacion' ? 4 : 2); $i++) {
+        for ($i = 0; $i < ($formato === 'todos_contra_todos' ? 2 : 4); $i++) {
             $id = $this->inscripcion($c['id'], 'Ficticio '.$i)['id'];
             $ids[] = $id;
             $plantillas[$id] = $this->plantilla($id)['id'];
@@ -31,7 +31,7 @@ class CicloCampeonatoTest extends BackendTestCase
             $this->postJson($ruta.'/generar-calendario')->assertCreated();
         } elseif ($formato === 'eliminacion_directa') {
             $f = $this->postJson($ruta.'/fases', ['tipo' => 'eliminacion', 'nombre' => 'Final'])->assertCreated()->json('fase');
-            $datos = ['siembra' => $ids, 'rondas' => [['modalidad' => 'unico', 'desempate' => 'penales']]];
+            $datos = ['siembra' => $ids, 'rondas' => array_fill(0, 2, ['modalidad' => 'unico', 'desempate' => 'penales'])];
             $vista = $this->postJson('/api/fases/'.$f['id'].'/previsualizar-llaves', $datos)->assertOk()->json();
             $this->postJson('/api/fases/'.$f['id'].'/generar-llaves', $datos + ['confirmacion' => $vista['confirmacion']])->assertCreated();
         } else {
@@ -82,9 +82,21 @@ class CicloCampeonatoTest extends BackendTestCase
             }
             if ($formato !== 'todos_contra_todos') {
                 $f = Fase::where('campeonato_id', $e['c']['id'])->where('tipo', 'eliminacion')->sole();
-                $this->postJson('/api/llaves/'.$f->rondas->first()->llaves->first()->id.'/avanzar')->assertOk();
+                foreach ($f->rondas as $ronda) {
+                    foreach ($ronda->llaves as $llave) {
+                        if ($formato === 'eliminacion_directa' && $ronda->numero > 1) {
+                            $final = Partido::where('llave_id', $llave->id)->sole();
+                            $this->resultado($e, $final);
+                            $campeon = $final->participantes()->where('rol', 'local')->sole()->campeonato_equipo_id;
+                        }
+                        $this->postJson('/api/llaves/'.$llave->id.'/avanzar')->assertOk();
+                    }
+                }
             }
-            $this->postJson($e['ruta'].'/finalizar')->assertOk()->assertJsonPath('campeonato.estado', 'finalizado')->assertJsonStructure(['campeon_campeonato_equipo_id']);
+            $cierre = $this->postJson($e['ruta'].'/finalizar')->assertOk()->assertJsonPath('campeonato.estado', 'finalizado')->assertJsonStructure(['campeon_campeonato_equipo_id']);
+            if ($formato === 'eliminacion_directa') {
+                $cierre->assertJsonPath('campeon_campeonato_equipo_id', $campeon);
+            }
             $this->postJson($e['ruta'].'/iniciar')->assertConflict();
             $this->postJson($e['ruta'].'/finalizar')->assertConflict();
             $this->patchJson($e['ruta'].'/requisitos-inicio', ['modalidad' => 'Cambio', 'minimo_jugadores' => 2])->assertConflict();

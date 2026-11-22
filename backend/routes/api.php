@@ -66,6 +66,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/correcciones/{correccion}/aplicar', [CorreccionPartidoController::class, 'aplicar']);
     Route::get('/mis-arbitrajes/{campeonato}/partidos', [ArbitrajeController::class, 'partidos']);
     Route::get('/partidos/{partido}/plantillas-arbitrales', [ArbitrajeController::class, 'plantillas']);
+    Route::get('/partidos/{partido}/panel-arbitral', [ArbitrajeController::class, 'panel']);
+    Route::put('/partidos/{partido}/panel-arbitral', [ArbitrajeController::class, 'preparar']);
+    Route::patch('/partidos/{partido}/panel-arbitral/reloj', [ArbitrajeController::class, 'reloj']);
     Route::get('/mis-arbitrajes', [AsignacionArbitroController::class, 'misArbitrajes']);
     Route::post('/campeonatos/{campeonato}/arbitro/buscar-usuario', [AsignacionArbitroController::class, 'buscarUsuario'])->middleware('throttle:10,1');
     Route::get('/campeonatos/{campeonato}/arbitro', [AsignacionArbitroController::class, 'vigente']);
@@ -129,6 +132,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/campeonatos/{campeonato}/estadisticas/rojas', [EstadisticaController::class, 'rojas']);
     Route::get('/campeonatos/{campeonato}/estadisticas/faltas', [EstadisticaController::class, 'faltas']);
     Route::get('/campeonatos/{campeonato}/estadisticas/equipos', [EstadisticaController::class, 'equipos']);
+    Route::get('/campeonatos/{campeonato}/identidades-deportivas', [EstadisticaController::class, 'identidades']);
+    Route::get('/campeonatos/{campeonato}/fichas/jugadores/{jugador}', [EstadisticaController::class, 'jugador'])->whereNumber('jugador');
 
     Route::get('/campeonatos/{campeonato}/configuracion', [ConfiguracionCampeonatoController::class, 'show']);
     Route::post('/campeonatos/{campeonato}/configuracion', [ConfiguracionCampeonatoController::class, 'store'])->middleware('auth:sanctum');
@@ -138,9 +143,12 @@ Route::middleware('auth:sanctum')->group(function () {
 
 Route::prefix('publico/campeonatos')->where(['campeonato' => '[0-9]+', 'partido' => '[0-9]+', 'inscripcion' => '[0-9]+'])->group(function () {
     Route::get('/', [PublicoCampeonatoController::class, 'index']);
+    Route::get('/por-codigo', [PublicoCampeonatoController::class, 'porCodigo'])->middleware('throttle:30,1');
     Route::get('/{campeonato}', [PublicoCampeonatoController::class, 'show']);
     Route::get('/{campeonato}/equipos', [PublicoCampeonatoController::class, 'equipos']);
     Route::get('/{campeonato}/equipos/{inscripcion}/plantilla', [PublicoCampeonatoController::class, 'plantillas']);
+    Route::get('/{campeonato}/jugadores/{jugador}', [PublicoCampeonatoController::class, 'jugador'])->whereNumber('jugador');
+    Route::get('/{campeonato}/identidades-deportivas', [PublicoCampeonatoController::class, 'identidades']);
     Route::get('/{campeonato}/partidos', [PublicoCampeonatoController::class, 'partidos']);
     Route::get('/{campeonato}/partidos/{partido}', [PublicoCampeonatoController::class, 'partido']);
     Route::get('/{campeonato}/partidos/{partido}/eventos', [PublicoCampeonatoController::class, 'eventos']);

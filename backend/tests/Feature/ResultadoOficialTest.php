@@ -304,7 +304,7 @@ class ResultadoOficialTest extends BackendTestCase
             app()->forgetInstance('db.schema');
             Schema::clearResolvedInstance('db.schema');
             foreach (glob(database_path('migrations/*.php')) as $archivo) {
-                if ($archivo !== $nueva) {
+                if (basename($archivo) < basename($nueva)) {
                     (require $archivo)->up();
                 }
             }

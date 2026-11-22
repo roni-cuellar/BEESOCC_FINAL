@@ -26,6 +26,7 @@ class ResultadoOficialService
         $this->comprobarEventos($partido);
         $auditoria = app(AuditoriaPartidoService::class);
         $anterior = $auditoria->capturar($partido);
+        app(PanelArbitralService::class)->alCambiarEstado($partido, 'finalizado');
         $partido->estado = 'finalizado';
         $partido->oficializado_at = now();
         $partido->save();

@@ -49,6 +49,7 @@ class ResolucionAdministrativaService
             $p->administrativo_sancionado_id = $datos['sancionado_id'];
             $p->administrativo_por_id = auth()->id();
             $p->motivo_administrativo = $datos['motivo'];
+            app(PanelArbitralService::class)->alCambiarEstado($p, 'finalizado');
             $p->estado = 'finalizado';
             $p->oficializado_at = now();
             $p->save();

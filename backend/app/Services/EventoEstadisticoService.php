@@ -73,9 +73,7 @@ class EventoEstadisticoService
     {
         // Se conserva el criterio temporal del Sprint 2.3A; DP-07 sigue pendiente.
         $fecha = ($partido->fecha_hora ?? now())->toDateString();
-        abort_if($plantilla->fecha_ingreso->toDateString() > $fecha
-            || ($plantilla->fecha_salida && $plantilla->fecha_salida->toDateString() < $fecha),
-            422, 'El jugador no está habilitado en la fecha del partido.');
+        abort_unless($plantilla->estaVigenteEn($fecha), 422, 'El jugador no está habilitado en la fecha del partido.');
     }
 
     private function comprobarAsistencia(EquipoPartido $participante, Plantilla $plantilla, int $golId, ?int $ignorarId): void

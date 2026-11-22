@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\CodigoLiga;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -39,11 +40,23 @@ class Campeonato extends Model
     // Campos que se pueden asignar con create() o fill().
     protected $fillable = [
         'nombre',
+        'logo',
         'descripcion',
         'temporada',
         'formato',
         'estado',
     ];
+
+    protected $hidden = ['codigo_liga'];
+
+    protected function insertAndSetId($query, $attributes)
+    {
+        app(CodigoLiga::class)->guardar(function (string $codigo) use ($query, $attributes) {
+            $attributes['codigo_liga'] = $codigo;
+            parent::insertAndSetId($query, $attributes);
+            $this->codigo_liga = $codigo;
+        });
+    }
 
     // El campeonato tiene como máximo una configuración.
     public function configuracion(): HasOne

@@ -19,6 +19,8 @@ class Partido extends Model
 
     protected $table = 'partidos';
 
+    protected $hidden = ['duracion_minutos', 'reloj_segundos', 'reloj_desde', 'titulares', 'version_panel'];
+
     // Campos permitidos para asignación masiva.
     protected $fillable = [
         'campeonato_id',
@@ -33,6 +35,11 @@ class Partido extends Model
         return [
             'fecha_hora' => 'datetime',
             'oficializado_at' => 'datetime',
+            'duracion_minutos' => 'integer',
+            'reloj_segundos' => 'integer',
+            'reloj_desde' => 'datetime',
+            'titulares' => 'array',
+            'version_panel' => 'integer',
         ];
     }
 

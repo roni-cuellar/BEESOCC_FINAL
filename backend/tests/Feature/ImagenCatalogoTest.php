@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Campeonato;
 use App\Models\Equipo;
 use App\Models\Jugador;
 use App\Models\User;
@@ -21,6 +22,7 @@ class ImagenCatalogoTest extends BackendTestCase
         return [
             ['/api/equipos', 'equipo', 'escudo', Equipo::class, ['nombre' => 'Equipo ficticio', 'ciudad' => 'Ciudad ficticia']],
             ['/api/jugadores', 'jugador', 'foto', Jugador::class, ['nombre' => 'Jugador', 'apellido' => 'Ficticio', 'fecha_nacimiento' => '2000-01-01']],
+            ['/api/campeonatos', 'campeonato', 'logo', Campeonato::class, ['nombre' => 'Campeonato ficticio', 'temporada' => '2026', 'formato' => 'todos_contra_todos']],
         ];
     }
 
@@ -88,5 +90,32 @@ class ImagenCatalogoTest extends BackendTestCase
             $this->post($ruta.'/'.$id, ['_method' => 'PATCH', $campo => $this->imagen()], ['Accept' => 'application/json'])->assertForbidden();
             $this->patchJson($ruta.'/'.$id, ['eliminar_imagen' => true])->assertForbidden();
         }
+    }
+
+    public function test_logo_publico_se_muestra_en_catalogo_detalle_y_codigo_solo_si_la_liga_esta_publicada(): void
+    {
+        $liga = $this->campeonato();
+        $this->assertNull($liga['logo']);
+        $logo = 'https://example.test/logo-publico.png';
+        $this->partialMock(ImagenCatalogoService::class, fn (MockInterface $mock) => $mock->shouldReceive('subir')
+            ->once()->with(UploadedFile::class, 'beesocc/campeonatos')->andReturn($logo));
+        $gestion = '/api/campeonatos/'.$liga['id'];
+        $catalogo = '/api/publico/campeonatos';
+        $porCodigo = $catalogo.'/por-codigo?codigo='.$liga['codigo_liga'];
+        $this->post($gestion, ['_method' => 'PATCH', 'logo' => $this->imagen()], ['Accept' => 'application/json'])
+            ->assertOk()->assertJsonPath('campeonato.logo', $logo);
+        $this->getJson($catalogo.'/'.$liga['id'])->assertNotFound();
+        $this->getJson($porCodigo)->assertNotFound();
+        $this->patchJson($gestion.'/publicacion', ['publicado' => true])->assertOk();
+        auth('web')->logout();
+        app('auth')->forgetGuards();
+
+        $this->getJson($catalogo)->assertOk()->assertJsonPath('0.logo', $logo);
+        foreach ([$catalogo.'/'.$liga['id'], $porCodigo] as $ruta) {
+            $this->getJson($ruta)->assertOk()->assertJsonPath('logo', $logo)
+                ->assertJsonMissingPath('administrador_id')->assertJsonMissingPath('codigo_liga');
+            $this->patchJson($ruta, ['eliminar_imagen' => true])->assertMethodNotAllowed();
+        }
+        $this->patchJson($gestion, ['eliminar_imagen' => true])->assertUnauthorized();
     }
 }

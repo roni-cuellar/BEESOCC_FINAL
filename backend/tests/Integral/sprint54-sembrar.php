@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Campeonato;
 use App\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Artisan;
@@ -52,7 +53,7 @@ foreach (glob(database_path('migrations/*.php')) as $archivo) {
 if (Artisan::call('migrate', ['--database' => 'mysql', '--path' => $rutas, '--realpath' => true, '--force' => true]) !== 0) {
     throw new RuntimeException('Falló el esquema anterior aislado.');
 }
-$historico = DB::table('campeonatos')->insertGetId(['nombre' => 'Histórico ficticio 5.4', 'temporada' => '2025', 'formato' => 'todos_contra_todos']);
+$historico = Campeonato::create(['nombre' => 'Histórico ficticio 5.4', 'temporada' => '2025', 'formato' => 'todos_contra_todos'])->id;
 $partidoHistorico = DB::table('partidos')->insertGetId(['campeonato_id' => $historico, 'jornada' => 9, 'estado' => 'finalizado', 'lugar' => 'Sede ficticia']);
 $antes = (array) DB::table('partidos')->find($partidoHistorico);
 if (Artisan::call('migrate', ['--database' => 'mysql', '--path' => [database_path('migrations/'.$nueva)], '--realpath' => true, '--force' => true]) !== 0) {

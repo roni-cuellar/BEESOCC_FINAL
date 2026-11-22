@@ -122,8 +122,11 @@ class EliminacionDirectaTest extends BackendTestCase
         $llave = $fase->rondas()->first()->llaves()->first();
         [$ida, $vuelta] = $llave->partidos()->get()->all();
         $this->oficializar($ida, 1, 0);
+        $ruta = '/api/fases/'.$fase->id;
+        $this->getJson($ruta)->assertOk()->assertJsonPath('rondas.0.llaves.0.marcador_global', null);
         $this->postJson('/api/llaves/'.$llave->id.'/avanzar')->assertConflict();
         $this->oficializar($vuelta, 2, 1);
+        $this->getJson($ruta)->assertOk()->assertJsonPath('rondas.0.llaves.0.marcador_global', ['plaza_1' => 2, 'plaza_2' => 2]);
         $this->postJson('/api/llaves/'.$llave->id.'/avanzar')->assertConflict();
         $admin = auth('web')->user();
         $arbitro = $ida->campeonato->asignacionesArbitro()->whereNull('fecha_fin')->firstOrFail()->usuario;
@@ -138,6 +141,16 @@ class EliminacionDirectaTest extends BackendTestCase
         $this->assertSame('prorroga_penales', $llave->refresh()->metodo_resolucion);
         $this->assertEquals($llave->plazas()->first()->fase_equipo_id, $llave->ganador_fase_equipo_id);
         $this->assertSame(4, DB::table('eventos_estadisticos')->count());
+        $liga = '/api/campeonatos/'.$fase->campeonato_id;
+        $publica = '/api/publico/campeonatos/'.$fase->campeonato_id.'/deporte';
+        $this->getJson($ruta)->assertOk()->assertJsonPath('campeon', null);
+        $this->getJson($publica)->assertNotFound();
+        $this->patchJson($liga.'/publicacion', ['publicado' => true])->assertOk();
+        $this->getJson($publica)->assertOk()->assertJsonPath('campeon', null)
+            ->assertJsonPath('fases.0.rondas.0.llaves.0.marcador_global', ['plaza_1' => 2, 'plaza_2' => 2]);
+        $this->postJson($liga.'/finalizar')->assertOk();
+        $this->getJson($ruta)->assertOk()->assertJsonPath('campeon.nombre', 'Equipo 1');
+        $this->getJson($publica)->assertOk()->assertJsonPath('campeon.nombre', 'Equipo 1');
     }
 
     public function test_siembras_ajenas_duplicadas_y_confirmacion_alterada_no_escriben(): void

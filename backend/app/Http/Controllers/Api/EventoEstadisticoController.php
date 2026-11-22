@@ -8,6 +8,7 @@ use App\Models\Partido;
 use App\Services\AuditoriaPartidoService;
 use App\Services\ControlPartidoService;
 use App\Services\EventoEstadisticoService;
+use App\Services\PanelArbitralService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -29,11 +30,16 @@ class EventoEstadisticoController extends Controller
     public function store(Request $request, Partido $partido): JsonResponse
     {
         Gate::authorize('arbitrar', $partido);
-        $datos = app(EventoEstadisticoService::class)->validar($request->all());
 
-        return DB::transaction(function () use ($datos, $partido) {
+        return DB::transaction(function () use ($request, $partido) {
             // Comparte el bloqueo usado por el controlador de partidos.
             $partido = app(ControlPartidoService::class)->bloquearActa($partido);
+            $datos = $request->all();
+            if ($partido->duracion_minutos !== null) {
+                $datos['minuto'] = app(PanelArbitralService::class)->minuto($partido);
+            }
+            $servicio = app(EventoEstadisticoService::class);
+            $datos = $servicio->validar($datos);
 
             if ($partido->estado !== 'en_curso') {
                 return response()->json(['message' => 'Solo se pueden registrar eventos en un partido en curso.'], 409);
@@ -41,7 +47,7 @@ class EventoEstadisticoController extends Controller
 
             $auditoria = app(AuditoriaPartidoService::class);
             $anterior = $auditoria->capturar($partido);
-            $evento = app(EventoEstadisticoService::class)->registrar($partido, $datos);
+            $evento = $servicio->registrar($partido, $datos);
             $auditoria->registrar($partido, 'registrar_evento', 'Registro arbitral de evento.', $anterior, $auditoria->capturar($partido));
 
             return response()->json([

@@ -3,10 +3,40 @@
 namespace App\Services;
 
 use App\Models\EquipoPartido;
+use App\Models\Llave;
 use App\Models\Partido;
 
 class MarcadorService
 {
+    public function globalOficial(Llave $llave, string $modalidad, array $marcadores = []): ?array
+    {
+        if ($modalidad !== 'ida_vuelta' || $llave->partidos->count() !== 2
+            || ! $llave->partidos->every(fn (Partido $p) => $p->esOficial())) {
+            return null;
+        }
+
+        $ida = $llave->partidos->firstWhere('numero_serie', 1);
+        $vuelta = $llave->partidos->firstWhere('numero_serie', 2);
+        if (! $ida || ! $vuelta || $ida->participantes->count() !== 2 || $vuelta->participantes->count() !== 2) {
+            return null;
+        }
+        $local = $ida->participantes->firstWhere('rol', 'local')?->campeonato_equipo_id;
+        $visitante = $ida->participantes->firstWhere('rol', 'visitante')?->campeonato_equipo_id;
+        if (! $local || ! $visitante || $local === $visitante
+            || $vuelta->participantes->firstWhere('rol', 'local')?->campeonato_equipo_id !== $visitante
+            || $vuelta->participantes->firstWhere('rol', 'visitante')?->campeonato_equipo_id !== $local) {
+            return null;
+        }
+
+        $a = $marcadores[$ida->id] ?? $this->calcular($ida);
+        $b = $marcadores[$vuelta->id] ?? $this->calcular($vuelta);
+
+        return [
+            'plaza_1' => $a['local']['goles'] + $b['visitante']['goles'],
+            'plaza_2' => $a['visitante']['goles'] + $b['local']['goles'],
+        ];
+    }
+
     public function goles(EquipoPartido $participante): int
     {
         $p = $participante->partido;

@@ -24,7 +24,9 @@ class AuditoriaPartidoService
             'administrativo_sancionado_id',
             'administrativo_por_id',
             'motivo_administrativo',
-        ]) + [
+        ]) + ($partido->duracion_minutos === null ? [] : $partido->only([
+            'duracion_minutos', 'reloj_segundos', 'reloj_desde', 'titulares', 'version_panel',
+        ])) + [
             'participantes' => $partido->participantes()->orderBy('id')->get(['id', 'rol', 'campeonato_equipo_id'])->toArray(),
             'eventos' => EventoEstadistico::whereHas('equipoPartido', fn ($q) => $q->where('partido_id', $partido->id))
                 ->orderBy('id')->get()->map->only(['id', 'equipo_partido_id', 'plantilla_id', 'tipo', 'minuto', 'gol_relacionado_id'])->all(),

@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\AuditoriaCambio;
 use App\Models\Campeonato;
 use App\Models\CampeonatoEquipo;
 use App\Models\Fase;
@@ -51,26 +50,29 @@ class DeportePublicoService
             }
             $fases[] = $datos;
         }
-        // El campeón procede de una resolución de Laravel, nunca del orden visual de la tabla.
-        $campeon = null;
-        if ($liga->estado === 'finalizado') {
-            $registro = AuditoriaCambio::where('campeonato_id', $liga->id)->where('entidad_tipo', 'campeonato')
-                ->where('entidad_id', $liga->id)->where('accion', 'finalizar_campeonato')->latest('id')->first();
-            $id = $registro?->posterior_json['campeon_campeonato_equipo_id'] ?? null;
-            $inscripcion = $liga->inscripcionesEquipos()->whereKey($id)->where('estado', 'activo')->first();
-            if ($inscripcion) {
-                $campeon = $this->equipo($inscripcion, $liga);
-            }
-        }
 
-        return ['fases' => $fases, 'campeon' => $campeon];
+        return ['fases' => $fases, 'campeon' => app(CampeonCampeonatoService::class)->consultar($liga)];
     }
 
     private function rondas(Fase $fase, Campeonato $liga): array
     {
         return $fase->rondas()->with('llaves.plazas', 'llaves.partidos.participantes.campeonatoEquipo.equipo')->get()->map(function ($ronda) use ($liga) {
             return $ronda->only(['id', 'numero', 'nombre', 'modalidad', 'desempate', 'estado']) + [
-                'llaves' => $ronda->llaves->map(function ($llave) use ($liga) {
+                'llaves' => $ronda->llaves->map(function ($llave) use ($liga, $ronda) {
+                    $marcadores = [];
+                    $partidos = $llave->partidos->map(function ($p) use ($liga, &$marcadores) {
+                        foreach ($p->participantes as $participante) {
+                            $this->equipo($participante->campeonatoEquipo, $liga);
+                        }
+                        $m = app(MarcadorService::class)->calcular($p);
+                        $marcadores[$p->id] = $m;
+
+                        return $p->only(['id', 'numero_serie', 'estado', 'tipo_resultado', 'oficializado_at']) + [
+                            'marcador' => ['local' => collect($m['local'])->only(['nombre', 'goles']), 'visitante' => collect($m['visitante'])->only(['nombre', 'goles'])],
+                            'marcador_deportivo' => $m['marcador_deportivo'],
+                        ];
+                    });
+
                     return $llave->only([
                         'id',
                         'numero',
@@ -89,17 +91,8 @@ class DeportePublicoService
                             'origen_grupo_id',
                             'origen_puesto',
                         ])),
-                        'partidos' => $llave->partidos->map(function ($p) use ($liga) {
-                            foreach ($p->participantes as $participante) {
-                                $this->equipo($participante->campeonatoEquipo, $liga);
-                            }
-                            $m = app(MarcadorService::class)->calcular($p);
-
-                            return $p->only(['id', 'numero_serie', 'estado', 'tipo_resultado', 'oficializado_at']) + [
-                                'marcador' => ['local' => collect($m['local'])->only(['nombre', 'goles']), 'visitante' => collect($m['visitante'])->only(['nombre', 'goles'])],
-                                'marcador_deportivo' => $m['marcador_deportivo'],
-                            ];
-                        }),
+                        'partidos' => $partidos,
+                        'marcador_global' => app(MarcadorService::class)->globalOficial($llave, $ronda->modalidad, $marcadores),
                     ];
                 }),
             ];

@@ -4,10 +4,16 @@ namespace App\Services;
 
 use App\Models\Campeonato;
 use App\Models\EventoEstadistico;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 
 class EstadisticaService
 {
+    private const TIPOS_JUGADOR = [
+        'gol' => 'goles', 'asistencia' => 'asistencias', 'amarilla' => 'amarillas',
+        'roja' => 'rojas', 'falta' => 'faltas',
+    ];
+
     public function goleadores(Campeonato $campeonato): JsonResponse
     {
         return $this->clasificacionJugadores($campeonato, 'gol', 'goleadores');
@@ -33,14 +39,35 @@ class EstadisticaService
         return $this->clasificacionJugadores($campeonato, 'falta', 'faltas');
     }
 
+    private function eventosCampeonato(Campeonato $campeonato): Builder
+    {
+        return EventoEstadistico::whereHas('equipoPartido.partido', function ($consulta) use ($campeonato) {
+            $consulta->where('campeonato_id', $campeonato->id)
+                ->whereIn('estado', ['en_curso', 'suspendido', 'finalizado']);
+        });
+    }
+
+    public function totalesJugador(Campeonato $campeonato, int $jugador): array
+    {
+        $conteos = $this->eventosCampeonato($campeonato)->whereIn('tipo', array_keys(self::TIPOS_JUGADOR))
+            ->whereHas('plantilla', function (Builder $consulta) use ($campeonato, $jugador) {
+                $consulta->where('jugador_id', $jugador)->whereHas('campeonatoEquipo',
+                    fn (Builder $inscripcion) => $inscripcion->where('campeonato_id', $campeonato->id));
+            })->selectRaw('tipo, COUNT(*) AS total')->groupBy('tipo')->pluck('total', 'tipo');
+
+        $totales = [];
+        foreach (self::TIPOS_JUGADOR as $tipo => $campo) {
+            $totales[$campo] = (int) ($conteos[$tipo] ?? 0);
+        }
+
+        return $totales;
+    }
+
     // Las cinco clasificaciones usan el mismo conteo, cambiando solo el tipo.
     private function clasificacionJugadores(Campeonato $campeonato, string $tipo, string $estadistica): JsonResponse
     {
-        $eventos = EventoEstadistico::where('tipo', $tipo)
-            ->whereHas('equipoPartido.partido', function ($consulta) use ($campeonato) {
-                $consulta->where('campeonato_id', $campeonato->id)
-                    ->whereIn('estado', ['en_curso', 'suspendido', 'finalizado']);
-            })->with(['plantilla.jugador', 'plantilla.campeonatoEquipo'])->get();
+        $eventos = $this->eventosCampeonato($campeonato)->where('tipo', $tipo)
+            ->with(['plantilla.jugador', 'plantilla.campeonatoEquipo'])->get();
         $resultados = [];
 
         foreach ($eventos as $evento) {
@@ -103,11 +130,8 @@ class EstadisticaService
             ];
         }
 
-        $eventos = EventoEstadistico::whereIn('tipo', ['gol', 'autogol', 'amarilla', 'roja', 'falta'])
-            ->whereHas('equipoPartido.partido', function ($consulta) use ($campeonato) {
-                $consulta->where('campeonato_id', $campeonato->id)
-                    ->whereIn('estado', ['en_curso', 'suspendido', 'finalizado']);
-            })->with(['equipoPartido.partido', 'plantilla'])->get();
+        $eventos = $this->eventosCampeonato($campeonato)->whereIn('tipo', ['gol', 'autogol', 'amarilla', 'roja', 'falta'])
+            ->with(['equipoPartido.partido', 'plantilla'])->get();
 
         $columnas = ['gol' => 'goles', 'autogol' => 'goles', 'amarilla' => 'amarillas', 'roja' => 'rojas', 'falta' => 'faltas'];
 

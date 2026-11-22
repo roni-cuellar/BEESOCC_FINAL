@@ -30,6 +30,12 @@ class Plantilla extends Model
         ];
     }
 
+    public function estaVigenteEn(string $fecha): bool
+    {
+        return $this->fecha_ingreso->toDateString() <= $fecha
+            && (! $this->fecha_salida || $this->fecha_salida->toDateString() >= $fecha);
+    }
+
     // La inscripción del jugador pertenece a un equipo de un campeonato.
     public function campeonatoEquipo(): BelongsTo
     {

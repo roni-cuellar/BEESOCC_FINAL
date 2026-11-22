@@ -13,6 +13,7 @@ use App\Services\ClasificacionGruposService;
 use App\Services\ControlPartidoService;
 use App\Services\IntegridadCampeonatoService;
 use App\Services\MarcadorService;
+use App\Services\PanelArbitralService;
 use App\Services\ResultadoOficialService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -265,6 +266,13 @@ class PartidoController extends Controller
                     return response()->json(['message' => 'El partido debe tener exactamente un local y un visitante antes de editar sus participantes.'], 409);
                 }
 
+                if ($partido->duracion_minutos !== null
+                    && ((int) $datos['local_id'] !== (int) $local->campeonato_equipo_id
+                        || (int) $datos['visitante_id'] !== (int) $visitante->campeonato_equipo_id)) {
+                    $partido->titulares = null;
+                    $partido->version_panel++;
+                }
+
                 if ((int) $datos['local_id'] === (int) $visitante->campeonato_equipo_id) {
                     // Intercambia roles sin repetir equipo ni rol durante la transacción.
                     $local->update(['rol' => 'temporal']);
@@ -295,6 +303,7 @@ class PartidoController extends Controller
         Gate::authorize($cancelar ? 'update' : 'arbitrar', $partido);
         $datos = $request->validate([
             'estado' => 'required|in:en_curso,suspendido,finalizado,cancelado',
+            'version_panel' => 'sometimes|required|integer|min:0',
             'jornada' => 'prohibited', 'fecha_hora' => 'prohibited', 'lugar' => 'prohibited',
             'local_id' => 'prohibited', 'visitante_id' => 'prohibited', 'fase_id' => 'prohibited', 'grupo_id' => 'prohibited', 'llave_id' => 'prohibited', 'numero_serie' => 'prohibited', 'tipo_partido' => 'prohibited', 'campeonato_id' => 'prohibited', 'oficializado_at' => 'prohibited', 'tipo_resultado' => 'prohibited', 'goles_admin_local' => 'prohibited', 'goles_admin_visitante' => 'prohibited',
         ]);
@@ -306,6 +315,10 @@ class PartidoController extends Controller
                 Gate::authorize('update', $partido);
             } else {
                 $partido = app(ControlPartidoService::class)->bloquearActa($partido);
+            }
+            $panel = app(PanelArbitralService::class);
+            if (isset($datos['version_panel'])) {
+                $panel->comprobarVersion($partido, $datos['version_panel']);
             }
             $transiciones = [
                 'programado' => ['en_curso', 'cancelado'],
@@ -319,6 +332,7 @@ class PartidoController extends Controller
             } else {
                 $auditoria = app(AuditoriaPartidoService::class);
                 $anterior = $auditoria->capturar($partido);
+                $panel->alCambiarEstado($partido, $datos['estado']);
                 $partido->update(['estado' => $datos['estado']]);
                 $auditoria->registrar($partido, 'cambiar_estado', 'Cambio de estado del partido.', $anterior, $auditoria->capturar($partido));
             }

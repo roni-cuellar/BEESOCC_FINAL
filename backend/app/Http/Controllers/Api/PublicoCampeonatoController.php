@@ -7,22 +7,31 @@ use App\Models\Campeonato;
 use App\Models\CampeonatoEquipo;
 use App\Models\Partido;
 use App\Models\Plantilla;
+use App\Services\CodigoLiga;
 use App\Services\DeportePublicoService;
 use App\Services\EstadisticaService;
+use App\Services\FichaDeportivaService;
 use App\Services\MarcadorService;
 use App\Services\TablaPosicionesService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class PublicoCampeonatoController extends Controller
 {
     private function campeonato(int $id): Campeonato
     {
-        return Campeonato::where('publicado', true)->whereNotNull('administrador_id')->findOrFail($id);
+        return $this->publicados()->findOrFail($id);
+    }
+
+    private function publicados(): Builder
+    {
+        return Campeonato::where('publicado', true)->whereNotNull('administrador_id');
     }
 
     private function datosCampeonato(Campeonato $campeonato): array
     {
-        return $campeonato->only(['id', 'nombre', 'descripcion', 'temporada', 'formato', 'estado']);
+        return $campeonato->only(['id', 'nombre', 'descripcion', 'temporada', 'formato', 'estado', 'logo']);
     }
 
     private function datosEquipo(CampeonatoEquipo $inscripcion, Campeonato $campeonato): array
@@ -75,21 +84,36 @@ class PublicoCampeonatoController extends Controller
         return $this->respuesta($servicio->consultar($liga));
     }
 
-    private function respuesta(mixed $datos): JsonResponse
+    private function respuesta(mixed $datos, int $estado = 200): JsonResponse
     {
         // Evita reutilizar una respuesta guardada después de ocultar el campeonato.
-        return response()->json($datos)->header('Cache-Control', 'no-store');
+        return response()->json($datos, $estado)->header('Cache-Control', 'no-store');
     }
 
     public function index(): JsonResponse
     {
-        return $this->respuesta(Campeonato::where('publicado', true)->whereNotNull('administrador_id')
+        return $this->respuesta($this->publicados()
             ->latest()->get()->map(fn ($campeonato) => $this->datosCampeonato($campeonato)));
     }
 
     public function show(int $campeonato): JsonResponse
     {
         return $this->respuesta($this->datosCampeonato($this->campeonato($campeonato)));
+    }
+
+    public function porCodigo(Request $request): JsonResponse
+    {
+        $codigo = CodigoLiga::normalizar($request->query('codigo'));
+        if ($codigo === null) {
+            return $this->respuesta(['message' => 'El código debe tener 10 caracteres válidos.'], 422);
+        }
+
+        $campeonato = $this->publicados()->where('codigo_liga', $codigo)->first();
+        if ($campeonato === null) {
+            return $this->respuesta(['message' => 'No hay una liga publicada disponible con ese código.'], 404);
+        }
+
+        return $this->respuesta($this->datosCampeonato($campeonato));
     }
 
     public function equipos(int $campeonato): JsonResponse
@@ -99,7 +123,7 @@ class PublicoCampeonatoController extends Controller
         return $this->respuesta($liga->inscripcionesEquipos()->with('equipo')->get()->map(fn ($inscripcion) => [
             'inscripcion_id' => $inscripcion->id,
             'estado' => $inscripcion->estado,
-            'equipo' => $this->datosEquipo($inscripcion, $liga),
+            'equipo' => $this->datosEquipo($inscripcion, $liga) + ['ciudad' => $inscripcion->equipo->ciudad],
         ]));
     }
 
@@ -109,8 +133,18 @@ class PublicoCampeonatoController extends Controller
         $equipo = $liga->inscripcionesEquipos()->findOrFail($inscripcion);
         $this->datosEquipo($equipo, $liga);
 
-        return $this->respuesta($equipo->plantillas()->whereNull('fecha_salida')->with('jugador')->get()
-            ->map(fn ($plantilla) => $this->datosJugador($plantilla, $liga)));
+        return $this->respuesta($equipo->plantillas()->whereNull('fecha_salida')->with('jugador')
+            ->orderBy('dorsal')->get()->map(fn ($plantilla) => $this->datosJugador($plantilla, $liga)));
+    }
+
+    public function identidades(int $campeonato, FichaDeportivaService $fichas): JsonResponse
+    {
+        return $this->respuesta($fichas->identidades($this->campeonato($campeonato)));
+    }
+
+    public function jugador(int $campeonato, int $jugador, EstadisticaService $estadistica, FichaDeportivaService $fichas): JsonResponse
+    {
+        return $this->respuesta($fichas->jugador($this->campeonato($campeonato), $jugador, $estadistica));
     }
 
     public function partidos(int $campeonato): JsonResponse

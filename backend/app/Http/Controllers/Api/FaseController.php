@@ -8,9 +8,11 @@ use App\Models\Campeonato;
 use App\Models\Fase;
 use App\Models\Llave;
 use App\Services\AvanceEliminacionService;
+use App\Services\CampeonCampeonatoService;
 use App\Services\CrucesGruposService;
 use App\Services\DistribucionGruposService;
 use App\Services\GeneracionEliminacionService;
+use App\Services\MarcadorService;
 use App\Services\SiembraEliminacionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -76,7 +78,18 @@ class FaseController extends Controller
             return response()->json($fase->load('grupos.equipos.inscripcion.equipo', 'grupos.partidos.participantes', 'equipos.inscripcion.equipo'));
         }
 
-        return response()->json($fase->load('equipos.inscripcion.equipo', 'rondas.llaves.plazas', 'rondas.llaves.partidos.participantes'));
+        $fase->load('equipos.inscripcion.equipo', 'rondas.llaves.plazas', 'rondas.llaves.partidos.participantes');
+        if ($fase->tipo === 'eliminacion') {
+            $fase->setAttribute('campeon', app(CampeonCampeonatoService::class)->consultar($fase->campeonato));
+            $marcador = app(MarcadorService::class);
+            foreach ($fase->rondas as $ronda) {
+                foreach ($ronda->llaves as $llave) {
+                    $llave->setAttribute('marcador_global', $marcador->globalOficial($llave, $ronda->modalidad));
+                }
+            }
+        }
+
+        return response()->json($fase);
     }
 
     public function previsualizar(Request $request, Fase $fase, SiembraEliminacionService $servicio): JsonResponse

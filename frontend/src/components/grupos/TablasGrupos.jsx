@@ -1,5 +1,6 @@
 import { Boton } from '../ui'
 import { nombreInscripcion } from '../../utils/grupos'
+import TablaPosicionesDeportiva from '../deportivo/TablaPosicionesDeportiva'
 
 export default function TablasGrupos({
   fase,
@@ -10,8 +11,15 @@ export default function TablasGrupos({
   onVista,
   onClasificar,
   publica = false,
+  destinoEquipo,
 }) {
   const vigente = clasificacion?.clasificacion_vigente
+  const equipos = Object.fromEntries(
+    (fase.equipos || []).map((fila) => [fila.campeonato_equipo_id, fila.inscripcion?.equipo]),
+  )
+  const clasificados = new Set(
+    vigente ? clasificacion.candidatos.map((fila) => fila.campeonato_equipo_id) : [],
+  )
   return (
     <>
       <div className="fila-entre grupos-vista-posiciones">
@@ -50,53 +58,13 @@ export default function TablasGrupos({
               <p className="nota">
                 {t.partidos_oficiales} de {t.partidos_esperados} partidos regulares oficiales
               </p>
-              <div
-                className="grupos-tabla-desplazamiento"
-                role="region"
-                tabIndex={0}
-                aria-label={`Posiciones ${grupo?.codigo}`}
-              >
-                <table>
-                  <caption className="sr-only">
-                    {grupo?.codigo} · {vista}
-                  </caption>
-                  <thead>
-                    <tr>
-                      {['Pos.', 'Equipo', 'PJ', 'PG', 'PE', 'PP', 'GF', 'GC', 'DG', 'PTS'].map(
-                        (c) => (
-                          <th key={c} scope="col">
-                            {c}
-                          </th>
-                        ),
-                      )}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {t.tabla.map((f) => {
-                      const clasificado =
-                        vigente &&
-                        clasificacion.candidatos.some(
-                          (c) => c.campeonato_equipo_id === f.campeonato_equipo_id,
-                        )
-                      return (
-                        <tr
-                          key={f.campeonato_equipo_id}
-                          className={clasificado ? 'grupos-clasificado' : ''}
-                        >
-                          <td>{f.posicion ?? '—'}</td>
-                          <th scope="row">
-                            {f.nombre}
-                            {clasificado && <small>Clasificado oficial</small>}
-                          </th>
-                          {['PJ', 'PG', 'PE', 'PP', 'GF', 'GC', 'DG', 'PTS'].map((c) => (
-                            <td key={c}>{f[c]}</td>
-                          ))}
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              </div>
+              <TablaPosicionesDeportiva
+                filas={t.tabla}
+                equipos={equipos}
+                clasificados={clasificados}
+                titulo={'Posiciones ' + (grupo?.codigo || '') + ' · ' + vista}
+                destinoEquipo={destinoEquipo}
+              />
               {t.pendientes_resolucion.length > 0 && (
                 <p className="grupos-alerta">
                   Hay posiciones empatadas pendientes de resolución. Consulta Desempates.

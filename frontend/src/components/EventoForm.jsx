@@ -11,6 +11,7 @@ function EventoForm({
   bloqueado = false,
   titulo = 'Registrar evento',
   textoBoton = 'Registrar evento',
+  minutoAutomatico = false,
 }) {
   const [datos, setDatos] = useState({
     tipo: 'gol',
@@ -50,7 +51,7 @@ function EventoForm({
         tipo: datos.tipo,
         equipo_partido_id: Number(datos.equipo_partido_id),
         plantilla_id: Number(datos.plantilla_id),
-        minuto: Number(datos.minuto),
+        ...(minutoAutomatico ? {} : { minuto: Number(datos.minuto) }),
         gol_relacionado_id: datos.tipo === 'asistencia' ? Number(datos.gol_relacionado_id) : null,
       })
       setDatos({ ...datos, plantilla_id: '', gol_relacionado_id: '' })
@@ -77,19 +78,23 @@ function EventoForm({
               ))}
             </select>
           </label>
-          <label>
-            Minuto
-            <input
-              required
-              min="0"
-              max="150"
-              step="1"
-              type="number"
-              name="minuto"
-              value={datos.minuto}
-              onChange={cambiar}
-            />
-          </label>
+          {minutoAutomatico ? (
+            <p className="nota">El minuto se toma del cronómetro oficial al guardar.</p>
+          ) : (
+            <label>
+              Minuto
+              <input
+                required
+                min="0"
+                max="150"
+                step="1"
+                type="number"
+                name="minuto"
+                value={datos.minuto}
+                onChange={cambiar}
+              />
+            </label>
+          )}
         </div>
         <label>
           {datos.tipo === 'autogol' ? 'Equipo beneficiado por el autogol' : 'Equipo participante'}

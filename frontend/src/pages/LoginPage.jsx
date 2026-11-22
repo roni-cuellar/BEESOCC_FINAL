@@ -15,13 +15,7 @@ function LoginPage() {
     evento.preventDefault()
     if (await autenticar('login', { email: datos.correo, password: datos.contrasena })) {
       setDatos({ correo: '', contrasena: '' })
-      const destino = state?.desde
-      navegar(
-        typeof destino === 'string' && destino.startsWith('/') && !destino.startsWith('//')
-          ? destino
-          : '/mis-ligas',
-        { replace: true },
-      )
+      navegar('/seleccion-roles', { replace: true, state })
     }
   }
   return (
@@ -30,9 +24,7 @@ function LoginPage() {
         VUELVE A LA CANCHA
       </p>
       <h1 className="font-titulo text-3xl font-bold text-oscuro">Iniciar sesión</h1>
-      <p className="mt-3 mb-7 text-sm leading-6 text-gris">
-        Continúa con la organización de tus campeonatos.
-      </p>
+      <p className="mt-3 mb-7 text-sm leading-6 text-gris">Accede a tu cuenta de BEESOCC.</p>
       <form onSubmit={entrar} aria-busy={cargando} className="grid gap-5">
         <Campo
           etiqueta="Correo electrónico"

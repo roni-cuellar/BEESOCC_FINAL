@@ -12,6 +12,12 @@ export default function RutaPrivada() {
   if (!verificado)
     return <EstadoVista cargando={cargando || !error} error={error} reintentar={verificar} />
   if (!usuario)
-    return <Navigate to="/login" state={{ desde: ubicacion.pathname + ubicacion.search }} replace />
+    return (
+      <Navigate
+        to="/login"
+        state={{ desde: ubicacion.pathname + ubicacion.search + ubicacion.hash }}
+        replace
+      />
+    )
   return <Outlet />
 }

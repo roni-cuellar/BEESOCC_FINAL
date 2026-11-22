@@ -1,47 +1,116 @@
 import EncabezadoPagina from '../components/layout/EncabezadoPagina'
-import { useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import ligaService from '../services/ligaService'
-import { mensajeError } from '../services/api'
-import EstadoVista from '../components/EstadoVista'
 import publicoService from '../services/publicoService'
+import useConsultaPublica from '../hooks/useConsultaPublica'
+import EstadoVista from '../components/EstadoVista'
+import TablaDeportiva, {
+  IdentidadDeportiva,
+  PuestoDeportivo,
+} from '../components/deportivo/TablaDeportiva'
+import { Boton } from '../components/ui'
 
 const tipos = {
-  goleadores: 'Goleadores',
-  asistencias: 'Asistencias',
-  amarillas: 'Amarillas',
-  rojas: 'Rojas',
-  faltas: 'Faltas',
-  equipos: 'Equipos',
+  goleadores: ['Goleadores', 'Goles'],
+  asistencias: ['Asistencias', 'Asistencias'],
+  amarillas: ['Amarillas', 'Tarjetas amarillas'],
+  rojas: ['Rojas', 'Tarjetas rojas'],
+  faltas: ['Faltas', 'Faltas'],
+  equipos: ['Equipos'],
 }
-function EstadisticasPage({ publica = false }) {
+
+const columnasEquipo = [
+  ['goles', 'Goles'],
+  ['amarillas', 'Amarillas'],
+  ['rojas', 'Rojas'],
+  ['faltas', 'Faltas'],
+]
+
+export function RankingDeportivo({ tipo, resultados, identidades, base }) {
+  const porEquipo = tipo === 'equipos'
+  const jugadores = new Map(identidades?.jugadores?.map((fila) => [fila.jugador_id, fila]))
+  const equipos = new Map(identidades?.equipos?.map((fila) => [fila.id, fila]))
+  return (
+    <TablaDeportiva titulo={tipos[tipo][0] + ' del campeonato'}>
+      <thead>
+        <tr>
+          <th scope="col">Pos.</th>
+          <th scope="col">{porEquipo ? 'Equipo' : 'Jugador'}</th>
+          {!porEquipo && <th scope="col">Equipo</th>}
+          {(porEquipo ? columnasEquipo : [['total', tipos[tipo][1]]]).map(([id, titulo]) => (
+            <th key={id} scope="col">
+              {titulo}
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {resultados.map((fila, indice) => {
+          const identidad = jugadores.get(fila.jugador_id)
+          const equipo = porEquipo ? equipos.get(fila.equipo_id) : identidad?.equipo
+          return (
+            <tr key={porEquipo ? fila.equipo_id : fila.jugador_id}>
+              <td>
+                <PuestoDeportivo valor={indice + 1} />
+              </td>
+              <th scope="row">
+                <IdentidadDeportiva
+                  nombre={porEquipo ? fila.nombre : `${fila.nombre} ${fila.apellido || ''}`.trim()}
+                  imagen={porEquipo ? equipo?.escudo : identidad?.foto}
+                  to={
+                    porEquipo
+                      ? `${base}/equipos/${fila.equipo_id}`
+                      : `${base}/jugadores/${fila.jugador_id}`
+                  }
+                  primaria
+                />
+              </th>
+              {porEquipo ? (
+                columnasEquipo.map(([campo]) => (
+                  <td key={campo}>
+                    {campo === 'goles' ? (
+                      <strong className="deportivo-total">{fila[campo]}</strong>
+                    ) : (
+                      fila[campo]
+                    )}
+                  </td>
+                ))
+              ) : (
+                <>
+                  <td>
+                    {equipo ? (
+                      <IdentidadDeportiva
+                        nombre={equipo.nombre}
+                        imagen={equipo.escudo}
+                        to={`${base}/equipos/${equipo.id}`}
+                      />
+                    ) : (
+                      <span className="text-gris">—</span>
+                    )}
+                  </td>
+                  <td>
+                    <strong className="deportivo-total">{fila.total}</strong>
+                  </td>
+                </>
+              )}
+            </tr>
+          )
+        })}
+      </tbody>
+    </TablaDeportiva>
+  )
+}
+
+export default function EstadisticasPage({ publica = false }) {
   const { ligaId } = useParams()
   const [tipo, setTipo] = useState('goleadores')
-  const [resultados, setResultados] = useState([])
-  const [cargando, setCargando] = useState(true)
-  const [error, setError] = useState('')
-  const [revision, setRevision] = useState(0)
-  useEffect(() => {
-    let vigente = true
-    async function consultar() {
-      setCargando(true)
-      setError('')
-      setResultados([])
-      try {
-        const respuesta = await (publica ? publicoService : ligaService).estadisticas(ligaId, tipo)
-        if (vigente) setResultados(respuesta.resultados)
-      } catch (e) {
-        if (vigente) setError(mensajeError(e))
-      } finally {
-        if (vigente) setCargando(false)
-      }
-    }
-    consultar()
-    return () => {
-      vigente = false
-    }
-  }, [ligaId, tipo, revision, publica])
-  const mayor = Math.max(1, ...resultados.map((r) => r.total || 0))
+  const servicio = publica ? publicoService : ligaService
+  const consultar = useCallback(() => servicio.estadisticas(ligaId, tipo), [servicio, ligaId, tipo])
+  const consultarIdentidades = useCallback(() => servicio.identidades(ligaId), [servicio, ligaId])
+  const consulta = useConsultaPublica(consultar)
+  const identidades = useConsultaPublica(consultarIdentidades)
+  const resultados = consulta.datos?.resultados || []
   return (
     <>
       <EncabezadoPagina
@@ -50,32 +119,33 @@ function EstadisticasPage({ publica = false }) {
         titulo="Estadísticas"
         descripcion="Rendimiento del campeonato."
         acciones={
-          <button
-            className="boton boton-borde"
-            onClick={() => setRevision((r) => r + 1)}
-            disabled={cargando}
+          <Boton
+            variante="secundario"
+            disabled={consulta.cargando}
+            onClick={() => {
+              consulta.reintentar()
+              identidades.reintentar()
+            }}
           >
             Actualizar
-          </button>
+          </Boton>
         }
       />
-      <div className="pestanas" role="group" aria-label="Tipo de estadística">
-        {Object.entries(tipos).map(([clave, titulo]) => (
-          <button
+      <div className="mb-5 flex flex-wrap gap-2" role="group" aria-label="Tipo de estadística">
+        {Object.entries(tipos).map(([clave, [titulo]]) => (
+          <Boton
             key={clave}
-            className={tipo === clave ? 'activa' : ''}
+            variante={tipo === clave ? 'principal' : 'secundario'}
             aria-pressed={tipo === clave}
             onClick={() => setTipo(clave)}
           >
             {titulo}
-          </button>
+          </Boton>
         ))}
       </div>
       <EstadoVista
-        cargando={cargando}
-        error={error}
+        {...consulta}
         vacio={!resultados.length}
-        reintentar={() => setRevision((r) => r + 1)}
         titulo="Aún no hay estadísticas"
         texto={
           publica
@@ -83,57 +153,22 @@ function EstadisticasPage({ publica = false }) {
             : 'Registra eventos para consultar el rendimiento.'
         }
       />
-      {!cargando && !error && resultados.length > 0 && (
-        <section className="panel">
-          <h2>{tipos[tipo]}</h2>
-          <div className="tabla-contenedor" role="region" aria-label={tipos[tipo]} tabIndex={0}>
-            <table>
-              <caption className="sr-only">{tipos[tipo]} del campeonato</caption>
-              <thead>
-                <tr>
-                  <th>Pos.</th>
-                  <th>{tipo === 'equipos' ? 'Equipo' : 'Jugador'}</th>
-                  {tipo === 'equipos' ? (
-                    <>
-                      <th>Goles</th>
-                      <th>Amarillas</th>
-                      <th>Rojas</th>
-                      <th>Faltas</th>
-                    </>
-                  ) : (
-                    <th>Total</th>
-                  )}
-                </tr>
-              </thead>
-              <tbody>
-                {resultados.map((r, indice) => (
-                  <tr key={r.jugador_id || r.equipo_id}>
-                    <td>{indice + 1}</td>
-                    <td>
-                      <strong>
-                        {r.nombre} {r.apellido || ''}
-                      </strong>
-                      {tipo !== 'equipos' && (
-                        <div className="barra-estadistica" aria-hidden="true">
-                          <span style={{ width: (r.total / mayor) * 100 + '%' }} />
-                        </div>
-                      )}
-                    </td>
-                    {tipo === 'equipos' ? (
-                      ['goles', 'amarillas', 'rojas', 'faltas'].map((campo) => (
-                        <td key={campo}>{r[campo]}</td>
-                      ))
-                    ) : (
-                      <td className="puntos-tabla">{r.total}</td>
-                    )}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+      {resultados.length > 0 && (
+        <section className="grid min-w-0 gap-3">
+          <h2 className="font-titulo text-xl font-bold">{tipos[tipo][0]}</h2>
+          {identidades.error && (
+            <p className="nota" role="status">
+              No se pudieron cargar todas las fotos y escudos.
+            </p>
+          )}
+          <RankingDeportivo
+            tipo={tipo}
+            resultados={resultados}
+            identidades={identidades.datos}
+            base={`/${publica ? 'campeonatos' : 'ligas'}/${ligaId}`}
+          />
         </section>
       )}
     </>
   )
 }
-export default EstadisticasPage

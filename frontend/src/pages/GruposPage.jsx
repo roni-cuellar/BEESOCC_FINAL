@@ -1,4 +1,5 @@
 import IlustracionModulo from '../components/IlustracionModulo'
+import LogoCampeonato from '../components/LogoCampeonato'
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { crearGruposStore } from '../stores/useGruposStore'
@@ -27,15 +28,22 @@ const secciones = [
   ['auditoria', 'Auditoría'],
 ]
 
-export default function GruposPage({ arbitral = false }) {
+export default function GruposPage({ arbitral = false, seccionInicial = 'grupos' }) {
   const { ligaId } = useParams()
-  return <ContenidoGrupos key={`${ligaId}:${arbitral}`} ligaId={ligaId} arbitral={arbitral} />
+  return (
+    <ContenidoGrupos
+      key={`${ligaId}:${arbitral}:${seccionInicial}`}
+      ligaId={ligaId}
+      arbitral={arbitral}
+      seccionInicial={seccionInicial}
+    />
+  )
 }
 
-function ContenidoGrupos({ ligaId, arbitral }) {
+function ContenidoGrupos({ ligaId, arbitral, seccionInicial }) {
   const [useGrupos] = useState(crearGruposStore)
   const s = useGrupos()
-  const [seccion, setSeccion] = useState('grupos')
+  const [seccion, setSeccion] = useState(seccionInicial)
   const [nombre, setNombre] = useState('Fase de grupos')
   const [confirmacion, setConfirmacion] = useState(null)
   const [tanda, setTanda] = useState(null)
@@ -87,6 +95,13 @@ function ContenidoGrupos({ ligaId, arbitral }) {
   }
   const vigente = s.clasificacion?.clasificacion_vigente
   const generador = !arbitral && s.liga?.estado === 'planificacion'
+  function cambiarSeccion(id) {
+    setSeccion(id)
+    s.invalidarPrevia()
+    setConfirmacion(null)
+    setTanda(null)
+  }
+
   return (
     <section
       className={`grupos-pagina eliminacion-pagina${arbitral ? ' mx-auto max-w-7xl px-5 py-8 sm:px-8' : ''}`}
@@ -98,10 +113,19 @@ function ContenidoGrupos({ ligaId, arbitral }) {
       )}
       <header className="grupos-cabecera">
         <div className="flex min-w-0 items-center gap-4">
-          <IlustracionModulo tipo="grupos" />
+          {seccion === 'eliminacion' ? (
+            <LogoCampeonato
+              ruta={s.liga?.logo ?? s.fase?.campeonato?.logo}
+              respaldo={<IlustracionModulo tipo="grupos" />}
+            />
+          ) : (
+            <IlustracionModulo tipo="grupos" />
+          )}
           <div className="min-w-0">
             <p className="etiqueta">BEESOCC · GRUPOS + ELIMINACIÓN</p>
-            <h1>Cada grupo, un camino al título.</h1>
+            <h1>
+              {seccionInicial === 'calendario' ? 'Calendario' : 'Cada grupo, un camino al título.'}
+            </h1>
             <p>
               {arbitral
                 ? 'Consulta posiciones y actas; certifica las tandas de los partidos que arbitras.'
@@ -109,9 +133,16 @@ function ContenidoGrupos({ ligaId, arbitral }) {
             </p>
           </div>
         </div>
-        <Boton variante="claro" disabled={bloqueado} onClick={() => recargar()}>
-          Actualizar competición
-        </Boton>
+        <div className="flex flex-wrap gap-3">
+          {!arbitral && seccionInicial === 'grupos' && (
+            <Boton variante="claro" to={`/ligas/${ligaId}/editar`}>
+              Editar logo de la liga
+            </Boton>
+          )}
+          <Boton variante="claro" disabled={bloqueado} onClick={() => recargar()}>
+            Actualizar competición
+          </Boton>
+        </div>
       </header>
       <EstadoVista
         cargando={s.cargando || !contextoActual}
@@ -138,7 +169,14 @@ function ContenidoGrupos({ ligaId, arbitral }) {
               <small>{s.eliminacion ? 'Cuadro generado' : 'Por generar'}</small>
             </li>
           </ol>
-          {!s.fase ? (
+          {!s.fase && seccionInicial === 'calendario' ? (
+            <EstadoVista
+              vacio
+              titulo="Configura primero la fase de grupos"
+              texto="El calendario estará disponible cuando exista una fase de grupos."
+              accion={<Boton to={`/ligas/${ligaId}/grupos`}>Ir a Grupos y eliminación</Boton>}
+            />
+          ) : !s.fase ? (
             <section className="panel">
               <h2>Empieza por la fase de grupos</h2>
               {generador ? (
@@ -174,24 +212,21 @@ function ContenidoGrupos({ ligaId, arbitral }) {
                 <h2>{s.fase.nombre}</h2>
                 <span className="estado">{s.fase.estado.replaceAll('_', ' ')}</span>
               </div>
-              <nav className="grupos-navegacion" aria-label="Gestión de grupos">
-                {secciones.map(([id, titulo]) => (
-                  <button
-                    key={id}
-                    type="button"
-                    aria-current={seccion === id ? 'page' : undefined}
-                    disabled={bloqueado}
-                    onClick={() => {
-                      setSeccion(id)
-                      s.invalidarPrevia()
-                      setConfirmacion(null)
-                      setTanda(null)
-                    }}
-                  >
-                    {titulo}
-                  </button>
-                ))}
-              </nav>
+              {seccionInicial !== 'calendario' && (
+                <nav className="grupos-navegacion" aria-label="Gestión de grupos">
+                  {secciones.map(([id, titulo]) => (
+                    <button
+                      key={id}
+                      type="button"
+                      aria-current={seccion === id ? 'page' : undefined}
+                      disabled={bloqueado}
+                      onClick={() => cambiarSeccion(id)}
+                    >
+                      {titulo}
+                    </button>
+                  ))}
+                </nav>
+              )}
               {seccion === 'grupos' && (
                 <>
                   {!s.fase.grupos.length &&
@@ -221,6 +256,9 @@ function ContenidoGrupos({ ligaId, arbitral }) {
                       vista={s.vista}
                       bloqueado={bloqueado}
                       onVista={recargar}
+                      destinoEquipo={
+                        arbitral ? undefined : (id) => `/ligas/${ligaId}/equipos/${id}`
+                      }
                       onClasificar={
                         !arbitral
                           ? () =>
@@ -317,6 +355,14 @@ function ContenidoGrupos({ ligaId, arbitral }) {
               )}
               {seccion === 'eliminacion' && (
                 <>
+                  <Boton
+                    variante="secundario"
+                    className="mb-4"
+                    disabled={bloqueado}
+                    onClick={() => cambiarSeccion('grupos')}
+                  >
+                    Volver a grupos y posiciones
+                  </Boton>
                   {s.eliminacion ? (
                     <>
                       <CuadroEliminacion

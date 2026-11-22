@@ -1,3 +1,4 @@
+import TablaDeportiva from '../components/deportivo/TablaDeportiva'
 import IlustracionModulo from '../components/IlustracionModulo'
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
@@ -139,53 +140,51 @@ function EquiposPage() {
           </div>
         ) : (
           equipos.length > 0 && (
-            <div className="panel tabla-contenedor">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Equipo</th>
-                    <th>Ciudad</th>
-                    <th>Acciones</th>
+            <TablaDeportiva catalogo titulo="Catálogo de equipos">
+              <thead>
+                <tr>
+                  <th>Equipo</th>
+                  <th>Ciudad</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {equipos.map((e) => (
+                  <tr key={e.id}>
+                    <td>
+                      <div className="celda-entidad">
+                        <ImagenEntidad ruta={e.escudo} nombre={e.nombre} />
+                        {e.nombre}
+                      </div>
+                    </td>
+                    <td>{e.ciudad}</td>
+                    <td>
+                      <div className="acciones acciones-compactas">
+                        <button className="boton boton-borde" onClick={() => setFormulario(e)}>
+                          Editar
+                        </button>
+                        <button
+                          className="boton-texto peligro"
+                          onClick={() =>
+                            setConfirmacion({
+                              titulo: 'Eliminar equipo',
+                              texto:
+                                '¿Eliminar el equipo? Solo es posible si no tiene inscripciones.',
+                              accion: async () => {
+                                await equipoService.eliminar(e.id)
+                                await cargar(ligaId)
+                              },
+                            })
+                          }
+                        >
+                          Eliminar
+                        </button>
+                      </div>
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {equipos.map((e) => (
-                    <tr key={e.id}>
-                      <td>
-                        <div className="celda-entidad">
-                          <ImagenEntidad ruta={e.escudo} nombre={e.nombre} />
-                          {e.nombre}
-                        </div>
-                      </td>
-                      <td>{e.ciudad}</td>
-                      <td>
-                        <div className="acciones acciones-compactas">
-                          <button className="boton boton-borde" onClick={() => setFormulario(e)}>
-                            Editar
-                          </button>
-                          <button
-                            className="boton-texto peligro"
-                            onClick={() =>
-                              setConfirmacion({
-                                titulo: 'Eliminar equipo',
-                                texto:
-                                  '¿Eliminar el equipo? Solo es posible si no tiene inscripciones.',
-                                accion: async () => {
-                                  await equipoService.eliminar(e.id)
-                                  await cargar(ligaId)
-                                },
-                              })
-                            }
-                          >
-                            Eliminar
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </TablaDeportiva>
           )
         ))}
       {formulario && (

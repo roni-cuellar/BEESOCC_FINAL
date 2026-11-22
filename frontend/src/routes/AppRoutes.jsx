@@ -35,6 +35,8 @@ import DetallePublicoPage, { ResumenPublicoPage } from '../pages/DetallePublicoP
 import EliminacionPage from '../pages/EliminacionPage'
 import GruposPage from '../pages/GruposPage'
 import DeportePublicoPage from '../pages/DeportePublicoPage'
+import SeleccionRolesPage from '../pages/SeleccionRolesPage'
+import { EquipoPublicoPage, JugadorPublicoPage } from '../pages/FichasPublicasPage'
 
 function PublicLayout() {
   return (
@@ -63,7 +65,7 @@ function TablaPrivada() {
 function CalendarioPrivado() {
   const { liga } = useOutletContext()
   return liga.formato === 'grupos_eliminacion' ? (
-    <Navigate to={'/ligas/' + liga.id + '/grupos'} replace />
+    <GruposPage seccionInicial="calendario" />
   ) : (
     <CalendarioPage />
   )
@@ -76,17 +78,6 @@ function CuadroPrivado() {
     <EliminacionPage />
   )
 }
-function TablaPublica() {
-  const { liga } = useOutletContext()
-  if (liga.formato !== 'todos_contra_todos')
-    return (
-      <Navigate
-        to={`/campeonatos/${liga.id}/${liga.formato === 'grupos_eliminacion' ? 'grupos' : 'cuadro'}`}
-        replace
-      />
-    )
-  return <TablaPage publica />
-}
 function AppRoutes() {
   const { pathname, hash } = useLocation()
   useEffect(() => {
@@ -98,13 +89,6 @@ function AppRoutes() {
       <Route element={<PublicLayout />}>
         <Route path="/" element={<InicioPage />} />
         <Route path="/campeonatos" element={<CampeonatosPublicosPage />} />
-        <Route path="/campeonatos/:ligaId" element={<DetallePublicoPage />}>
-          <Route index element={<ResumenPublicoPage />} />
-          <Route path="tabla" element={<TablaPublica />} />
-          <Route path="estadisticas" element={<EstadisticasPage publica />} />
-          <Route path="grupos" element={<DeportePublicoPage grupos />} />
-          <Route path="cuadro" element={<DeportePublicoPage />} />
-        </Route>
         <Route
           path="*"
           element={
@@ -118,13 +102,30 @@ function AppRoutes() {
           }
         />
       </Route>
+      <Route path="/campeonatos/:ligaId" element={<DetallePublicoPage />}>
+        <Route index element={<ResumenPublicoPage />} />
+        <Route path="clasificacion" element={<DeportePublicoPage />} />
+        <Route path="estadisticas" element={<EstadisticasPage publica />} />
+        <Route path="equipos/:equipoId" element={<EquipoPublicoPage />} />
+        <Route path="jugadores/:jugadorId" element={<JugadorPublicoPage />} />
+        {['tabla', 'grupos', 'cuadro'].map((ruta) => (
+          <Route key={ruta} path={ruta} element={<Navigate to="../clasificacion" replace />} />
+        ))}
+      </Route>
       <Route element={<AccesoLayout />}>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/registro" element={<RegistroPage />} />
       </Route>
       <Route element={<RutaPrivada />}>
         <Route element={<AplicacionLayout />}>
+          <Route path="/seleccion-roles" element={<SeleccionRolesPage />} />
+        </Route>
+        <Route element={<AplicacionLayout destino="/mis-ligas" etiqueta="Mis ligas" />}>
           <Route path="/mis-ligas" element={<MisLigasPage />} />
+          <Route path="/ligas/nueva" element={<CrearLigaPage />} />
+          <Route path="/ligas/:ligaId/editar" element={<CrearLigaPage />} />
+        </Route>
+        <Route element={<AplicacionLayout destino="/mis-arbitrajes" etiqueta="Mis arbitrajes" />}>
           <Route path="/mis-arbitrajes" element={<MisArbitrajesPage />} />
           <Route path="/mis-arbitrajes/:ligaId/partidos" element={<PartidosArbitrajePage />} />
           <Route path="/mis-arbitrajes/:ligaId/cuadro" element={<EliminacionPage arbitral />} />
@@ -137,15 +138,15 @@ function AppRoutes() {
               </section>
             }
           />
-          <Route path="/ligas/nueva" element={<CrearLigaPage />} />
-          <Route path="/ligas/:ligaId/editar" element={<CrearLigaPage />} />
         </Route>
         <Route path="/ligas/:ligaId" element={<DashboardLayout />}>
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<DashboardPage />} />
           <Route path="arbitros" element={<ArbitrosPage />} />
           <Route path="equipos" element={<EquiposPage />} />
+          <Route path="equipos/:equipoId" element={<EquipoPublicoPage publica={false} />} />
           <Route path="jugadores" element={<JugadoresPage />} />
+          <Route path="jugadores/:jugadorId" element={<JugadorPublicoPage publica={false} />} />
           <Route path="partidos" element={<PartidosPage />} />
           <Route path="partidos/:partidoId" element={<PartidoDetallePage />} />
           <Route path="calendario" element={<CalendarioPrivado />} />

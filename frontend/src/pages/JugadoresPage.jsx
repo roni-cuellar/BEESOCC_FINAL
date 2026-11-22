@@ -1,9 +1,9 @@
+import TablaDeportiva from '../components/deportivo/TablaDeportiva'
 import IlustracionModulo from '../components/IlustracionModulo'
-import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useCallback, useState } from 'react'
+import { useOutletContext, useParams } from 'react-router-dom'
 import jugadorService from '../services/jugadorService'
-import { mensajeError } from '../services/api'
-import useEquipoStore from '../stores/useEquipoStore'
+import equipoService from '../services/equipoService'
 import JugadorForm from '../components/JugadorForm'
 import PlantillaForm from '../components/PlantillaForm'
 import ImagenEntidad from '../components/ImagenEntidad'
@@ -11,73 +11,59 @@ import Modal from '../components/Modal'
 import Confirmacion from '../components/Confirmacion'
 import EstadoVista from '../components/EstadoVista'
 import Aviso from '../components/Aviso'
+import useConsultaPublica from '../hooks/useConsultaPublica'
+import { jugadoresDisponibles } from '../utils/inscripciones'
+
+function InscripcionJugador({ equipoId, inscripciones, jugadores, onGuardar, onCancelar }) {
+  const consultar = useCallback(async () => {
+    const listas = await Promise.all(inscripciones.map(({ id }) => jugadorService.plantillas(id)))
+    return {
+      disponibles: jugadoresDisponibles(jugadores, listas.flat()),
+      plantillaEquipo: listas[inscripciones.findIndex(({ id }) => String(id) === equipoId)] || [],
+    }
+  }, [equipoId, inscripciones, jugadores])
+  const consulta = useConsultaPublica(consultar)
+  return consulta.datos ? (
+    <PlantillaForm
+      modo="inscribir"
+      jugadores={consulta.datos.disponibles}
+      plantillas={consulta.datos.plantillaEquipo}
+      onGuardar={onGuardar}
+      onCancelar={onCancelar}
+    />
+  ) : (
+    <EstadoVista {...consulta} />
+  )
+}
 
 function JugadoresPage() {
   const { ligaId } = useParams()
-  const { inscripciones, cargando: cargandoEquipos, error: errorEquipos, cargar } = useEquipoStore()
-  const [jugadores, setJugadores] = useState([])
-  const [plantillas, setPlantillas] = useState([])
+  const liga = useOutletContext()?.liga
   const [seleccionado, setEquipoId] = useState('')
-  const equipoId = inscripciones.some((i) => String(i.id) === seleccionado)
-    ? seleccionado
-    : String(inscripciones[0]?.id || '')
   const [tab, setTab] = useState('plantilla')
   const [busqueda, setBusqueda] = useState('')
   const [revision, setRevision] = useState(0)
-  const [cargando, setCargando] = useState(true)
-  const [cargandoPlantilla, setCargandoPlantilla] = useState(false)
-  const [error, setError] = useState('')
-  const [errorPlantilla, setErrorPlantilla] = useState('')
   const [formulario, setFormulario] = useState(null)
   const [inscripcionForm, setInscripcionForm] = useState(null)
   const [confirmacion, setConfirmacion] = useState(null)
   const [mensaje, setMensaje] = useState('')
-  useEffect(() => {
-    cargar(ligaId)
-  }, [ligaId, cargar])
-  useEffect(() => {
-    let vigente = true
-    async function consultar() {
-      setCargando(true)
-      setError('')
-      try {
-        const datos = await jugadorService.listar()
-        if (vigente) setJugadores(datos)
-      } catch (e) {
-        if (vigente) setError(mensajeError(e))
-      } finally {
-        if (vigente) setCargando(false)
-      }
-    }
-    consultar()
-    return () => {
-      vigente = false
-    }
-  }, [revision])
-  useEffect(() => {
-    let vigente = true
-    async function consultar() {
-      setPlantillas([])
-      setErrorPlantilla('')
-      if (!equipoId) {
-        setCargandoPlantilla(false)
-        return
-      }
-      setCargandoPlantilla(true)
-      try {
-        const datos = await jugadorService.plantillas(equipoId)
-        if (vigente) setPlantillas(datos)
-      } catch (e) {
-        if (vigente) setErrorPlantilla(mensajeError(e))
-      } finally {
-        if (vigente) setCargandoPlantilla(false)
-      }
-    }
-    consultar()
-    return () => {
-      vigente = false
-    }
-  }, [equipoId, revision])
+
+  const consultarEquipos = useCallback(() => equipoService.inscripciones(ligaId), [ligaId])
+  const consultaEquipos = useConsultaPublica(consultarEquipos)
+  const consultaCatalogo = useConsultaPublica(jugadorService.listar, revision)
+  const inscripciones = consultaEquipos.datos ?? []
+  const jugadores = consultaCatalogo.datos ?? []
+  const equipoId = inscripciones.some((i) => String(i.id) === seleccionado)
+    ? seleccionado
+    : String(inscripciones[0]?.id || '')
+  const consultarPlantilla = useCallback(
+    () => (equipoId ? jugadorService.plantillas(equipoId) : Promise.resolve([])),
+    [equipoId],
+  )
+  const consultaPlantilla = useConsultaPublica(consultarPlantilla, revision)
+  const { cargando: cargandoPlantilla, error: errorPlantilla } = consultaPlantilla
+  const plantillas = consultaPlantilla.datos ?? []
+  const consultaVista = tab === 'catalogo' ? consultaCatalogo : consultaEquipos
   const equipo = inscripciones.find((i) => String(i.id) === String(equipoId))
   const catalogo = jugadores.filter((j) =>
     (j.nombre + ' ' + j.apellido).toLowerCase().includes(busqueda.toLowerCase()),
@@ -119,18 +105,9 @@ function JugadoresPage() {
           Todos los jugadores
         </button>
       </div>
-      <EstadoVista
-        cargando={cargando || cargandoEquipos}
-        error={error || errorEquipos}
-        reintentar={() => {
-          cargar(ligaId)
-          setRevision((v) => v + 1)
-        }}
-      />
-      {!cargando &&
-        !cargandoEquipos &&
-        !error &&
-        !errorEquipos &&
+      <EstadoVista {...consultaVista} />
+      {!consultaVista.cargando &&
+        !consultaVista.error &&
         (tab === 'catalogo' ? (
           <>
             <div className="filtros">
@@ -149,53 +126,51 @@ function JugadoresPage() {
               texto="Registra un jugador o cambia la búsqueda."
             />
             {catalogo.length > 0 && (
-              <div className="panel tabla-contenedor">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Jugador</th>
-                      <th>Nacimiento</th>
-                      <th>Acciones</th>
+              <TablaDeportiva catalogo titulo="Catálogo de jugadores">
+                <thead>
+                  <tr>
+                    <th>Jugador</th>
+                    <th>Nacimiento</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {catalogo.map((j) => (
+                    <tr key={j.id}>
+                      <td>
+                        <div className="celda-entidad">
+                          <ImagenEntidad ruta={j.foto} nombre={j.nombre + ' ' + j.apellido} />
+                          {j.nombre} {j.apellido}
+                        </div>
+                      </td>
+                      <td>{j.fecha_nacimiento.slice(0, 10)}</td>
+                      <td>
+                        <div className="acciones acciones-compactas">
+                          <button className="boton boton-borde" onClick={() => setFormulario(j)}>
+                            Editar
+                          </button>
+                          <button
+                            className="boton-texto peligro"
+                            onClick={() =>
+                              setConfirmacion({
+                                titulo: 'Eliminar jugador',
+                                texto:
+                                  '¿Eliminar al jugador? Solo es posible si no tiene inscripciones.',
+                                accion: async () => {
+                                  await jugadorService.eliminar(j.id)
+                                  setRevision((v) => v + 1)
+                                },
+                              })
+                            }
+                          >
+                            Eliminar
+                          </button>
+                        </div>
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {catalogo.map((j) => (
-                      <tr key={j.id}>
-                        <td>
-                          <div className="celda-entidad">
-                            <ImagenEntidad ruta={j.foto} nombre={j.nombre + ' ' + j.apellido} />
-                            {j.nombre} {j.apellido}
-                          </div>
-                        </td>
-                        <td>{j.fecha_nacimiento.slice(0, 10)}</td>
-                        <td>
-                          <div className="acciones acciones-compactas">
-                            <button className="boton boton-borde" onClick={() => setFormulario(j)}>
-                              Editar
-                            </button>
-                            <button
-                              className="boton-texto peligro"
-                              onClick={() =>
-                                setConfirmacion({
-                                  titulo: 'Eliminar jugador',
-                                  texto:
-                                    '¿Eliminar al jugador? Solo es posible si no tiene inscripciones.',
-                                  accion: async () => {
-                                    await jugadorService.eliminar(j.id)
-                                    setRevision((v) => v + 1)
-                                  },
-                                })
-                              }
-                            >
-                              Eliminar
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                  ))}
+                </tbody>
+              </TablaDeportiva>
             )}
           </>
         ) : (
@@ -217,6 +192,7 @@ function JugadoresPage() {
                 disabled={
                   !equipo ||
                   equipo.estado !== 'activo' ||
+                  liga?.estado !== 'planificacion' ||
                   cargandoPlantilla ||
                   Boolean(errorPlantilla)
                 }
@@ -225,6 +201,9 @@ function JugadoresPage() {
                 Inscribir jugador
               </button>
             </div>
+            {equipo?.estado === 'activo' && liga && liga.estado !== 'planificacion' && (
+              <p className="nota">Las nuevas inscripciones se realizan durante la planificación.</p>
+            )}
             {equipo?.estado === 'retirado' && (
               <div className="aviso aviso-info">
                 Equipo retirado. Su plantilla se conserva para consulta.
@@ -240,83 +219,81 @@ function JugadoresPage() {
                   ? 'Inscribe un equipo para comenzar.'
                   : 'Selecciona un jugador para inscribirlo.'
               }
-              reintentar={() => setRevision((v) => v + 1)}
+              reintentar={consultaPlantilla.reintentar}
             />
             {!cargandoPlantilla && !errorPlantilla && plantillas.length > 0 && (
-              <div className="panel tabla-contenedor">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Jugador</th>
-                      <th>Dorsal</th>
-                      <th>Posición</th>
-                      <th>Ingreso</th>
-                      <th>Salida</th>
-                      <th>Estado</th>
-                      <th>Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {plantillas.map((p) => (
-                      <tr key={p.id}>
-                        <td>
-                          <div className="celda-entidad">
-                            <ImagenEntidad ruta={p.jugador.foto} nombre={p.jugador.nombre} />
-                            {p.jugador.nombre} {p.jugador.apellido}
+              <TablaDeportiva catalogo titulo="Plantillas del campeonato">
+                <thead>
+                  <tr>
+                    <th>Jugador</th>
+                    <th>Dorsal</th>
+                    <th>Posición</th>
+                    <th>Ingreso</th>
+                    <th>Salida</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {plantillas.map((p) => (
+                    <tr key={p.id}>
+                      <td>
+                        <div className="celda-entidad">
+                          <ImagenEntidad ruta={p.jugador.foto} nombre={p.jugador.nombre} />
+                          {p.jugador.nombre} {p.jugador.apellido}
+                        </div>
+                      </td>
+                      <td>{p.dorsal}</td>
+                      <td>{p.posicion}</td>
+                      <td>{p.fecha_ingreso.slice(0, 10)}</td>
+                      <td>{p.fecha_salida?.slice(0, 10) || '—'}</td>
+                      <td>
+                        <span
+                          className={'estado estado-' + (p.fecha_salida ? 'retirado' : 'activo')}
+                        >
+                          {p.fecha_salida ? 'Histórica' : 'Activa'}
+                        </span>
+                      </td>
+                      <td>
+                        {!p.fecha_salida ? (
+                          <div className="acciones acciones-compactas">
+                            <button
+                              className="boton boton-borde"
+                              onClick={() => setInscripcionForm({ modo: 'editar', plantilla: p })}
+                            >
+                              Editar
+                            </button>
+                            <button
+                              className="boton boton-borde"
+                              onClick={() => setInscripcionForm({ modo: 'salida', plantilla: p })}
+                            >
+                              Registrar salida
+                            </button>
+                            <button
+                              className="boton-texto peligro"
+                              onClick={() =>
+                                setConfirmacion({
+                                  titulo: 'Eliminar inscripción',
+                                  texto:
+                                    '¿Eliminar esta inscripción? Para retirar al jugador, registra su salida.',
+                                  accion: async () => {
+                                    await jugadorService.eliminarPlantilla(p.id)
+                                    setRevision((v) => v + 1)
+                                  },
+                                })
+                              }
+                            >
+                              Eliminar
+                            </button>
                           </div>
-                        </td>
-                        <td>{p.dorsal}</td>
-                        <td>{p.posicion}</td>
-                        <td>{p.fecha_ingreso.slice(0, 10)}</td>
-                        <td>{p.fecha_salida?.slice(0, 10) || '—'}</td>
-                        <td>
-                          <span
-                            className={'estado estado-' + (p.fecha_salida ? 'retirado' : 'activo')}
-                          >
-                            {p.fecha_salida ? 'Histórica' : 'Activa'}
-                          </span>
-                        </td>
-                        <td>
-                          {!p.fecha_salida ? (
-                            <div className="acciones acciones-compactas">
-                              <button
-                                className="boton boton-borde"
-                                onClick={() => setInscripcionForm({ modo: 'editar', plantilla: p })}
-                              >
-                                Editar
-                              </button>
-                              <button
-                                className="boton boton-borde"
-                                onClick={() => setInscripcionForm({ modo: 'salida', plantilla: p })}
-                              >
-                                Registrar salida
-                              </button>
-                              <button
-                                className="boton-texto peligro"
-                                onClick={() =>
-                                  setConfirmacion({
-                                    titulo: 'Eliminar inscripción',
-                                    texto:
-                                      '¿Eliminar esta inscripción? Para retirar al jugador, registra su salida.',
-                                    accion: async () => {
-                                      await jugadorService.eliminarPlantilla(p.id)
-                                      setRevision((v) => v + 1)
-                                    },
-                                  })
-                                }
-                              >
-                                Eliminar
-                              </button>
-                            </div>
-                          ) : (
-                            <span className="nota">Cerrada</span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                        ) : (
+                          <span className="nota">Cerrada</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </TablaDeportiva>
             )}
           </>
         ))}
@@ -343,13 +320,24 @@ function JugadoresPage() {
           }
           onCerrar={() => setInscripcionForm(null)}
         >
-          <PlantillaForm
-            {...inscripcionForm}
-            jugadores={jugadores}
-            plantillas={plantillas}
-            onGuardar={guardarPlantilla}
-            onCancelar={() => setInscripcionForm(null)}
-          />
+          {inscripcionForm.modo === 'inscribir' && !consultaCatalogo.datos ? (
+            <EstadoVista {...consultaCatalogo} />
+          ) : inscripcionForm.modo === 'inscribir' ? (
+            <InscripcionJugador
+              equipoId={equipoId}
+              inscripciones={inscripciones}
+              jugadores={jugadores}
+              onGuardar={guardarPlantilla}
+              onCancelar={() => setInscripcionForm(null)}
+            />
+          ) : (
+            <PlantillaForm
+              {...inscripcionForm}
+              plantillas={plantillas}
+              onGuardar={guardarPlantilla}
+              onCancelar={() => setInscripcionForm(null)}
+            />
+          )}
         </Modal>
       )}
       {confirmacion && (

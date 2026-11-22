@@ -65,19 +65,23 @@ function CalendarioPage() {
         )}
       </div>
       <Aviso exito={exito} />
-      {!eliminacion && (
-        <details
-          className="panel ajustes-calendario"
-          id="configuracion"
-          open={hash === '#configuracion' ? true : undefined}
+      <details
+        className="panel ajustes-calendario"
+        id="configuracion"
+        open={hash === '#configuracion' ? true : undefined}
+      >
+        <summary>
+          Configuración del campeonato
+          <Icono nombre="mas" />
+        </summary>
+        <Link
+          className="enlace-texto mb-4 inline-flex min-h-11 items-center"
+          to={`/ligas/${ligaId}/editar`}
         >
-          <summary>
-            Configuración del campeonato
-            <Icono nombre="mas" />
-          </summary>
-          <ConfiguracionForm ligaId={ligaId} hayPartidos={partidos.length > 0} />
-        </details>
-      )}
+          Editar logo de la liga
+        </Link>
+        {!eliminacion && <ConfiguracionForm ligaId={ligaId} hayPartidos={partidos.length > 0} />}
+      </details>
       {partidos.length > 0 && (
         <p className="nota">Ya hay partidos registrados. Abre uno para programarlo.</p>
       )}

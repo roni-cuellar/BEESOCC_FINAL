@@ -5,12 +5,13 @@ export default function EncabezadoPagina({
   descripcion,
   acciones,
   ilustracion,
+  imagen,
   tituloAs: Titulo = 'h1',
 }) {
   return (
     <div className="encabezado-modulo mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex min-w-0 items-center gap-4">
-        {ilustracion && <IlustracionModulo tipo={ilustracion} />}
+        {imagen ?? (ilustracion && <IlustracionModulo tipo={ilustracion} />)}
         <div className="min-w-0">
           <Titulo className="font-titulo text-3xl font-bold text-oscuro sm:text-4xl">
             {titulo}

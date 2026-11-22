@@ -4,6 +4,7 @@ import { mensajeError } from '../services/api'
 import LigaCard from '../components/LigaCard'
 import EstadoVista from '../components/EstadoVista'
 import EncabezadoPagina from '../components/layout/EncabezadoPagina'
+import BuscarLigaPorCodigo from '../components/BuscarLigaPorCodigo'
 import { Boton } from '../components/ui'
 
 export default function CampeonatosPublicosPage() {
@@ -52,6 +53,7 @@ export default function CampeonatosPublicosPage() {
           </Boton>
         }
       />
+      <BuscarLigaPorCodigo />
       <EstadoVista
         cargando={cargando}
         error={error}

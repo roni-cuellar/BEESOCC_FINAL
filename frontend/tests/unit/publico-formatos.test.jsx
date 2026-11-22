@@ -92,7 +92,7 @@ it('reutiliza el cuadro público sin controles ni enlaces administrativos', () =
   for (const texto of [
     'Final',
     'Equipo 1',
-    'Clasificado',
+    'Ganador de la final',
     '3 – 0',
     'Resultado administrativo',
     'marcador deportivo: 1',

@@ -12,7 +12,9 @@ import Aviso from '../components/Aviso'
 import { mensajeError } from '../services/api'
 import { Boton, Tarjeta } from '../components/ui'
 import IlustracionModulo from '../components/IlustracionModulo'
+import LogoCampeonato from '../components/LogoCampeonato'
 import ResumenDeportivo from '../components/ResumenDeportivo'
+import TablaPosicionesDeportiva from '../components/deportivo/TablaPosicionesDeportiva'
 import Icono from '../components/Icono'
 
 function DashboardPage() {
@@ -67,6 +69,14 @@ function DashboardPage() {
           jugadores,
           arbitros: arbitraje.status === 'fulfilled' ? (arbitraje.value ? 1 : 0) : null,
           tabla: tabla.status === 'fulfilled' ? tabla.value.tabla : [],
+          identidades:
+            inscripciones.status === 'fulfilled'
+              ? Object.fromEntries(
+                  inscripciones.value
+                    .filter(({ equipo }) => equipo)
+                    .map(({ equipo }) => [equipo.id, equipo]),
+                )
+              : {},
           error: errores.join(' '),
           cargando: false,
         })
@@ -92,8 +102,13 @@ function DashboardPage() {
     <>
       <header className="dashboard-portada mb-7">
         <div className="flex min-w-0 items-start gap-4 sm:gap-6">
-          <IlustracionModulo
-            tipo={grupos ? 'grupos' : eliminacion ? 'eliminacion' : 'campeonatos'}
+          <LogoCampeonato
+            ruta={liga.logo}
+            respaldo={
+              <IlustracionModulo
+                tipo={grupos ? 'grupos' : eliminacion ? 'eliminacion' : 'campeonatos'}
+              />
+            }
           />
           <div className="min-w-0">
             <p className="mb-3 text-xs font-semibold tracking-widest text-green-200">
@@ -226,31 +241,13 @@ function DashboardPage() {
             </Boton>
           </div>
           <Tarjeta sinRelleno>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <caption className="sr-only">Primeras posiciones del campeonato</caption>
-                <thead>
-                  <tr>
-                    <th>Pos.</th>
-                    <th>Equipo</th>
-                    <th>PJ</th>
-                    <th>PTS</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {resumen.tabla.slice(0, 5).map((f) => (
-                    <tr key={f.equipo_id}>
-                      <td>{f.posicion}</td>
-                      <td>{f.nombre}</td>
-                      <td>{f.PJ}</td>
-                      <td>
-                        <strong>{f.PTS}</strong>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <TablaPosicionesDeportiva
+              columnas={['PJ', 'PTS']}
+              filas={resumen.tabla.slice(0, 5)}
+              equipos={resumen.identidades}
+              titulo="Primeras posiciones del campeonato"
+              destinoEquipo={(id) => `/ligas/${ligaId}/equipos/${id}`}
+            />
             {!resumen.tabla.length && (
               <p className="px-5 py-7 text-sm text-gris">
                 {resumen.cargando

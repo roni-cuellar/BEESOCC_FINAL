@@ -6,6 +6,24 @@ import Aviso from '../components/Aviso'
 import EstadoVista from '../components/EstadoVista'
 import { Boton, Campo, Tarjeta } from '../components/ui'
 import EncabezadoPagina from '../components/layout/EncabezadoPagina'
+import ImagenCatalogoForm from '../components/ImagenCatalogoForm'
+import LogoCampeonato from '../components/LogoCampeonato'
+
+function previaLogo({ url, actual }) {
+  return (
+    <div className="my-3">
+      {url ? (
+        <img
+          src={url}
+          alt="Vista previa del logo seleccionado"
+          className="size-16 rounded-xl border border-green-100 bg-white object-contain p-1 sm:size-24"
+        />
+      ) : (
+        <LogoCampeonato ruta={actual} alt="Logo actual de la liga" />
+      )}
+    </div>
+  )
+}
 
 function CrearLigaPage() {
   const { ligaId } = useParams()
@@ -18,6 +36,9 @@ function CrearLigaPage() {
   })
   const [cargando, setCargando] = useState(Boolean(ligaId))
   const [guardando, setGuardando] = useState(false)
+  const [logoActual, setLogoActual] = useState(null)
+  const [archivoLogo, setArchivoLogo] = useState(null)
+  const [quitarLogo, setQuitarLogo] = useState(false)
   const [error, setError] = useState('')
   const [errores, setErrores] = useState({})
   const formularioRef = useRef(null)
@@ -33,17 +54,22 @@ function CrearLigaPage() {
       setErrorConsulta('')
       setError('')
       setErrores({})
+      setLogoActual(null)
+      setArchivoLogo(null)
+      setQuitarLogo(false)
       setDatos({ nombre: '', descripcion: '', temporada: '', formato: 'todos_contra_todos' })
       if (!ligaId) return
       try {
         const liga = await ligaService.obtener(ligaId)
-        if (vigente)
+        if (vigente) {
+          setLogoActual(liga.logo || null)
           setDatos({
             nombre: liga.nombre,
             descripcion: liga.descripcion || '',
             temporada: liga.temporada,
             formato: liga.formato,
           })
+        }
       } catch (e) {
         if (vigente) setErrorConsulta(mensajeError(e))
       } finally {
@@ -70,6 +96,8 @@ function CrearLigaPage() {
         nombre: datos.nombre.trim(),
         descripcion: datos.descripcion.trim() || null,
         temporada: datos.temporada.trim(),
+        logo: archivoLogo,
+        eliminar_imagen: quitarLogo,
       }
       if (ligaId) await ligaService.actualizar(ligaId, envio)
       else await ligaService.crear(envio)
@@ -79,7 +107,11 @@ function CrearLigaPage() {
         },
       })
     } catch (e) {
-      setError(mensajeError(e))
+      setError(
+        archivoLogo && e.response?.status === 502
+          ? 'No se pudo subir el logo. Intenta de nuevo.'
+          : mensajeError(e),
+      )
       if (e.response?.status === 422) setErrores(e.response.data?.errors || {})
       setGuardando(false)
     }
@@ -104,6 +136,22 @@ function CrearLigaPage() {
       {!cargando && !errorConsulta && (
         <Tarjeta as="form" ref={formularioRef} className="grid gap-6" onSubmit={guardar}>
           <Aviso error={error} />
+          <fieldset disabled={guardando} className="min-w-0 rounded-xl border border-borde p-4">
+            <legend className="px-2 font-semibold text-marca-oscuro">Identidad de la liga</legend>
+            <ImagenCatalogoForm
+              campo="logo"
+              etiqueta="Logo de la liga"
+              actual={logoActual}
+              archivo={archivoLogo}
+              eliminar={quitarLogo}
+              onArchivo={(archivo) => {
+                setArchivoLogo(archivo)
+                if (archivo) setQuitarLogo(false)
+              }}
+              onEliminar={setQuitarLogo}
+              renderizarPrevia={previaLogo}
+            />
+          </fieldset>
           <Campo
             etiqueta="Nombre"
             name="nombre"

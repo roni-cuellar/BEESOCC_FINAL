@@ -13,9 +13,10 @@ export async function guardarCatalogo(ruta, datos, campo, editar = false) {
   const envio = { ...campos, ...(eliminar_imagen ? { eliminar_imagen: true } : {}) }
   if (archivo instanceof File) {
     const formulario = new FormData()
-    Object.entries(envio).forEach(([clave, valor]) =>
-      formulario.append(clave, typeof valor === 'boolean' ? (valor ? '1' : '0') : String(valor)),
-    )
+    Object.entries(envio).forEach(([clave, valor]) => {
+      const texto = typeof valor === 'boolean' ? (valor ? '1' : '0') : String(valor ?? '')
+      formulario.append(clave, texto)
+    })
     formulario.append(campo, archivo)
     // PHP procesa los archivos multipart mediante POST; Laravel resuelve PATCH.
     if (editar) formulario.append('_method', 'PATCH')

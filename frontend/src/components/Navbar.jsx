@@ -1,13 +1,21 @@
-import { useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { Link, useMatch } from 'react-router-dom'
 import logo from '../assets/branding/logo.png'
 import Icono from './Icono'
 import { Boton } from './ui'
+import SalirSesion from './SalirSesion'
+import useAuthStore from '../stores/useAuthStore'
 
 function Navbar() {
   const [abierto, setAbierto] = useState(false)
   const control = useRef(null)
   const cerrar = () => setAbierto(false)
+  const consultaPublica = Boolean(useMatch('/campeonatos/*'))
+  const { usuario, verificado, verificar } = useAuthStore()
+
+  useEffect(() => {
+    if (consultaPublica && !verificado) verificar()
+  }, [consultaPublica, verificado, verificar])
   return (
     <header className="sticky top-0 z-20 border-b border-white/10 bg-marca-oscuro text-white">
       <div className="relative mx-auto flex min-h-20 max-w-7xl items-center justify-between gap-5 px-5 sm:px-8 lg:px-10">
@@ -62,16 +70,27 @@ function Navbar() {
             ))}
           </div>
           <div className="flex flex-wrap items-center gap-3 border-t border-white/15 pt-4 lg:border-0 lg:pt-0">
-            <Link
-              className="flex min-h-11 items-center rounded-lg px-2 text-sm hover:bg-white/10"
-              to="/login"
-              onClick={cerrar}
-            >
-              Iniciar sesión
-            </Link>
-            <Boton to="/registro" variante="claro" onClick={cerrar}>
-              Registrarse
-            </Boton>
+            {usuario ? (
+              <>
+                <Boton to="/seleccion-roles" variante="claro" onClick={cerrar}>
+                  Cambiar rol
+                </Boton>
+                <SalirSesion className="flex min-h-11 items-center rounded-lg px-2 text-sm hover:bg-white/10" />
+              </>
+            ) : (
+              <>
+                <Link
+                  className="flex min-h-11 items-center rounded-lg px-2 text-sm hover:bg-white/10"
+                  to="/login"
+                  onClick={cerrar}
+                >
+                  Iniciar sesión
+                </Link>
+                <Boton to="/registro" variante="claro" onClick={cerrar}>
+                  Registrarse
+                </Boton>
+              </>
+            )}
           </div>
         </nav>
       </div>

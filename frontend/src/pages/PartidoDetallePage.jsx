@@ -17,6 +17,7 @@ import ResultadoOficial from '../components/ResultadoOficial'
 import PanelCorrecciones from '../components/PanelCorrecciones'
 import ResolucionAdministrativa from '../components/ResolucionAdministrativa'
 import useLigaStore from '../stores/useLigaStore'
+import { RelojArbitral, TitularesArbitrales } from '../components/PanelArbitral'
 
 function PartidoDetallePage({ arbitral = false }) {
   const campeonatoEnCurso = useLigaStore((e) => e.liga?.estado === 'en_curso')
@@ -27,6 +28,7 @@ function PartidoDetallePage({ arbitral = false }) {
   const [eventos, setEventos] = useState([])
   const [marcador, setMarcador] = useState(null)
   const [plantillas, setPlantillas] = useState({})
+  const [panel, setPanel] = useState(null)
   const [error, setError] = useState('')
   const [errorParcial, setErrorParcial] = useState('')
   const [cargando, setCargando] = useState(true)
@@ -49,6 +51,7 @@ function PartidoDetallePage({ arbitral = false }) {
     setEventos([])
     setMarcador(null)
     setPlantillas({})
+    setPanel(null)
     setConfirmacion(null)
     setCorregir(null)
     setEditar(false)
@@ -87,16 +90,19 @@ function PartidoDetallePage({ arbitral = false }) {
       setPartido(null)
       setMarcador(null)
       setPlantillas({})
+      setPanel(null)
       try {
         const detalle = await partidoService.obtener(partidoId)
         if (String(detalle.campeonato_id) !== ligaId) throw new Error('liga_incorrecta')
-        const [eventosRespuesta, marcadorRespuesta, listas] = await Promise.allSettled([
-          partidoService.eventos(partidoId),
-          partidoService.marcador(partidoId),
-          arbitral ? arbitroService.plantillas(partidoId) : Promise.resolve({}),
-        ])
+        const [eventosRespuesta, marcadorRespuesta, listas, panelRespuesta] =
+          await Promise.allSettled([
+            partidoService.eventos(partidoId),
+            partidoService.marcador(partidoId),
+            arbitral ? arbitroService.plantillas(partidoId) : Promise.resolve({}),
+            arbitral ? arbitroService.panel(partidoId) : Promise.resolve(null),
+          ])
         if (!vigente || accesoBloqueado.current) return
-        const denegada = [eventosRespuesta, marcadorRespuesta, listas].find(
+        const denegada = [eventosRespuesta, marcadorRespuesta, listas, panelRespuesta].find(
           (r) => r.status === 'rejected' && [401, 403, 404].includes(r.reason.response?.status),
         )
         if (denegada) {
@@ -109,6 +115,10 @@ function PartidoDetallePage({ arbitral = false }) {
         }
         const fallos = []
         if (listas.status === 'rejected') fallos.push(mensajeError(listas.reason))
+        if (panelRespuesta.status === 'fulfilled' && panelRespuesta.value) {
+          setPanel({ ...panelRespuesta.value, recibidoEn: performance.now() })
+        } else if (panelRespuesta.status === 'rejected')
+          fallos.push(mensajeError(panelRespuesta.reason))
         if (marcadorRespuesta.status === 'fulfilled') setMarcador(marcadorRespuesta.value)
         else fallos.push(mensajeError(marcadorRespuesta.reason))
         setPartido(detalle)
@@ -135,7 +145,7 @@ function PartidoDetallePage({ arbitral = false }) {
     setMensaje(texto)
     setRevision((v) => v + 1)
   }
-  async function operar(accion, texto) {
+  async function operar(accion, texto, actualizarPanel = false) {
     if (accesoBloqueado.current) throw { response: { status: 403 } }
     if (operacionPendiente.current) return
     operacionPendiente.current = true
@@ -143,10 +153,15 @@ function PartidoDetallePage({ arbitral = false }) {
     setErrorOperacion('')
     setMensaje('')
     try {
-      await accion()
+      const respuesta = await accion()
       if (!accesoBloqueado.current) {
-        setCargando(true)
-        recargar(texto)
+        if (actualizarPanel) {
+          setPanel({ ...respuesta, recibidoEn: performance.now() })
+          setMensaje(texto)
+        } else {
+          setCargando(true)
+          recargar(texto)
+        }
       }
     } catch (e) {
       if ([401, 403, 404].includes(e.response?.status)) bloquearAcceso(e)
@@ -178,7 +193,10 @@ function PartidoDetallePage({ arbitral = false }) {
           () =>
             finalizar
               ? partidoService.finalizar(partidoId)
-              : partidoService.actualizar(partidoId, { estado }),
+              : partidoService.actualizar(partidoId, {
+                  estado,
+                  ...(arbitral && panel ? { version_panel: panel.version } : {}),
+                }),
           finalizar ? 'Resultado oficializado.' : 'Estado actualizado.',
         ),
     })
@@ -217,21 +235,39 @@ function PartidoDetallePage({ arbitral = false }) {
             error={errorOperacion || errorParcial || (!arbitral && errorEquipos)}
             exito={mensaje}
           />
-          <div className="panel marcador-detalle">
-            <div>
-              <span>LOCAL</span>
-              <strong>{marcador?.local.nombre || nombreParticipante(partido, 'local')}</strong>
+          {arbitral ? (
+            <RelojArbitral
+              partido={partido}
+              marcador={marcador}
+              panel={panel}
+              bloqueado={operando}
+              onReloj={(accion) =>
+                operar(
+                  () => arbitroService.reloj(partidoId, { accion, version: panel.version }),
+                  accion === 'pausar' ? 'Cronómetro pausado.' : 'Cronómetro reanudado.',
+                  true,
+                )
+              }
+            />
+          ) : (
+            <div className="panel marcador-detalle">
+              <div>
+                <span>LOCAL</span>
+                <strong>{marcador?.local.nombre || nombreParticipante(partido, 'local')}</strong>
+              </div>
+              <b>
+                {marcador
+                  ? marcador.local.goles + ' – ' + marcador.visitante.goles
+                  : 'No disponible'}
+              </b>
+              <div>
+                <span>VISITANTE</span>
+                <strong>
+                  {marcador?.visitante.nombre || nombreParticipante(partido, 'visitante')}
+                </strong>
+              </div>
             </div>
-            <b>
-              {marcador ? marcador.local.goles + ' – ' + marcador.visitante.goles : 'No disponible'}
-            </b>
-            <div>
-              <span>VISITANTE</span>
-              <strong>
-                {marcador?.visitante.nombre || nombreParticipante(partido, 'visitante')}
-              </strong>
-            </div>
-          </div>
+          )}
           <ResultadoOficial partido={partido} />
           {partido.tipo_resultado === 'administrativo' && marcador?.marcador_deportivo && (
             <p className="nota">
@@ -270,6 +306,7 @@ function PartidoDetallePage({ arbitral = false }) {
               arbitral={arbitral}
               bloqueado={operando}
               onCambiar={confirmarEstado}
+              omitirInicio={arbitral}
             />
             {!arbitral && !partido.llave_id && !partido.grupo_id && !partido.oficializado_at && (
               <button
@@ -290,6 +327,22 @@ function PartidoDetallePage({ arbitral = false }) {
               </button>
             )}
           </div>
+          {arbitral && panel && (
+            <TitularesArbitrales
+              key={panel.version}
+              partido={partido}
+              panel={panel}
+              bloqueado={operando}
+              onPreparar={(datos) =>
+                operar(
+                  () => arbitroService.preparar(partidoId, { ...datos, version: panel.version }),
+                  'Preparación guardada.',
+                  true,
+                )
+              }
+              onIniciar={() => confirmarEstado('en_curso')}
+            />
+          )}
           <div className={arbitral ? 'detalle-eventos' : 'mt-6'}>
             <div className="panel">
               <h2>Historial de eventos</h2>
@@ -342,12 +395,13 @@ function PartidoDetallePage({ arbitral = false }) {
               </ol>
             </div>
             {arbitral &&
-              (partido.estado === 'en_curso' && plantillasListas ? (
+              (partido.estado === 'en_curso' && plantillasListas && panel ? (
                 <EventoForm
                   bloqueado={operando}
                   partido={partido}
                   eventos={eventos}
                   plantillas={plantillas}
+                  minutoAutomatico={panel.duracion_minutos !== null}
                   onGuardar={(datos) =>
                     operar(
                       () => partidoService.crearEvento(partidoId, datos),

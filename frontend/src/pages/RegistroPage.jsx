@@ -26,7 +26,7 @@ function RegistroPage() {
       })
     ) {
       setDatos({ nombre: '', correo: '', contrasena: '', confirmacion: '' })
-      navegar('/mis-ligas', { replace: true })
+      navegar('/seleccion-roles', { replace: true })
     }
   }
   function cambiar(campo, valor) {

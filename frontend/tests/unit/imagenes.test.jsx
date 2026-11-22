@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import api from '../../src/services/api.js'
 import equipo from '../../src/services/equipoService.js'
 import jugador from '../../src/services/jugadorService.js'
+import liga from '../../src/services/ligaService.js'
 import { validarArchivoImagen } from '../../src/services/imagenCatalogo.js'
 import EquipoForm from '../../src/components/EquipoForm.jsx'
 import JugadorForm from '../../src/components/JugadorForm.jsx'
@@ -16,6 +17,7 @@ describe('contratos de fotos y escudos', () => {
   for (const [servicio, campo, entidad, ruta] of [
     [equipo, 'escudo', 'equipo', '/equipos'],
     [jugador, 'foto', 'jugador', '/jugadores'],
+    [liga, 'logo', 'campeonato', '/campeonatos'],
   ]) {
     it(`${campo}: crea y reemplaza archivo con multipart y método interpretado por PHP`, async () => {
       const envios = []
@@ -57,6 +59,16 @@ describe('contratos de fotos y escudos', () => {
     expect(validarArchivoImagen({ type: 'image/png', size: 5 * 1024 * 1024 + 1 })).toContain('5 MB')
     expect(validarArchivoImagen({ type: 'image/svg+xml', size: 1 })).toContain('JPG')
     expect(validarArchivoImagen({ type: 'text/plain', size: 1 })).not.toBe('')
+  })
+
+  it('envía la descripción vacía como campo vacío al subir un logo', async () => {
+    let formulario
+    api.defaults.adapter = async (config) => {
+      formulario = config.data
+      return { data: { campeonato: {} }, status: 200, headers: {}, config }
+    }
+    await liga.crear({ descripcion: null, logo: new File(['ficticio'], 'logo.png') })
+    expect(formulario.get('descripcion')).toBe('')
   })
 
   it('propaga el fallo de subida sin reintentar ni cambiar la referencia por otro envío', async () => {

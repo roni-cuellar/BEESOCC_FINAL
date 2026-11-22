@@ -124,10 +124,10 @@ function Sidebar({ ligaId, abierta, onCerrar, eliminacion = false, grupos = fals
           </Link>
           <Link
             className="flex min-h-11 items-center rounded-xl px-3 text-green-100 hover:bg-white/10"
-            to="/mis-arbitrajes"
+            to="/seleccion-roles"
             onClick={onCerrar}
           >
-            Mis arbitrajes
+            Cambiar rol
           </Link>
           <SalirSesion className="flex min-h-11 items-center rounded-xl px-3 text-green-100 hover:bg-white/10" />
           <p className="mt-5 px-3 text-[9px] leading-5 tracking-wider text-green-200">

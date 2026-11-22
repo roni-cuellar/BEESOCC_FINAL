@@ -1,7 +1,41 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import ilustracion from '../assets/branding/optimizadas/campeonatos.png'
 import { Boton, Tarjeta } from './ui'
 import Icono from './Icono'
+import LogoCampeonato from './LogoCampeonato'
+
+function CodigoCompartible({ codigo, nombre }) {
+  const [aviso, setAviso] = useState('')
+
+  async function copiar() {
+    try {
+      await navigator.clipboard.writeText(codigo)
+      setAviso('Código copiado.')
+    } catch {
+      setAviso('Selecciona el código para copiarlo manualmente.')
+    }
+  }
+
+  return (
+    <div className="mb-4 rounded-xl border border-green-100 bg-green-50 p-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <p className="text-xs font-semibold text-marca-oscuro">Código de liga</p>
+          <code className="mt-1 block font-mono font-semibold tracking-widest text-marca-oscuro">
+            {codigo}
+          </code>
+        </div>
+        <Boton variante="secundario" aria-label={'Copiar código de ' + nombre} onClick={copiar}>
+          Copiar
+        </Boton>
+      </div>
+      <p role="status" className="text-sm text-marca-oscuro">
+        {aviso}
+      </p>
+    </div>
+  )
+}
 
 function LigaCard({ liga, onEliminar, onPublicacion, publicando = false, publica = false }) {
   const estado =
@@ -21,13 +55,19 @@ function LigaCard({ liga, onEliminar, onPublicacion, publicando = false, publica
             {liga.temporada}
           </p>
         </div>
-        <img
-          className="size-36 object-contain sm:size-44"
-          src={ilustracion}
-          alt=""
-          loading="lazy"
-          width="384"
-          height="384"
+        <LogoCampeonato
+          ruta={liga.logo}
+          className="size-24 sm:size-28"
+          respaldo={
+            <img
+              className="size-36 object-contain sm:size-44"
+              src={ilustracion}
+              alt=""
+              loading="lazy"
+              width="384"
+              height="384"
+            />
+          }
         />
       </div>
       <div className="flex flex-1 flex-col p-5 sm:p-6">
@@ -53,6 +93,9 @@ function LigaCard({ liga, onEliminar, onPublicacion, publicando = false, publica
                 ? 'Grupos + eliminación'
                 : liga.formato}
         </p>
+        {!publica && liga.codigo_liga && (
+          <CodigoCompartible codigo={liga.codigo_liga} nombre={liga.nombre} />
+        )}
         <Boton
           className="mt-auto w-full"
           to={publica ? '/campeonatos/' + liga.id : '/ligas/' + liga.id + '/dashboard'}

@@ -16,15 +16,18 @@ export default function AccionesEstadoPartido({
   arbitral = false,
   bloqueado = false,
   onCambiar,
+  omitirInicio = false,
 }) {
-  return accionesEstado(estado, arbitral).map((destino) => (
-    <button
-      key={destino}
-      className="boton boton-borde"
-      disabled={bloqueado}
-      onClick={() => onCambiar(destino)}
-    >
-      {textoAccion(destino, estado)}
-    </button>
-  ))
+  return accionesEstado(estado, arbitral)
+    .filter((destino) => !(omitirInicio && estado === 'programado' && destino === 'en_curso'))
+    .map((destino) => (
+      <button
+        key={destino}
+        className="boton boton-borde"
+        disabled={bloqueado}
+        onClick={() => onCambiar(destino)}
+      >
+        {textoAccion(destino, estado)}
+      </button>
+    ))
 }

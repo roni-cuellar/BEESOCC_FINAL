@@ -13,5 +13,8 @@ const arbitroService = {
   misArbitrajes: async () => (await api.get('/mis-arbitrajes')).data.asignaciones,
   partidos: async (id) => (await api.get('/mis-arbitrajes/' + id + '/partidos')).data,
   plantillas: async (id) => (await api.get('/partidos/' + id + '/plantillas-arbitrales')).data,
+  panel: async (id) => (await api.get(`/partidos/${id}/panel-arbitral`)).data,
+  preparar: async (id, datos) => (await api.put(`/partidos/${id}/panel-arbitral`, datos)).data,
+  reloj: async (id, datos) => (await api.patch(`/partidos/${id}/panel-arbitral/reloj`, datos)).data,
 }
 export default arbitroService

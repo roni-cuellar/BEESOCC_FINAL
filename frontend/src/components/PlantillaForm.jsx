@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import Aviso from './Aviso'
+import SelectorJugador from './SelectorJugador'
 import { mensajeError } from '../services/api'
 function PlantillaForm({ modo, plantilla, jugadores, plantillas, onGuardar, onCancelar }) {
   const [datos, setDatos] = useState(() => ({
@@ -16,7 +17,12 @@ function PlantillaForm({ modo, plantilla, jugadores, plantillas, onGuardar, onCa
   }
   async function guardar(e) {
     e.preventDefault()
+    if (guardando) return
     setError('')
+    if (modo === 'inscribir' && !jugadores.some((j) => String(j.id) === datos.jugador_id)) {
+      setError('Selecciona un jugador disponible.')
+      return
+    }
     if (
       modo !== 'salida' &&
       plantillas.some(
@@ -50,17 +56,15 @@ function PlantillaForm({ modo, plantilla, jugadores, plantillas, onGuardar, onCa
     <form onSubmit={guardar}>
       <Aviso error={error} />
       {modo === 'inscribir' && (
-        <label>
-          Jugador existente
-          <select required name="jugador_id" value={datos.jugador_id} onChange={cambiar}>
-            <option value="">Selecciona un jugador</option>
-            {jugadores.map((j) => (
-              <option key={j.id} value={j.id}>
-                {j.nombre} {j.apellido} · #{j.id}
-              </option>
-            ))}
-          </select>
-        </label>
+        <SelectorJugador
+          jugadores={jugadores}
+          valor={datos.jugador_id}
+          onSeleccion={(jugador_id) => {
+            setDatos((actual) => ({ ...actual, jugador_id }))
+            setError('')
+          }}
+          deshabilitado={guardando}
+        />
       )}
       {modo !== 'salida' && (
         <div className="dos-columnas">
@@ -129,7 +133,10 @@ function PlantillaForm({ modo, plantilla, jugadores, plantillas, onGuardar, onCa
         >
           Cancelar
         </button>
-        <button className="boton boton-verde" disabled={guardando}>
+        <button
+          className="boton boton-verde"
+          disabled={guardando || (modo === 'inscribir' && !datos.jugador_id)}
+        >
           {guardando
             ? 'Guardando…'
             : modo === 'salida'

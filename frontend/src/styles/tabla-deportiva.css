@@ -1,0 +1,133 @@
+.tabla-deportiva {
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  background: #fff;
+  scrollbar-color: #16a34a #e5e7eb;
+}
+
+.tabla-deportiva:focus-visible,
+.identidad-deportiva:focus-visible {
+  outline: 2px solid #16a34a;
+  outline-offset: -2px;
+}
+
+.tabla-deportiva :is(th, td) {
+  padding: 0.65rem 0.8rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.tabla-deportiva thead th {
+  background: #0f3d2e;
+  color: #fff;
+  font-size: 0.75rem;
+  letter-spacing: normal;
+}
+
+.tabla-deportiva tbody th {
+  border-bottom: 1px solid #e5e7eb;
+  background: transparent;
+  color: #111827;
+  font-size: inherit;
+  letter-spacing: normal;
+  white-space: normal;
+}
+
+.tabla-deportiva tbody tr:last-child > * {
+  border-bottom: 0;
+}
+
+.tabla-deportiva tbody tr {
+  position: relative;
+}
+
+.tabla-deportiva tbody tr:nth-child(even) {
+  background: #f8faf9;
+}
+
+.tabla-deportiva tbody tr:is(:hover, :focus-within) {
+  background: #edf7ef;
+}
+
+.tabla-deportiva:not(.tabla-deportiva-catalogo) :is(th, td):not(:nth-child(2)) {
+  text-align: center;
+}
+
+.tabla-deportiva-catalogo td:first-child {
+  min-width: 11rem;
+}
+
+.tabla-deportiva .identidad-deportiva {
+  min-width: 8.5rem;
+}
+
+.identidad-deportiva {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 0.625rem;
+  border-radius: 0.375rem;
+  color: #111827;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+a.identidad-deportiva:hover {
+  color: #0f3d2e;
+  text-decoration: underline;
+}
+
+.tabla-deportiva a.identidad-deportiva:not(.identidad-deportiva-principal) {
+  position: relative;
+  z-index: 1;
+}
+
+.tabla-deportiva .identidad-deportiva-principal::after {
+  position: absolute;
+  inset: 0;
+  content: '';
+}
+
+.identidad-deportiva .deportivo-avatar {
+  flex: 0 0 2.25rem;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
+.deportivo-puesto,
+.deportivo-total {
+  display: inline-grid;
+  min-width: 2rem;
+  min-height: 2rem;
+  place-items: center;
+  padding: 0.125rem 0.4rem;
+  border-radius: 0.5rem;
+  color: #0f3d2e;
+  font-weight: 700;
+}
+
+.deportivo-puesto {
+  background: #f4f7f5;
+}
+
+.deportivo-puesto[data-podio] {
+  border: 1px solid #16a34a;
+}
+
+.deportivo-puesto[data-podio='1'],
+.deportivo-total {
+  background: #0f3d2e;
+  color: #fff;
+}
+
+.deportivo-clasificado {
+  display: block;
+  color: #0f3d2e;
+  font-size: 0.7rem;
+}

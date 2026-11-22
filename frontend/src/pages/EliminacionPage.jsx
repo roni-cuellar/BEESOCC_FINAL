@@ -1,4 +1,5 @@
 import IlustracionModulo from '../components/IlustracionModulo'
+import LogoCampeonato from '../components/LogoCampeonato'
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { crearEliminacionStore } from '../stores/useEliminacionStore'
@@ -68,7 +69,10 @@ export default function EliminacionPage({ arbitral = false }) {
       )}
       <div className="titulo-pagina">
         <div className="flex min-w-0 items-center gap-4">
-          <IlustracionModulo tipo="eliminacion" />
+          <LogoCampeonato
+            ruta={s.liga?.logo ?? s.fase?.campeonato?.logo}
+            respaldo={<IlustracionModulo tipo="eliminacion" />}
+          />
           <div className="min-w-0">
             <p className="etiqueta">ELIMINACIÓN DIRECTA · CUADRO PRIVADO</p>
             <h1>Fases y llaves</h1>

@@ -1,5 +1,6 @@
 import { Boton } from './ui'
 import Icono from './Icono'
+import LogoCampeonato from './LogoCampeonato'
 function HeaderDashboard({ liga, ligaId, abierta, onMenu }) {
   return (
     <header className="sticky top-0 z-20 flex min-h-20 flex-wrap items-center justify-between gap-3 border-b border-borde bg-white px-4 py-4 sm:px-6 lg:px-8">
@@ -14,6 +15,7 @@ function HeaderDashboard({ liga, ligaId, abierta, onMenu }) {
           <Icono nombre="menu" />
           <span className="sr-only">Menú de la liga</span>
         </button>
+        <LogoCampeonato ruta={liga?.logo} respaldo={null} className="size-10 sm:size-12" />
         <div className="min-w-0">
           <p className="mb-1 text-[9px] font-semibold tracking-[.14em] whitespace-nowrap text-gris">
             CAMPEONATO
@@ -28,7 +30,11 @@ function HeaderDashboard({ liga, ligaId, abierta, onMenu }) {
       </div>
       <Boton
         variante="secundario"
-        to={'/ligas/' + ligaId + '/calendario#configuracion'}
+        to={
+          '/ligas/' +
+          ligaId +
+          (liga?.formato === 'grupos_eliminacion' ? '/grupos' : '/calendario#configuracion')
+        }
         aria-label="Configuración"
         className="min-w-11 shrink-0 px-3"
       >

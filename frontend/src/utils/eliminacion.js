@@ -1,6 +1,55 @@
-export const nombreEquipoFase = (fase, id) =>
-  fase.equipos?.find((e) => String(e.id) === String(id))?.inscripcion?.equipo?.nombre ||
-  'Equipo por confirmar'
+export const equipoFase = (fase, id) =>
+  fase.equipos?.find((e) => String(e.id) === String(id))?.inscripcion?.equipo
+
+export const nombreEquipoFase = (fase, id) => equipoFase(fase, id)?.nombre || 'Equipo por confirmar'
+
+export function nombreRondaCuadro(ronda, restantes, mostrarFinal = true) {
+  const nombres = ['Final', 'Semifinales', 'Cuartos de final', 'Octavos de final']
+  return mostrarFinal && ronda.llaves.length === 2 ** restantes && /^Ronda \d+$/i.test(ronda.nombre)
+    ? nombres[restantes] || ronda.nombre
+    : ronda.nombre
+}
+
+export function llaveFinalCuadro(fase) {
+  const ronda = fase.rondas?.at(-1)
+  return ronda?.llaves.length === 1 && nombreRondaCuadro(ronda, 0).toLowerCase() === 'final'
+    ? ronda.llaves[0]
+    : null
+}
+
+export function campeonEnCuadro(fase, campeon) {
+  const final = llaveFinalCuadro(fase)
+  const ganador = final?.estado === 'resuelta' && equipoFase(fase, final.ganador_fase_equipo_id)
+  return Boolean(campeon && ganador?.id != null && String(ganador.id) === String(campeon.id))
+}
+
+export function conexionesCuadro(rondas) {
+  const origenes = new Map()
+  rondas.forEach((ronda, indice) => {
+    ronda.llaves.forEach((llave) => origenes.set(String(llave.id), { indice, llave }))
+  })
+
+  return rondas.flatMap((ronda, indice) =>
+    ronda.llaves.flatMap((destino) =>
+      destino.plazas.flatMap((plaza) => {
+        if (plaza.origen_tipo !== 'ganador_llave') return []
+        const origen = origenes.get(String(plaza.origen_llave_id))
+        if (!origen || origen.indice >= indice) return []
+        return [
+          {
+            origen: origen.llave.id,
+            destino: destino.id,
+            plaza: plaza.id,
+            confirmada:
+              origen.llave.estado === 'resuelta' &&
+              plaza.fase_equipo_id != null &&
+              String(plaza.fase_equipo_id) === String(origen.llave.ganador_fase_equipo_id),
+          },
+        ]
+      }),
+    ),
+  )
+}
 
 export function nombrePlaza(fase, plaza) {
   if (plaza.fase_equipo_id) return nombreEquipoFase(fase, plaza.fase_equipo_id)
